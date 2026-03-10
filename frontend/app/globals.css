@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Roboto Condensed";
+  src: url("/assets/fonts/RobotoCondensed-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
+:root {
+  --color-primary: #1f4493;
+  --color-accent: #e67400;
+  --color-muted: #676767;
+  --color-bg: rgba(208, 208, 208, 0.12);
+}
+
+body {
+  font-family: "Roboto Condensed", sans-serif;
+  background-color: var(--color-bg);
+  color: #1a1a1a;
+}

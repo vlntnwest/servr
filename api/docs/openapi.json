@@ -1,0 +1,395 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Pokey Webapp API",
+    "version": "1.0.0",
+    "description": "Backend API for the Pokey restaurant ordering system"
+  },
+  "servers": [{ "url": "/api" }],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": { "error": { "type": "string" } }
+      },
+      "Message": {
+        "type": "object",
+        "properties": { "message": { "type": "string" } }
+      },
+      "Restaurant": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "address": { "type": "string" },
+          "zipCode": { "type": "string" },
+          "city": { "type": "string" },
+          "phone": { "type": "string", "nullable": true },
+          "email": { "type": "string", "nullable": true },
+          "imageUrl": { "type": "string", "nullable": true },
+          "stripeAccountId": { "type": "string", "nullable": true }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "restaurantId": { "type": "string", "format": "uuid" },
+          "fullName": { "type": "string", "nullable": true },
+          "phone": { "type": "string", "nullable": true },
+          "email": { "type": "string", "nullable": true },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "IN_PROGRESS", "COMPLETED", "DELIVERED", "CANCELLED", "PENDING_ON_SITE_PAYMENT"]
+          },
+          "totalPrice": { "type": "number" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "tags": ["System"],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/user/me": {
+      "get": {
+        "summary": "Get current user",
+        "tags": ["User"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "User data" }, "401": { "description": "Unauthorized" } }
+      },
+      "put": {
+        "summary": "Update current user",
+        "tags": ["User"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fullName": { "type": "string" },
+                  "phone": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Updated user" } }
+      },
+      "delete": {
+        "summary": "Delete current user",
+        "tags": ["User"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Deleted" } }
+      }
+    },
+    "/restaurants": {
+      "post": {
+        "summary": "Create restaurant",
+        "tags": ["Restaurants"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "address", "zipCode", "city", "phone"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "address": { "type": "string" },
+                  "zipCode": { "type": "string" },
+                  "city": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "email": { "type": "string" },
+                  "imageUrl": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created restaurant" } }
+      }
+    },
+    "/restaurants/{restaurantId}": {
+      "get": {
+        "summary": "Get restaurant info (public)",
+        "tags": ["Restaurants"],
+        "parameters": [{ "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Restaurant data" }, "404": { "description": "Not found" } }
+      },
+      "put": {
+        "summary": "Update restaurant",
+        "tags": ["Restaurants"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Updated" } }
+      },
+      "delete": {
+        "summary": "Delete restaurant",
+        "tags": ["Restaurants"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Deleted" } }
+      }
+    },
+    "/restaurants/{restaurantId}/opening-hours": {
+      "get": {
+        "summary": "Get opening hours (public)",
+        "tags": ["Opening Hours"],
+        "parameters": [{ "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Opening hours array" } }
+      },
+      "put": {
+        "summary": "Replace opening hours (ADMIN+)",
+        "tags": ["Opening Hours"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["dayOfWeek", "openTime", "closeTime", "order"],
+                  "properties": {
+                    "dayOfWeek": { "type": "integer", "minimum": 0, "maximum": 6 },
+                    "openTime": { "type": "string", "example": "09:00" },
+                    "closeTime": { "type": "string", "example": "22:00" },
+                    "order": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Updated opening hours" } }
+      }
+    },
+    "/restaurants/{restaurantId}/members": {
+      "get": {
+        "summary": "List members (ADMIN+)",
+        "tags": ["Members"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Members list" } }
+      }
+    },
+    "/restaurants/{restaurantId}/members/invite": {
+      "post": {
+        "summary": "Invite a member by email (OWNER)",
+        "tags": ["Members"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "role": { "type": "string", "enum": ["ADMIN", "STAFF"], "default": "STAFF" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Invitation sent" } }
+      }
+    },
+    "/restaurants/{restaurantId}/members/{memberId}/role": {
+      "patch": {
+        "summary": "Change member role (OWNER)",
+        "tags": ["Members"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "memberId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "required": ["role"], "properties": { "role": { "type": "string", "enum": ["ADMIN", "STAFF"] } } }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Updated member" } }
+      }
+    },
+    "/restaurants/{restaurantId}/members/{memberId}": {
+      "delete": {
+        "summary": "Remove member (OWNER)",
+        "tags": ["Members"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "memberId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Removed" } }
+      }
+    },
+    "/members/accept": {
+      "post": {
+        "summary": "Accept invitation",
+        "tags": ["Members"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "required": ["token"], "properties": { "token": { "type": "string" } } }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Joined restaurant" } }
+      }
+    },
+    "/restaurants/{restaurantId}/orders": {
+      "post": {
+        "summary": "Create order (public)",
+        "tags": ["Orders"],
+        "parameters": [{ "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["items"],
+                "properties": {
+                  "fullName": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "email": { "type": "string" },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "productId": { "type": "string", "format": "uuid" },
+                        "quantity": { "type": "integer", "minimum": 1 },
+                        "optionChoiceIds": { "type": "array", "items": { "type": "string", "format": "uuid" } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created order" }, "400": { "description": "Restaurant closed" } }
+      },
+      "get": {
+        "summary": "List orders (STAFF+)",
+        "tags": ["Orders"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Orders list" } }
+      }
+    },
+    "/restaurants/{restaurantId}/orders/{orderId}": {
+      "get": {
+        "summary": "Get order (STAFF+)",
+        "tags": ["Orders"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "orderId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Order data" }, "404": { "description": "Not found" } }
+      }
+    },
+    "/restaurants/{restaurantId}/orders/{orderId}/status": {
+      "patch": {
+        "summary": "Update order status (STAFF+)",
+        "tags": ["Orders"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "orderId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "required": ["status"], "properties": { "status": { "type": "string", "enum": ["PENDING", "IN_PROGRESS", "COMPLETED", "DELIVERED", "CANCELLED", "PENDING_ON_SITE_PAYMENT"] } } }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Updated order" } }
+      }
+    },
+    "/restaurants/{restaurantId}/stats": {
+      "get": {
+        "summary": "Get restaurant stats (ADMIN+)",
+        "tags": ["Stats"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "period", "in": "query", "schema": { "type": "string", "enum": ["day", "week", "month"], "default": "month" } }
+        ],
+        "responses": { "200": { "description": "Stats data" } }
+      }
+    },
+    "/checkout/create-session": {
+      "post": {
+        "summary": "Create Stripe checkout session",
+        "tags": ["Checkout"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["restaurantId", "items"],
+                "properties": {
+                  "restaurantId": { "type": "string", "format": "uuid" },
+                  "fullName": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "email": { "type": "string" },
+                  "items": { "type": "array" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Stripe session or on-site order" } }
+      }
+    },
+    "/checkout/webhook": {
+      "post": {
+        "summary": "Stripe webhook",
+        "tags": ["Checkout"],
+        "responses": { "200": { "description": "Received" } }
+      }
+    },
+    "/checkout/restaurants/{restaurantId}/orders/{orderId}/refund": {
+      "post": {
+        "summary": "Refund order (ADMIN+)",
+        "tags": ["Checkout"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "orderId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Refund created, order cancelled" } }
+      }
+    }
+  }
+}
