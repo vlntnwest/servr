@@ -13,6 +13,7 @@ async function main() {
     create: {
       id: "00000000-0000-0000-0000-000000000001",
       name: "Pokey Bar Demo",
+      slug: "pokey-bar-demo",
       address: "36 rue de la Krutenau",
       zipCode: "67000",
       city: "Strasbourg",

@@ -6,6 +6,9 @@ const { isAdmin, isOwner } = require("../middleware/role.middleware");
 const { validate } = require("../middleware/validate.middleware");
 const { restaurantSchema } = require("../validators/schemas");
 
+// Public — get restaurant by slug (must be before /:restaurantId)
+router.get("/by-slug/:slug", restaurantControllers.getRestaurantBySlug);
+
 // Public — get restaurant info
 router.get("/:restaurantId", restaurantControllers.getRestaurant);
 
