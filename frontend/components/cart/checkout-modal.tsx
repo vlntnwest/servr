@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { createCheckoutSession } from "@/lib/api";
 import { useCart } from "@/contexts/cart-context";
+import { useOptionalRestaurant } from "@/contexts/restaurant-context";
 import { useRouter } from "next/navigation";
 
 interface CheckoutModalProps {
@@ -17,6 +18,7 @@ interface CheckoutModalProps {
 
 export default function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const { toCheckoutItems, clearCart, total } = useCart();
+  const restaurantCtx = useOptionalRestaurant();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,12 +40,15 @@ export default function CheckoutModal({ open, onClose }: CheckoutModalProps) {
 
     try {
       const items = toCheckoutItems();
-      const result = await createCheckoutSession({
-        fullName: form.fullName || undefined,
-        phone: form.phone || undefined,
-        email: form.email || undefined,
-        items,
-      });
+      const result = await createCheckoutSession(
+        {
+          fullName: form.fullName || undefined,
+          phone: form.phone || undefined,
+          email: form.email || undefined,
+          items,
+        },
+        restaurantCtx?.restaurant.id,
+      );
 
       if ("error" in result) {
         setError(result.error);
@@ -59,7 +64,8 @@ export default function CheckoutModal({ open, onClose }: CheckoutModalProps) {
       } else if (data.paymentMethod === "on_site") {
         // On-site payment
         clearCart();
-        router.push(`/order/confirmation/${data.order.id}`);
+        const basePath = restaurantCtx ? `/store/${restaurantCtx.slug}` : "";
+        router.push(`${basePath}/order/confirmation/${data.order.id}`);
         onClose();
       }
     } catch (err) {

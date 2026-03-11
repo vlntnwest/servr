@@ -62,6 +62,24 @@ export async function getRestaurant(): Promise<Restaurant | null> {
   return json.data ?? null;
 }
 
+export async function getRestaurantBySlug(slug: string): Promise<Restaurant | null> {
+  const res = await fetch(`${API_URL}/api/v1/restaurants/by-slug/${slug}`, {
+    next: { revalidate: 3600 },
+  });
+  if (!res.ok) return null;
+  const json = await res.json();
+  return json.data ?? null;
+}
+
+export async function getMenuForRestaurant(restaurantId: string): Promise<Category[]> {
+  const res = await fetch(
+    `${API_URL}/api/v1/menu/restaurants/${restaurantId}/menu`,
+    { next: { revalidate: 60 } },
+  );
+  const json = await res.json();
+  return json.data ?? [];
+}
+
 export async function getOpeningHours(): Promise<OpeningHour[]> {
   const res = await fetch(
     `${API_URL}/api/v1/restaurants/${RESTAURANT_ID}/opening-hours`,
@@ -91,20 +109,24 @@ export async function validatePromoCode(
 
 // ── Checkout ─────────────────────────────────────────────────────────────────
 
-export async function createCheckoutSession(payload: {
-  fullName?: string;
-  phone?: string;
-  email?: string;
-  items: CheckoutItem[];
-}): Promise<
+export async function createCheckoutSession(
+  payload: {
+    fullName?: string;
+    phone?: string;
+    email?: string;
+    items: CheckoutItem[];
+  },
+  restaurantId?: string,
+): Promise<
   | { data: { url: string; sessionId: string } }
   | { data: { order: Order; paymentMethod: "on_site" } }
   | { error: string }
 > {
+  const rid = restaurantId ?? RESTAURANT_ID;
   const res = await fetch(`${API_URL}/api/v1/checkout/create-session`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ restaurantId: RESTAURANT_ID, ...payload }),
+    body: JSON.stringify({ restaurantId: rid, ...payload }),
   });
   return res.json();
 }

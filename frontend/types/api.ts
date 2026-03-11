@@ -55,6 +55,7 @@ export type Category = {
 export type Restaurant = {
   id: string;
   name: string;
+  slug: string | null;
   address: string;
   zipCode: string;
   city: string;
