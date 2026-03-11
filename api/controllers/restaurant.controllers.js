@@ -20,15 +20,35 @@ module.exports.getRestaurant = async (req, res, next) => {
   }
 };
 
+module.exports.getRestaurantBySlug = async (req, res, next) => {
+  const { slug } = req.params;
+
+  try {
+    const data = await prisma.restaurant.findUnique({
+      where: { slug },
+    });
+
+    if (!data) {
+      return res.status(404).json({ error: "Restaurant not found" });
+    }
+
+    logger.info({ slug }, "Restaurant retrieved by slug");
+    return res.status(200).json({ data });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports.createRestaurant = async (req, res, next) => {
   const user = req.user;
-  const { name, address, zipCode, city, phone, email, imageUrl } = req.body;
+  const { name, slug, address, zipCode, city, phone, email, imageUrl } = req.body;
 
   try {
     const data = await prisma.$transaction(async (tx) => {
       const restaurant = await tx.restaurant.create({
         data: {
           name,
+          slug,
           address,
           zipCode,
           city,

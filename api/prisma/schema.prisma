@@ -25,6 +25,7 @@ model User {
 model Restaurant {
   id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name              String             @db.VarChar(255)
+  slug              String?            @unique @db.VarChar(100)
   address           String             @db.Text
   zipCode           String             @db.VarChar(5)
   city              String             @db.VarChar(50)

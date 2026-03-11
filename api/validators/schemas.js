@@ -16,6 +16,12 @@ const updateUserSchema = z.object({
 
 const restaurantSchema = z.object({
   name: z.string().min(1).max(50),
+  slug: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be lowercase alphanumeric with hyphens")
+    .optional(),
   address: z.string().min(1).max(255),
   zipCode: z
     .string()
