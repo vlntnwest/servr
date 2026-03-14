@@ -3,6 +3,7 @@ const prisma = require("../lib/prisma");
 const logger = require("../logger");
 const { sendOrderConfirmation } = require("../lib/mailer");
 const { withOrderNumber } = require("../lib/orderNumber");
+const { isScheduledTimeValid } = require("./order.controllers");
 
 function isRestaurantOpen(openingHours) {
   if (!openingHours || openingHours.length === 0) return true;
@@ -16,12 +17,13 @@ function isRestaurantOpen(openingHours) {
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
+const CONNECT_WEBHOOK_SECRET = process.env.STRIPE_CONNECT_WEBHOOK_SECRET;
 
 // Platform commission: 5% (in cents)
 const PLATFORM_FEE_PERCENT = 0.05;
 
 module.exports.createCheckoutSession = async (req, res, next) => {
-  const { restaurantId, fullName, phone, email, items } = req.body;
+  const { restaurantId, fullName, phone, email, items, scheduledFor } = req.body;
 
   try {
     const restaurant = await prisma.restaurant.findUnique({
@@ -37,6 +39,10 @@ module.exports.createCheckoutSession = async (req, res, next) => {
     });
     if (!isRestaurantOpen(openingHours)) {
       return res.status(400).json({ error: "Restaurant is currently closed" });
+    }
+
+    if (scheduledFor && !isScheduledTimeValid(openingHours, scheduledFor)) {
+      return res.status(400).json({ error: "Scheduled time is outside opening hours or in the past" });
     }
 
     const productIds = [...new Set(items.map((i) => i.productId))];
@@ -87,6 +93,7 @@ module.exports.createCheckoutSession = async (req, res, next) => {
             totalPrice,
             status: "PENDING_ON_SITE_PAYMENT",
             orderNumber,
+            scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
           },
         });
 
@@ -169,27 +176,28 @@ module.exports.createCheckoutSession = async (req, res, next) => {
       totalAmountCents * PLATFORM_FEE_PERCENT,
     );
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: lineItems,
-      mode: "payment",
-      success_url: `${process.env.CLIENT_URL}/order/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/order/cancel`,
-      customer_email: email || undefined,
-      payment_intent_data: {
-        application_fee_amount: applicationFeeAmount,
-        transfer_data: {
-          destination: restaurant.stripeAccountId,
+    const session = await stripe.checkout.sessions.create(
+      {
+        payment_method_types: ["card"],
+        line_items: lineItems,
+        mode: "payment",
+        success_url: `${process.env.CLIENT_URL}/order/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.CLIENT_URL}/order/cancel`,
+        customer_email: email || undefined,
+        payment_intent_data: {
+          application_fee_amount: applicationFeeAmount,
+        },
+        metadata: {
+          restaurantId,
+          fullName: fullName || "",
+          phone: phone || "",
+          email: email || "",
+          items: JSON.stringify(items),
+          scheduledFor: scheduledFor || "",
         },
       },
-      metadata: {
-        restaurantId,
-        fullName: fullName || "",
-        phone: phone || "",
-        email: email || "",
-        items: JSON.stringify(items),
-      },
-    });
+      { stripeAccount: restaurant.stripeAccountId },
+    );
 
     logger.info(
       { sessionId: session.id, restaurantId },
@@ -216,7 +224,7 @@ module.exports.handleWebhook = async (req, res) => {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-    const { restaurantId, fullName, phone, email } = session.metadata;
+    const { restaurantId, fullName, phone, email, scheduledFor } = session.metadata;
     const items = JSON.parse(session.metadata.items || "[]");
     const totalPrice = session.amount_total / 100;
 
@@ -232,6 +240,7 @@ module.exports.handleWebhook = async (req, res) => {
             status: "PENDING",
             stripePaymentIntentId: session.payment_intent || null,
             orderNumber,
+            scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
           },
         });
 
@@ -272,6 +281,16 @@ module.exports.handleWebhook = async (req, res) => {
     }
   }
 
+  if (event.type === "account.updated") {
+    const account = event.data.object;
+    if (account.charges_enabled) {
+      logger.info(
+        { stripeAccountId: account.id },
+        "Stripe Connect account charges_enabled",
+      );
+    }
+  }
+
   res.status(200).json({ received: true });
 };
 
@@ -297,10 +316,17 @@ module.exports.refundOrder = async (req, res, next) => {
       return res.status(409).json({ error: "Order is already cancelled" });
     }
 
-    const refund = await stripe.refunds.create({
-      payment_intent: order.stripePaymentIntentId,
-      reverse_transfer: true,
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { id: restaurantId },
     });
+    if (!restaurant || !restaurant.stripeAccountId) {
+      return res.status(400).json({ error: "No Stripe account associated with this restaurant" });
+    }
+
+    const refund = await stripe.refunds.create(
+      { payment_intent: order.stripePaymentIntentId },
+      { stripeAccount: restaurant.stripeAccountId },
+    );
 
     const updated = await prisma.order.update({
       where: { id: orderId },
@@ -315,4 +341,76 @@ module.exports.refundOrder = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+module.exports.handleConnectWebhook = async (req, res) => {
+  const sig = req.headers["stripe-signature"];
+
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, CONNECT_WEBHOOK_SECRET);
+  } catch (err) {
+    logger.warn({ error: err.message }, "Stripe connect webhook signature verification failed");
+    return res.status(400).json({ error: `Webhook error: ${err.message}` });
+  }
+
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+    const { restaurantId, fullName, phone, email, scheduledFor } = session.metadata;
+    const items = JSON.parse(session.metadata.items || "[]");
+    const totalPrice = session.amount_total / 100;
+
+    try {
+      const order = await withOrderNumber(async (tx, orderNumber) => {
+        const created = await tx.order.create({
+          data: {
+            restaurantId,
+            fullName: fullName || null,
+            phone: phone || null,
+            email: email || null,
+            totalPrice,
+            status: "PENDING",
+            stripePaymentIntentId: session.payment_intent || null,
+            orderNumber,
+            scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
+          },
+        });
+
+        for (const item of items) {
+          const orderProduct = await tx.orderProduct.create({
+            data: {
+              orderId: created.id,
+              productId: item.productId,
+              quantity: item.quantity,
+            },
+          });
+
+          if (item.optionChoiceIds && item.optionChoiceIds.length > 0) {
+            await tx.orderProductOption.createMany({
+              data: item.optionChoiceIds.map((ocId) => ({
+                orderProductId: orderProduct.id,
+                optionChoiceId: ocId,
+              })),
+            });
+          }
+        }
+
+        return created;
+      });
+
+      logger.info(
+        { orderId: order.id, restaurantId, sessionId: session.id },
+        "Order created from Stripe connect webhook",
+      );
+      sendOrderConfirmation({ to: email || null, order });
+    } catch (err) {
+      logger.error(
+        { error: err.message, sessionId: session.id, restaurantId },
+        "Failed to create order from connect webhook",
+      );
+      return res.status(500).json({ error: "Failed to create order" });
+    }
+  }
+
+  res.status(200).json({ received: true });
 };

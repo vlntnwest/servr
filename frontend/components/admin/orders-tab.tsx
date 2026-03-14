@@ -154,6 +154,12 @@ function OrderCard({
         {dayjs(order.createdAt).fromNow()}
       </p>
 
+      {order.scheduledFor && (
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+          Prévu pour {new Date(order.scheduledFor).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+        </span>
+      )}
+
       <div className="mt-1">
         <select
           className="w-full text-xs border border-black/15 rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary"

@@ -54,7 +54,7 @@ const paymentLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many payment attempts, please try again later." },
-  skip: (req) => req.path === "/webhook", // Skip webhook (Stripe calls)
+  skip: (req) => req.path === "/webhook" || req.path === "/connect-webhook",
 });
 
 // Request ID (must be before other middleware)
@@ -66,6 +66,8 @@ app.use(helmet());
 // Webhook route FIRST - before CORS to avoid blocking Stripe requests
 app.use("/api/checkout/webhook", express.raw({ type: "application/json" }));
 app.use("/api/v1/checkout/webhook", express.raw({ type: "application/json" }));
+app.use("/api/checkout/connect-webhook", express.raw({ type: "application/json" }));
+app.use("/api/v1/checkout/connect-webhook", express.raw({ type: "application/json" }));
 
 // CORS
 const corsOption = {
@@ -79,7 +81,7 @@ const corsOption = {
 
 // Apply CORS to all routes EXCEPT webhook
 app.use((req, res, next) => {
-  if (req.path.endsWith("/checkout/webhook")) {
+  if (req.path.endsWith("/checkout/webhook") || req.path.endsWith("/checkout/connect-webhook")) {
     return next();
   }
   cors(corsOption)(req, res, next);

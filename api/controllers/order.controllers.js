@@ -13,9 +13,24 @@ function isRestaurantOpen(openingHours) {
   return currentTime >= todayHours.openTime && currentTime < todayHours.closeTime;
 }
 
+function isScheduledTimeValid(openingHours, scheduledAt) {
+  const dt = new Date(scheduledAt);
+  // Must be in the future
+  if (dt <= new Date()) return false;
+  // No opening hours configured → always open
+  if (!openingHours || openingHours.length === 0) return true;
+  const dayOfWeek = dt.getDay();
+  const hours = `${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`;
+  const todayHours = openingHours.find((h) => h.dayOfWeek === dayOfWeek);
+  if (!todayHours) return false;
+  return hours >= todayHours.openTime && hours < todayHours.closeTime;
+}
+
+module.exports.isScheduledTimeValid = isScheduledTimeValid;
+
 module.exports.createOrder = async (req, res, next) => {
   const { restaurantId } = req.params;
-  const { fullName, phone, email, items, promoCode } = req.body;
+  const { fullName, phone, email, items, promoCode, scheduledFor } = req.body;
 
   try {
     const openingHours = await prisma.openingHour.findMany({
@@ -23,6 +38,10 @@ module.exports.createOrder = async (req, res, next) => {
     });
     if (!isRestaurantOpen(openingHours)) {
       return res.status(400).json({ error: "Restaurant is currently closed" });
+    }
+
+    if (scheduledFor && !isScheduledTimeValid(openingHours, scheduledFor)) {
+      return res.status(400).json({ error: "Scheduled time is outside opening hours or in the past" });
     }
 
     const productIds = [...new Set(items.map((i) => i.productId))];
@@ -87,7 +106,7 @@ module.exports.createOrder = async (req, res, next) => {
 
     const data = await withOrderNumber(async (tx, orderNumber) => {
       const order = await tx.order.create({
-        data: { restaurantId, fullName, phone, email, totalPrice, orderNumber },
+        data: { restaurantId, fullName, phone, email, totalPrice, orderNumber, scheduledFor: scheduledFor ? new Date(scheduledFor) : null },
       });
 
       if (appliedPromoCode) {

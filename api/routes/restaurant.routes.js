@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const restaurantControllers = require("../controllers/restaurant.controllers");
+const stripeControllers = require("../controllers/stripe.controllers");
 const checkAuth = require("../middleware/auth.middleware");
 const { isAdmin, isOwner } = require("../middleware/role.middleware");
 const { validate } = require("../middleware/validate.middleware");
@@ -30,6 +31,20 @@ router.delete(
   checkAuth,
   isOwner,
   restaurantControllers.deleteRestaurant,
+);
+
+// Stripe Connect
+router.post(
+  "/:restaurantId/stripe/onboard",
+  checkAuth,
+  isOwner,
+  stripeControllers.initiateStripeOnboarding,
+);
+router.get(
+  "/:restaurantId/stripe/status",
+  checkAuth,
+  isOwner,
+  stripeControllers.getStripeStatus,
 );
 
 module.exports = router;

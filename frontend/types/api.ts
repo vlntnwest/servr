@@ -100,6 +100,7 @@ export type Order = {
   status: OrderStatus;
   totalPrice: string;
   stripePaymentIntentId: string | null;
+  scheduledFor: string | null;
   createdAt: string;
   updatedAt: string;
   orderProducts: OrderProduct[];

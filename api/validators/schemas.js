@@ -130,6 +130,7 @@ const orderSchema = z.object({
   email: z.string().email().optional(),
   items: z.array(orderItemSchema).min(1),
   promoCode: z.string().min(1).max(50).optional(),
+  scheduledFor: z.string().datetime({ offset: true }).optional(),
 });
 
 const updateOrderStatusSchema = z.object({
@@ -190,6 +191,7 @@ const checkoutSessionSchema = z.object({
   phone: phoneSchema.optional(),
   email: z.string().email().optional(),
   items: z.array(orderItemSchema).min(1),
+  scheduledFor: z.string().datetime({ offset: true }).optional(),
 });
 
 module.exports = {

@@ -1,53 +1,45 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { initiateStripeOnboarding, setRestaurantId } from "@/lib/api";
+import { createClient } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 
-export default function AdminRedirectPage() {
+export default function StripeRefreshPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [noRestaurant, setNoRestaurant] = useState(false);
 
   useEffect(() => {
-    const init = async () => {
+    const refresh = async () => {
+      // Restore RESTAURANT_ID from session
       const {
         data: { session },
       } = await supabase.auth.getSession();
-
       if (!session) {
-        router.replace("/login");
+        router.push("/login");
         return;
       }
-
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/me`,
         { headers: { Authorization: `Bearer ${session.access_token}` } },
       );
-
       if (res.ok) {
         const { data } = await res.json();
-        const firstId = data.restaurantMembers?.[0]?.restaurantId;
-        if (firstId) {
-          router.replace(`/admin/${firstId}`);
-          return;
-        }
+        const restaurantId = data.restaurantMembers?.[0]?.restaurantId;
+        if (restaurantId) setRestaurantId(restaurantId);
       }
 
-      setNoRestaurant(true);
+      const result = await initiateStripeOnboarding();
+      if ("data" in result && result.data?.url) {
+        window.location.href = result.data.url;
+      } else {
+        // Fallback: go to admin settings
+        router.push("/admin");
+      }
     };
-
-    init();
+    refresh();
   }, [supabase, router]);
-
-  if (noRestaurant) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-[#676767]">Aucun restaurant trouvé.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center">

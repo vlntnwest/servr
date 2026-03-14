@@ -109,6 +109,7 @@ export async function createCheckoutSession(
     phone?: string;
     email?: string;
     items: CheckoutItem[];
+    scheduledFor?: string;
   },
   restaurantId?: string,
 ): Promise<
@@ -131,6 +132,7 @@ export async function createOrder(payload: {
   email?: string;
   items: CheckoutItem[];
   promoCode?: string;
+  scheduledFor?: string;
 }): Promise<{ data?: Order; error?: string }> {
   const res = await fetch(
     `${API_URL}/api/v1/restaurants/${RESTAURANT_ID}/orders`,
@@ -451,4 +453,31 @@ export async function unlinkOptionGroup(
     { method: "DELETE" },
   );
   return "error" in result ? { error: result.error } : {};
+}
+
+// ── Stripe Connect (OWNER) ────────────────────────────────────────────────────
+
+export async function initiateStripeOnboarding(): Promise<{
+  data?: { url: string };
+  error?: string;
+}> {
+  return apiFetch<{ url: string }>(
+    `/restaurants/${RESTAURANT_ID}/stripe/onboard`,
+    { method: "POST" },
+  );
+}
+
+export async function getStripeStatus(): Promise<{
+  data?: {
+    connected: boolean;
+    chargesEnabled?: boolean;
+    detailsSubmitted?: boolean;
+  };
+  error?: string;
+}> {
+  return apiFetch<{
+    connected: boolean;
+    chargesEnabled?: boolean;
+    detailsSubmitted?: boolean;
+  }>(`/restaurants/${RESTAURANT_ID}/stripe/status`);
 }
