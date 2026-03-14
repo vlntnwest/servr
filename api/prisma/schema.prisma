@@ -184,6 +184,7 @@ model OptionChoice {
 
 model Order {
   id                     String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderNumber            String?        @unique @map("order_number") @db.VarChar(6)
   restaurantId           String         @map("restaurant_id") @db.Uuid
   userId                 String?        @map("user_id") @db.Uuid
   fullName               String?        @map("full_name") @db.VarChar(50)
