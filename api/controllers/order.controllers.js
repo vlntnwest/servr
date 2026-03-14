@@ -1,6 +1,7 @@
 const prisma = require("../lib/prisma");
 const logger = require("../logger");
 const { sendOrderConfirmation } = require("../lib/mailer");
+const { withOrderNumber } = require("../lib/orderNumber");
 
 function isRestaurantOpen(openingHours) {
   if (!openingHours || openingHours.length === 0) return true;
@@ -84,9 +85,9 @@ module.exports.createOrder = async (req, res, next) => {
       totalPrice = Math.round(totalPrice * 100) / 100;
     }
 
-    const data = await prisma.$transaction(async (tx) => {
+    const data = await withOrderNumber(async (tx, orderNumber) => {
       const order = await tx.order.create({
-        data: { restaurantId, fullName, phone, email, totalPrice },
+        data: { restaurantId, fullName, phone, email, totalPrice, orderNumber },
       });
 
       if (appliedPromoCode) {
@@ -210,6 +211,34 @@ module.exports.updateOrderStatus = async (req, res, next) => {
 
     logger.info({ orderId, status }, "Order status updated");
     return res.status(200).json({ data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Intentionally public (no auth) — returns minimal order info for confirmation pages.
+// Order IDs are UUIDs and not guessable.
+module.exports.getOrderPublic = async (req, res, next) => {
+  const { orderId } = req.params;
+
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        orderNumber: true,
+        status: true,
+        totalPrice: true,
+        createdAt: true,
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    logger.info({ orderId }, "Public order lookup");
+    return res.status(200).json({ data: order });
   } catch (error) {
     next(error);
   }
