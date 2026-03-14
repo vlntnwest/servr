@@ -223,7 +223,7 @@
 
 - [ ] Step 1: Create `api/tests/controllers/order-timeslot.spec.js` with the following content:
   ```js
-  import { isScheduledTimeValid } from "../../controllers/order.controllers.js";
+  const { isScheduledTimeValid } = require("../../controllers/order.controllers");
 
   // Opening hours fixture: open Mon–Fri 12:00–22:00 (dayOfWeek 1–5)
   const weekdayHours = [
