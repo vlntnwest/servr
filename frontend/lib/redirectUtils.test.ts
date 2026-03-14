@@ -16,6 +16,7 @@ describe("isSafeRedirect", () => {
 
   it("returns false for protocol-relative URLs", () => {
     expect(isSafeRedirect("//evil.com")).toBe(false);
+    expect(isSafeRedirect("%2F%2Fevil.com")).toBe(false);
   });
 
   it("returns false for absolute URLs", () => {

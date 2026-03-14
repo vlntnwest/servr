@@ -49,8 +49,8 @@ module.exports.getUserOrders = async (req, res, next) => {
       prisma.order.findMany({
         where: { userId: id },
         orderBy: { createdAt: "desc" },
-        take: Number(limit),
-        skip: Number(offset),
+        take: limit,
+        skip: offset,
         include: {
           restaurant: { select: { id: true, name: true, slug: true } },
           orderProducts: {
