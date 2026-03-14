@@ -15,7 +15,10 @@ import type {
 } from "@/types/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
-const RESTAURANT_ID = process.env.NEXT_PUBLIC_RESTAURANT_ID ?? "";
+let RESTAURANT_ID = "";
+export function setRestaurantId(id: string) {
+  RESTAURANT_ID = id;
+}
 
 async function getAuthHeader(): Promise<Record<string, string>> {
   const supabase = createClient();
@@ -44,15 +47,6 @@ async function apiFetch<T>(
 
 // ── Public endpoints ─────────────────────────────────────────────────────────
 
-export async function getMenu(): Promise<Category[]> {
-  console.log("RESTAURANT_ID", RESTAURANT_ID);
-  const res = await fetch(
-    `${API_URL}/api/v1/menu/restaurants/${RESTAURANT_ID}/menu`,
-    { next: { revalidate: 60 } },
-  );
-  const json = await res.json();
-  return json.data ?? [];
-}
 
 export async function getRestaurant(): Promise<Restaurant | null> {
   const res = await fetch(`${API_URL}/api/v1/restaurants/${RESTAURANT_ID}`, {
@@ -155,11 +149,11 @@ export async function getOrders(
   page = 1,
   limit = 20,
 ): Promise<PaginatedResponse<Order>> {
-  const result = await apiFetch<PaginatedResponse<Order>>(
+  const result = await apiFetch<never>(
     `/restaurants/${RESTAURANT_ID}/orders?page=${page}&limit=${limit}`,
   );
-  if ("data" in result) return result.data;
-  return { data: [], pagination: { page, limit, total: 0, totalPages: 0 } };
+  if ("error" in result) return { data: [], pagination: { page, limit, total: 0, totalPages: 0 } };
+  return result as unknown as PaginatedResponse<Order>;
 }
 
 export async function updateOrderStatus(
@@ -197,14 +191,11 @@ export async function getOptionGroups(): Promise<OptionGroup[]> {
 export async function getMembers(): Promise<
   PaginatedResponse<RestaurantMember>
 > {
-  const result = await apiFetch<PaginatedResponse<RestaurantMember>>(
+  const result = await apiFetch<never>(
     `/restaurants/${RESTAURANT_ID}/members`,
   );
-  if ("data" in result) return result.data;
-  return {
-    data: [],
-    pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
-  };
+  if ("error" in result) return { data: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } };
+  return result as unknown as PaginatedResponse<RestaurantMember>;
 }
 
 export async function inviteMember(

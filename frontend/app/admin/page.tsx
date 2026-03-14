@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { setRestaurantId } from "@/lib/api";
 import OrdersTab from "@/components/admin/orders-tab";
 import StatsTab from "@/components/admin/stats-tab";
 import MembersTab from "@/components/admin/members-tab";
@@ -20,14 +21,25 @@ export default function AdminPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) {
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         router.push("/login");
-      } else {
-        setUser(user);
-        setLoading(false);
+        return;
       }
-    });
+      setUser(session.user);
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/me`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (res.ok) {
+        const { data } = await res.json();
+        const restaurantId = data.restaurantMembers?.[0]?.restaurantId;
+        if (restaurantId) setRestaurantId(restaurantId);
+      }
+      setLoading(false);
+    };
+    init();
   }, [supabase, router]);
 
   if (loading) {
