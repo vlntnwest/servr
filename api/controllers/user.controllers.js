@@ -25,12 +25,12 @@ module.exports.getUserData = async (req, res, next) => {
 
 module.exports.updateUserData = async (req, res, next) => {
   const { id } = req.user;
-  const { fullName, phone } = req.body;
+  const { fullName, phone, address, city, zipCode } = req.body;
 
   try {
     const data = await prisma.user.update({
       where: { id },
-      data: { fullName, phone },
+      data: { fullName, phone, address, city, zipCode },
     });
 
     logger.info({ userId: data.id }, "User data updated successfully");

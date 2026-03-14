@@ -12,6 +12,9 @@ const phoneSchema = z
 const updateUserSchema = z.object({
   fullName: z.string().min(1).max(50).optional(),
   phone: phoneSchema.optional(),
+  address: z.string().max(200).optional(),
+  city: z.string().max(100).optional(),
+  zipCode: z.string().regex(/^[0-9]{5}$/, "Invalid French postal code").optional(),
 });
 
 const restaurantSchema = z.object({
