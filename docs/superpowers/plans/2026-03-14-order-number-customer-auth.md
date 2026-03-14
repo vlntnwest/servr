@@ -1,6 +1,6 @@
 # Order Numbers & Customer Auth Implementation Plan
 
-> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Add human-readable order numbers to every order, and allow customers to create accounts with order history and profile management.
 
@@ -36,7 +36,7 @@
 **Files:**
 - Modify: `api/prisma/schema.prisma` (model Order, line 185)
 
-- [ ] **Step 1: Add the field to schema**
+- [x] **Step 1: Add the field to schema**
 
 In `api/prisma/schema.prisma`, inside the `Order` model after the `id` field, add:
 
@@ -54,7 +54,7 @@ model Order {
   // ... rest unchanged
 ```
 
-- [ ] **Step 2: Run migration**
+- [x] **Step 2: Run migration**
 
 ```bash
 cd api && npx prisma migrate dev --name add_order_number
@@ -62,7 +62,7 @@ cd api && npx prisma migrate dev --name add_order_number
 
 Expected: migration file created, `order_number` column added to `orders` table as nullable VARCHAR(6) with unique constraint.
 
-- [ ] **Step 3: Regenerate Prisma client**
+- [x] **Step 3: Regenerate Prisma client**
 
 ```bash
 cd api && npx prisma generate
@@ -70,7 +70,7 @@ cd api && npx prisma generate
 
 Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add api/prisma/schema.prisma api/prisma/migrations/
@@ -85,7 +85,7 @@ git commit -m "feat(db): add nullable orderNumber field to Order"
 - Create: `api/lib/orderNumber.js`
 - Create: `api/tests/orderNumber.spec.js`
 
-- [ ] **Step 1: Write the failing test first**
+- [x] **Step 1: Write the failing test first**
 
 Create `api/tests/orderNumber.spec.js`:
 
@@ -179,7 +179,7 @@ describe("withOrderNumber", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 cd api && npx vitest run tests/orderNumber.spec.js
@@ -187,7 +187,7 @@ cd api && npx vitest run tests/orderNumber.spec.js
 
 Expected: FAIL — `generateCode` is not defined.
 
-- [ ] **Step 3: Implement `api/lib/orderNumber.js`**
+- [x] **Step 3: Implement `api/lib/orderNumber.js`**
 
 ```js
 const prisma = require("./prisma");
@@ -232,7 +232,7 @@ async function withOrderNumber(txCallback) {
 module.exports = { CHARSET, generateCode, withOrderNumber };
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 ```bash
 cd api && npx vitest run tests/orderNumber.spec.js
@@ -240,7 +240,7 @@ cd api && npx vitest run tests/orderNumber.spec.js
 
 Expected: 3 tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add api/lib/orderNumber.js api/tests/orderNumber.spec.js
@@ -262,7 +262,7 @@ All three must use `withOrderNumber` to ensure every order has an `orderNumber`.
 - Modify: `api/controllers/checkout.controllers.js`
 - Modify: `api/controllers/order.controllers.js`
 
-- [ ] **Step 1: Add import at top of file**
+- [x] **Step 1: Add import at top of file**
 
 In `api/controllers/checkout.controllers.js`, after line 3 (`const logger = ...`), add:
 
@@ -270,7 +270,7 @@ In `api/controllers/checkout.controllers.js`, after line 3 (`const logger = ...`
 const { withOrderNumber } = require("../lib/orderNumber");
 ```
 
-- [ ] **Step 2: Replace on-site payment transaction (lines 79–121)**
+- [x] **Step 2: Replace on-site payment transaction (lines 79–121)**
 
 Find the block:
 ```js
@@ -336,7 +336,7 @@ const order = await withOrderNumber(async (tx, orderNumber) => {
 });
 ```
 
-- [ ] **Step 3: Replace webhook transaction (lines 222–255)**
+- [x] **Step 3: Replace webhook transaction (lines 222–255)**
 
 Find the block starting with:
 ```js
@@ -387,7 +387,7 @@ const order = await withOrderNumber(async (tx, orderNumber) => {
 });
 ```
 
-- [ ] **Step 4: Integrate `withOrderNumber` into `createOrder` in `api/controllers/order.controllers.js`**
+- [x] **Step 4: Integrate `withOrderNumber` into `createOrder` in `api/controllers/order.controllers.js`**
 
 Add import at top of `api/controllers/order.controllers.js`:
 
@@ -443,7 +443,7 @@ const data = await withOrderNumber(async (tx, orderNumber) => {
 });
 ```
 
-- [ ] **Step 5: Manual smoke test — on-site path**
+- [x] **Step 5: Manual smoke test — on-site path**
 
 Start the API (`npm run dev` in `api/`). Send:
 
@@ -455,7 +455,7 @@ curl -X POST http://localhost:5001/api/checkout/create-session \
 
 Expected: response includes `data.order.orderNumber` as a 6-char string.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add api/controllers/checkout.controllers.js api/controllers/order.controllers.js
@@ -472,7 +472,7 @@ git commit -m "feat(api): generate orderNumber on all order creation paths"
 - Modify: `api/controllers/order.controllers.js` (add `getOrderPublic` at the end)
 - Modify: `api/routes/order.routes.js` (add one public route at the top)
 
-- [ ] **Step 1: Add `getOrderPublic` to `api/controllers/order.controllers.js`**
+- [x] **Step 1: Add `getOrderPublic` to `api/controllers/order.controllers.js`**
 
 Append at the end of the file:
 
@@ -506,7 +506,7 @@ module.exports.getOrderPublic = async (req, res, next) => {
 };
 ```
 
-- [ ] **Step 2: Add the public route to `api/routes/order.routes.js`**
+- [x] **Step 2: Add the public route to `api/routes/order.routes.js`**
 
 Add at the top of the route file, before the existing restaurant-scoped routes:
 
@@ -517,7 +517,7 @@ router.get("/orders/:orderId", orderControllers.getOrderPublic);
 
 The full import line for `getOrderPublic` is already covered by `require("../controllers/order.controllers")` — no new import needed.
 
-- [ ] **Step 3: Manual test**
+- [x] **Step 3: Manual test**
 
 ```bash
 curl http://localhost:5001/api/orders/<an-existing-order-uuid>
@@ -531,7 +531,7 @@ curl http://localhost:5001/api/orders/00000000-0000-0000-0000-000000000000
 
 Expected: `{ error: "Order not found" }` with status 404.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add api/controllers/order.controllers.js api/routes/order.routes.js
@@ -545,7 +545,7 @@ git commit -m "feat(api): add public GET /api/orders/:orderId endpoint"
 **Files:**
 - Modify: `frontend/app/store/[slug]/order/confirmation/[orderId]/page.tsx`
 
-- [ ] **Step 1: Update the page to fetch and display `orderNumber`**
+- [x] **Step 1: Update the page to fetch and display `orderNumber`**
 
 Replace the entire content of `frontend/app/store/[slug]/order/confirmation/[orderId]/page.tsx`:
 
@@ -599,7 +599,7 @@ export default async function StoreOrderConfirmationPage({
 }
 ```
 
-- [ ] **Step 2: Verify `NEXT_PUBLIC_API_URL` is set in `frontend/.env.local`**
+- [x] **Step 2: Verify `NEXT_PUBLIC_API_URL` is set in `frontend/.env.local`**
 
 ```bash
 grep NEXT_PUBLIC_API_URL frontend/.env.local
@@ -607,11 +607,11 @@ grep NEXT_PUBLIC_API_URL frontend/.env.local
 
 Expected: `NEXT_PUBLIC_API_URL=http://localhost:5001` (or similar). If missing, add it.
 
-- [ ] **Step 3: Manual test**
+- [x] **Step 3: Manual test**
 
 Navigate to `/store/[slug]/order/confirmation/[a-real-order-id]`. Verify `Commande #A4X9K2` is shown (with the real orderNumber).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add frontend/app/store/[slug]/order/confirmation/[orderId]/page.tsx
@@ -645,7 +645,7 @@ git commit -m "feat(frontend): display orderNumber on confirmation page"
 **Files:**
 - Create: `frontend/lib/redirectUtils.ts`
 
-- [ ] **Step 1: Create `frontend/lib/redirectUtils.ts`**
+- [x] **Step 1: Create `frontend/lib/redirectUtils.ts`**
 
 ```ts
 /**
@@ -662,7 +662,7 @@ export function isSafeRedirect(redirect: string | null): redirect is string {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add frontend/lib/redirectUtils.ts
@@ -676,7 +676,7 @@ git commit -m "feat(frontend): add shared isSafeRedirect utility"
 **Files:**
 - Modify: `api/prisma/schema.prisma`
 
-- [ ] **Step 1: Add fields to `User` and explicit relation**
+- [x] **Step 1: Add fields to `User` and explicit relation**
 
 In `api/prisma/schema.prisma`, update the `User` model:
 
@@ -719,7 +719,7 @@ model Order {
 }
 ```
 
-- [ ] **Step 2: Run migration**
+- [x] **Step 2: Run migration**
 
 ```bash
 cd api && npx prisma migrate dev --name add_customer_profile_fields
@@ -727,13 +727,13 @@ cd api && npx prisma migrate dev --name add_customer_profile_fields
 
 Expected: migration adds `address`, `city`, `zip_code` columns to `users` table. Also adds index on `orders.user_id`.
 
-- [ ] **Step 3: Regenerate client**
+- [x] **Step 3: Regenerate client**
 
 ```bash
 cd api && npx prisma generate
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add api/prisma/schema.prisma api/prisma/migrations/
@@ -748,7 +748,7 @@ git commit -m "feat(db): add customer profile fields and User-Order relation"
 - Modify: `api/validators/schemas.js`
 - Modify: `api/controllers/user.controllers.js`
 
-- [ ] **Step 1: Update `updateUserSchema` in `api/validators/schemas.js`**
+- [x] **Step 1: Update `updateUserSchema` in `api/validators/schemas.js`**
 
 Replace:
 ```js
@@ -769,7 +769,7 @@ const updateUserSchema = z.object({
 });
 ```
 
-- [ ] **Step 2: Update `updateUserData` controller in `api/controllers/user.controllers.js`**
+- [x] **Step 2: Update `updateUserData` controller in `api/controllers/user.controllers.js`**
 
 Replace:
 ```js
@@ -797,7 +797,7 @@ module.exports.updateUserData = async (req, res, next) => {
     });
 ```
 
-- [ ] **Step 3: Manual test**
+- [x] **Step 3: Manual test**
 
 ```bash
 curl -X PUT http://localhost:5001/api/user/me \
@@ -818,7 +818,7 @@ curl -X PUT http://localhost:5001/api/user/me \
 
 Expected: 400 with validation error.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add api/validators/schemas.js api/controllers/user.controllers.js
@@ -834,7 +834,7 @@ git commit -m "feat(api): extend user profile with address fields"
 - Modify: `api/controllers/user.controllers.js`
 - Modify: `api/routes/user.routes.js`
 
-- [ ] **Step 1: Add `getUserOrdersQuerySchema` to `api/validators/schemas.js`**
+- [x] **Step 1: Add `getUserOrdersQuerySchema` to `api/validators/schemas.js`**
 
 Add after the existing `updateUserSchema`:
 
@@ -847,7 +847,7 @@ const getUserOrdersQuerySchema = z.object({
 
 Also add it to the `module.exports` at the bottom of `schemas.js`.
 
-- [ ] **Step 2: Add `getUserOrders` to `api/controllers/user.controllers.js`**
+- [x] **Step 2: Add `getUserOrders` to `api/controllers/user.controllers.js`**
 
 Add at the end of the file:
 
@@ -883,7 +883,7 @@ module.exports.getUserOrders = async (req, res, next) => {
 };
 ```
 
-- [ ] **Step 3: Add route in `api/routes/user.routes.js`**
+- [x] **Step 3: Add route in `api/routes/user.routes.js`**
 
 First, add the import at the top of the file alongside the other schema imports:
 
@@ -899,7 +899,7 @@ router.get("/me/orders", checkAuth, validate({ query: getUserOrdersQuerySchema }
 
 **Important:** This route must be declared BEFORE any `router.get("/me/:param", ...)` routes to avoid route shadowing.
 
-- [ ] **Step 3: Manual test**
+- [x] **Step 3: Manual test**
 
 ```bash
 curl http://localhost:5001/api/user/me/orders \
@@ -914,7 +914,7 @@ curl "http://localhost:5001/api/user/me/orders?limit=5&offset=0" \
   -H "Authorization: Bearer <valid-token>"
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add api/validators/schemas.js api/controllers/user.controllers.js api/routes/user.routes.js
@@ -928,7 +928,7 @@ git commit -m "feat(api): add GET /api/user/me/orders endpoint"
 **Files:**
 - Create: `frontend/app/auth/callback/route.ts`
 
-- [ ] **Step 1: Check if Supabase server client helper exists**
+- [x] **Step 1: Check if Supabase server client helper exists**
 
 ```bash
 ls frontend/lib/supabase/
@@ -936,7 +936,7 @@ ls frontend/lib/supabase/
 
 Expected: `client.ts` and `server.ts` (or similar). If `server.ts` is missing, you'll need to create it following the Supabase Next.js SSR guide.
 
-- [ ] **Step 2: Create `frontend/app/auth/callback/route.ts`**
+- [x] **Step 2: Create `frontend/app/auth/callback/route.ts`**
 
 Uses the existing `@/lib/supabase/server` helper (do not re-implement `createServerClient` inline).
 
@@ -963,11 +963,11 @@ export async function GET(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 3: Manual test**
+- [x] **Step 3: Manual test**
 
 Configure Google OAuth in Supabase dashboard (Authentication > Providers > Google). Add `http://localhost:3000/auth/callback` as a redirect URL. Test the OAuth flow from the register page (Task 2.6) once it's built.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add frontend/app/auth/callback/route.ts
@@ -981,7 +981,7 @@ git commit -m "feat(frontend): add Supabase OAuth callback route"
 **Files:**
 - Modify: `frontend/app/login/page.tsx`
 
-- [ ] **Step 1: Update login page**
+- [x] **Step 1: Update login page**
 
 `useSearchParams()` in Next.js 15 requires a `<Suspense>` boundary. The pattern is to split the component into an inner component that uses `useSearchParams`, wrapped in `Suspense` by the page export.
 
@@ -1100,11 +1100,11 @@ export default function LoginPage() {
 }
 ```
 
-- [ ] **Step 2: Manual test**
+- [x] **Step 2: Manual test**
 
 Navigate to `/login?redirect=/account`. After login, verify redirect goes to `/account`. Navigate to `/login?redirect=//evil.com`. After login, verify redirect goes to `/` (fallback).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add frontend/app/login/page.tsx
@@ -1118,7 +1118,7 @@ git commit -m "feat(frontend): add redirect support and register link to login p
 **Files:**
 - Create: `frontend/app/register/page.tsx`
 
-- [ ] **Step 1: Verify `NEXT_PUBLIC_SITE_URL` is set in `frontend/.env.local`**
+- [x] **Step 1: Verify `NEXT_PUBLIC_SITE_URL` is set in `frontend/.env.local`**
 
 ```bash
 grep NEXT_PUBLIC_SITE_URL frontend/.env.local
@@ -1128,7 +1128,7 @@ If missing, add: `NEXT_PUBLIC_SITE_URL=http://localhost:3000`
 
 This is used instead of `window.location.origin` (which crashes during SSR).
 
-- [ ] **Step 2: Create `frontend/app/register/page.tsx`**
+- [x] **Step 2: Create `frontend/app/register/page.tsx`**
 
 `useSearchParams()` requires `<Suspense>`. Split into inner `RegisterForm` + page wrapper. Use `NEXT_PUBLIC_SITE_URL` instead of `window.location.origin`.
 
@@ -1273,13 +1273,13 @@ export default function RegisterPage() {
 }
 ```
 
-- [ ] **Step 2: Manual test**
+- [x] **Step 2: Manual test**
 
 Navigate to `/register`. Test:
 1. Email/password signup → verify email confirmation screen shows
 2. Google button → verify redirect to Google OAuth (requires Google provider configured in Supabase)
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add frontend/app/register/page.tsx
@@ -1293,7 +1293,7 @@ git commit -m "feat(frontend): add customer registration page"
 **Files:**
 - Create: `frontend/app/account/page.tsx`
 
-- [ ] **Step 1: Create `frontend/app/account/page.tsx`**
+- [x] **Step 1: Create `frontend/app/account/page.tsx`**
 
 ```tsx
 "use client";
@@ -1456,13 +1456,13 @@ export default function AccountPage() {
 }
 ```
 
-- [ ] **Step 2: Manual test**
+- [x] **Step 2: Manual test**
 
 1. Navigate to `/account` without being logged in → should redirect to `/login?redirect=/account`
 2. After login, navigate to `/account` → form pre-filled with user data
 3. Edit address fields and save → success message shown, fields updated
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add frontend/app/account/page.tsx
@@ -1476,7 +1476,7 @@ git commit -m "feat(frontend): add customer account profile page"
 **Files:**
 - Create: `frontend/app/account/orders/page.tsx`
 
-- [ ] **Step 1: Create `frontend/app/account/orders/page.tsx`**
+- [x] **Step 1: Create `frontend/app/account/orders/page.tsx`**
 
 ```tsx
 "use client";
@@ -1592,13 +1592,13 @@ export default function OrderHistoryPage() {
 }
 ```
 
-- [ ] **Step 2: Manual test**
+- [x] **Step 2: Manual test**
 
 1. Place an order while logged in (on-site payment path, or create one via API with your userId)
 2. Navigate to `/account/orders`
 3. Verify the order appears with `orderNumber`, restaurant name, items, total, date
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add frontend/app/account/orders/page.tsx
@@ -1609,16 +1609,16 @@ git commit -m "feat(frontend): add customer order history page"
 
 ## Final Verification
 
-- [ ] Run all backend tests: `cd api && npm test`
-- [ ] Start frontend: `cd frontend && npm run dev` — check no TypeScript errors in new files
-- [ ] Full flow test:
+- [x] Run all backend tests: `cd api && npm test`
+- [x] Start frontend: `cd frontend && npm run dev` — check no TypeScript errors in new files
+- [x] Full flow test:
   1. Register at `/register` with email/password
   2. Confirm email, log in at `/login`
   3. Place an on-site order at a restaurant → confirm `orderNumber` shows on confirmation page
   4. Navigate to `/account/orders` → order appears
   5. Edit profile at `/account` → changes persist
 
-- [ ] Final commit if anything was missed:
+- [x] Final commit if anything was missed:
 
 ```bash
 git add -A
