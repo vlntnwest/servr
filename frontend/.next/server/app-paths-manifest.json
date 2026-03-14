@@ -1,6 +1,0 @@
-{
-  "/login/page": "app/login/page.js",
-  "/page": "app/page.js",
-  "/store/[slug]/page": "app/store/[slug]/page.js",
-  "/store/[slug]/order/confirmation/[orderId]/page": "app/store/[slug]/order/confirmation/[orderId]/page.js"
-}
