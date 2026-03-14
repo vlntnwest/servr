@@ -1,6 +1,6 @@
 {
-  "name": "pokey-webapp-v2",
-  "version": "0.2.0",
+  "name": "servr-frontend",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
