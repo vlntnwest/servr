@@ -2,12 +2,27 @@ import Link from "next/link";
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+async function getOrder(orderId: string) {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}`,
+      { cache: "no-store" }
+    );
+    if (!res.ok) return null;
+    const { data } = await res.json();
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export default async function StoreOrderConfirmationPage({
   params,
 }: {
   params: Promise<{ slug: string; orderId: string }>;
 }) {
   const { slug, orderId } = await params;
+  const order = await getOrder(orderId);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -21,7 +36,7 @@ export default async function StoreOrderConfirmationPage({
           Paiement à régler sur place lors du retrait.
         </p>
         <p className="text-xs text-[#676767] mb-4 font-mono">
-          Réf: {orderId.slice(-8)}
+          Commande #{order?.orderNumber ?? orderId.slice(-8)}
         </p>
         <Button asChild>
           <Link href={`/store/${slug}`}>Retour au menu</Link>
