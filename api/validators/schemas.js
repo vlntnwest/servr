@@ -17,6 +17,11 @@ const updateUserSchema = z.object({
   zipCode: z.string().regex(/^[0-9]{5}$/, "Invalid French postal code").optional(),
 });
 
+const getUserOrdersQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
 const restaurantSchema = z.object({
   name: z.string().min(1).max(50),
   slug: z
@@ -190,6 +195,7 @@ const checkoutSessionSchema = z.object({
 module.exports = {
   // User
   updateUserSchema,
+  getUserOrdersQuerySchema,
 
   // Restaurant
   restaurantSchema,

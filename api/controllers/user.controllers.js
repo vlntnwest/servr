@@ -40,6 +40,36 @@ module.exports.updateUserData = async (req, res, next) => {
   }
 };
 
+module.exports.getUserOrders = async (req, res, next) => {
+  const { id } = req.user;
+  const { limit, offset } = req.query; // Already validated and coerced by Zod
+
+  try {
+    const [orders, total] = await prisma.$transaction([
+      prisma.order.findMany({
+        where: { userId: id },
+        orderBy: { createdAt: "desc" },
+        take: Number(limit),
+        skip: Number(offset),
+        include: {
+          restaurant: { select: { id: true, name: true, slug: true } },
+          orderProducts: {
+            include: {
+              product: { select: { id: true, name: true } },
+            },
+          },
+        },
+      }),
+      prisma.order.count({ where: { userId: id } }),
+    ]);
+
+    logger.info({ userId: id, count: orders.length }, "User orders fetched");
+    return res.status(200).json({ data: { orders, total } });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports.deleteUser = async (req, res, next) => {
   const { id } = req.user;
 
