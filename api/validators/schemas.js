@@ -12,6 +12,14 @@ const phoneSchema = z
 const updateUserSchema = z.object({
   fullName: z.string().min(1).max(50).optional(),
   phone: phoneSchema.optional(),
+  address: z.string().max(200).optional(),
+  city: z.string().max(50).optional(),
+  zipCode: z.string().regex(/^[0-9]{5}$/, "Invalid French postal code").optional(),
+});
+
+const getUserOrdersQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  offset: z.coerce.number().int().min(0).default(0),
 });
 
 const restaurantSchema = z.object({
@@ -187,6 +195,7 @@ const checkoutSessionSchema = z.object({
 module.exports = {
   // User
   updateUserSchema,
+  getUserOrdersQuerySchema,
 
   // Restaurant
   restaurantSchema,

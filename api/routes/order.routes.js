@@ -9,6 +9,9 @@ const {
   updateOrderStatusSchema,
 } = require("../validators/schemas");
 
+// Public — no auth required
+router.get("/orders/:orderId", orderControllers.getOrderPublic);
+
 // Public — create order (no auth required)
 router.post(
   "/restaurants/:restaurantId/orders",

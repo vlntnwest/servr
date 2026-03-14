@@ -14,9 +14,13 @@ model User {
   email             String?            @unique
   fullName          String?            @map("full_name") @db.VarChar(50)
   phone             String?
+  address           String?            @map("address") @db.VarChar(200)
+  city              String?            @map("city") @db.VarChar(50)
+  zipCode           String?            @map("zip_code") @db.VarChar(5)
   createdAt         DateTime?          @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime?          @map("updated_at") @db.Timestamp(6)
   restaurantMembers RestaurantMember[]
+  orders            Order[]
 
   @@map("users")
   @@schema("public")
@@ -184,6 +188,7 @@ model OptionChoice {
 
 model Order {
   id                     String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderNumber            String?        @unique @map("order_number") @db.VarChar(6)
   restaurantId           String         @map("restaurant_id") @db.Uuid
   userId                 String?        @map("user_id") @db.Uuid
   fullName               String?        @map("full_name") @db.VarChar(50)
@@ -195,9 +200,11 @@ model Order {
   createdAt              DateTime?      @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @map("created_at") @db.Timestamptz(6)
   updatedAt              DateTime?      @map("updated_at") @db.Timestamp(6)
   restaurant             Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user                   User?          @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: NoAction)
   orderProducts          OrderProduct[]
 
   @@index([restaurantId])
+  @@index([userId])
   @@map("orders")
   @@schema("public")
 }

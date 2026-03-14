@@ -2,6 +2,7 @@ const Stripe = require("stripe");
 const prisma = require("../lib/prisma");
 const logger = require("../logger");
 const { sendOrderConfirmation } = require("../lib/mailer");
+const { withOrderNumber } = require("../lib/orderNumber");
 
 function isRestaurantOpen(openingHours) {
   if (!openingHours || openingHours.length === 0) return true;
@@ -76,7 +77,7 @@ module.exports.createCheckoutSession = async (req, res, next) => {
         totalPrice += (basePrice + optionsPrice) * item.quantity;
       }
 
-      const order = await prisma.$transaction(async (tx) => {
+      const order = await withOrderNumber(async (tx, orderNumber) => {
         const created = await tx.order.create({
           data: {
             restaurantId,
@@ -85,6 +86,7 @@ module.exports.createCheckoutSession = async (req, res, next) => {
             email,
             totalPrice,
             status: "PENDING_ON_SITE_PAYMENT",
+            orderNumber,
           },
         });
 
@@ -219,7 +221,7 @@ module.exports.handleWebhook = async (req, res) => {
     const totalPrice = session.amount_total / 100;
 
     try {
-      const order = await prisma.$transaction(async (tx) => {
+      const order = await withOrderNumber(async (tx, orderNumber) => {
         const created = await tx.order.create({
           data: {
             restaurantId,
@@ -229,6 +231,7 @@ module.exports.handleWebhook = async (req, res) => {
             totalPrice,
             status: "PENDING",
             stripePaymentIntentId: session.payment_intent || null,
+            orderNumber,
           },
         });
 
