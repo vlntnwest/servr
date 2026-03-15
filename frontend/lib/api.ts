@@ -74,9 +74,10 @@ export async function getMenuForRestaurant(restaurantId: string): Promise<Catego
   return json.data ?? [];
 }
 
-export async function getOpeningHours(): Promise<OpeningHour[]> {
+export async function getOpeningHours(restaurantId?: string): Promise<OpeningHour[]> {
+  const rid = restaurantId ?? RESTAURANT_ID;
   const res = await fetch(
-    `${API_URL}/api/v1/restaurants/${RESTAURANT_ID}/opening-hours`,
+    `${API_URL}/api/v1/restaurants/${rid}/opening-hours`,
     { next: { revalidate: 3600 } },
   );
   const json = await res.json();

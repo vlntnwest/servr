@@ -36,12 +36,12 @@ module.exports.createOrder = async (req, res, next) => {
     const openingHours = await prisma.openingHour.findMany({
       where: { restaurantId },
     });
-    if (!isRestaurantOpen(openingHours)) {
+    if (scheduledFor) {
+      if (!isScheduledTimeValid(openingHours, scheduledFor)) {
+        return res.status(400).json({ error: "Scheduled time is outside opening hours or in the past" });
+      }
+    } else if (!isRestaurantOpen(openingHours)) {
       return res.status(400).json({ error: "Restaurant is currently closed" });
-    }
-
-    if (scheduledFor && !isScheduledTimeValid(openingHours, scheduledFor)) {
-      return res.status(400).json({ error: "Scheduled time is outside opening hours or in the past" });
     }
 
     const productIds = [...new Set(items.map((i) => i.productId))];

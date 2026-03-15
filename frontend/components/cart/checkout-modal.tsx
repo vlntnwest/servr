@@ -17,39 +17,40 @@ interface CheckoutModalProps {
   onClose: () => void;
 }
 
-/**
- * Generate 15-minute time slots for today between `openTime` and `closeTime`,
- * starting no earlier than `minFrom` (Date, default = now + 30 min).
- * Returns ISO strings.
- */
-function generateTimeSlots(
-  openTime: string,
-  closeTime: string,
-  minFrom: Date = new Date(Date.now() + 30 * 60 * 1000),
-): string[] {
-  const slots: string[] = [];
-  const today = new Date();
-  today.setSeconds(0, 0);
+const DAYS_AHEAD = 7;
 
+function generateSlotsForDate(date: Date, openTime: string, closeTime: string): string[] {
   const [openH, openM] = openTime.split(":").map(Number);
   const [closeH, closeM] = closeTime.split(":").map(Number);
 
-  const start = new Date(today);
+  const start = new Date(date);
   start.setHours(openH, openM, 0, 0);
 
-  const end = new Date(today);
+  const end = new Date(date);
   end.setHours(closeH, closeM, 0, 0);
 
-  // Advance start to the next 15-minute boundary after minFrom
+  const isToday = date.toDateString() === new Date().toDateString();
+  const minFrom = isToday ? new Date(Date.now() + 30 * 60 * 1000) : start;
+
   const cursor = new Date(Math.max(start.getTime(), minFrom.getTime()));
   const rem = cursor.getMinutes() % 15;
   if (rem !== 0) cursor.setMinutes(cursor.getMinutes() + (15 - rem), 0, 0);
 
+  const slots: string[] = [];
   while (cursor < end) {
     slots.push(cursor.toISOString());
     cursor.setMinutes(cursor.getMinutes() + 15);
   }
   return slots;
+}
+
+function formatDayLabel(date: Date): string {
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  if (date.toDateString() === today.toDateString()) return "Aujourd'hui";
+  if (date.toDateString() === tomorrow.toDateString()) return "Demain";
+  return date.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
 }
 
 function formatSlotLabel(iso: string): string {
@@ -72,19 +73,33 @@ export default function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     scheduledFor: "",
   });
   const [openingHours, setOpeningHours] = useState<OpeningHour[]>([]);
+  const [selectedDay, setSelectedDay] = useState<string>("");
 
   useEffect(() => {
     if (open) {
-      getOpeningHours().then(setOpeningHours).catch(() => {});
+      getOpeningHours(restaurantCtx?.restaurant.id).then(setOpeningHours).catch(() => {});
     }
   }, [open]);
 
-  const todaySlots = useMemo(() => {
-    const dayOfWeek = new Date().getDay();
-    const todayHours = openingHours.find((h) => h.dayOfWeek === dayOfWeek);
-    if (!todayHours) return [];
-    return generateTimeSlots(todayHours.openTime, todayHours.closeTime);
+  const availableDays = useMemo(() => {
+    const days: { dateKey: string; label: string; slots: string[] }[] = [];
+    for (let i = 0; i < DAYS_AHEAD; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() + i);
+      const dayOfWeek = date.getDay();
+      const hours = openingHours.find((h) => h.dayOfWeek === dayOfWeek);
+      if (!hours) continue;
+      const slots = generateSlotsForDate(date, hours.openTime, hours.closeTime);
+      if (slots.length === 0) continue;
+      const dateKey = date.toDateString();
+      days.push({ dateKey, label: formatDayLabel(date), slots });
+    }
+    return days;
   }, [openingHours]);
+
+  // Auto-select first available day when switching to "scheduled"
+  const firstDay = availableDays[0];
+  const currentDayEntry = availableDays.find((d) => d.dateKey === selectedDay) ?? firstDay;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -160,14 +175,16 @@ export default function CheckoutModal({ open, onClose }: CheckoutModalProps) {
               </button>
               <button
                 type="button"
-                onClick={() =>
+                onClick={() => {
+                  const first = availableDays[0];
+                  setSelectedDay(first?.dateKey ?? "");
                   setForm((prev) => ({
                     ...prev,
                     orderType: "scheduled",
-                    scheduledFor: todaySlots[0] ?? "",
-                  }))
-                }
-                disabled={todaySlots.length === 0}
+                    scheduledFor: first?.slots[0] ?? "",
+                  }));
+                }}
+                disabled={availableDays.length === 0}
                 className={`flex-1 py-2 px-3 rounded-md border text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                   form.orderType === "scheduled"
                     ? "bg-primary text-primary-foreground border-primary"
@@ -177,18 +194,35 @@ export default function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                 Prévu pour…
               </button>
             </div>
-            {form.orderType === "scheduled" && todaySlots.length > 0 && (
-              <select
-                value={form.scheduledFor}
-                onChange={(e) => setForm((prev) => ({ ...prev, scheduledFor: e.target.value }))}
-                className="w-full text-sm border border-black/15 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                {todaySlots.map((iso) => (
-                  <option key={iso} value={iso}>
-                    {formatSlotLabel(iso)}
-                  </option>
-                ))}
-              </select>
+            {form.orderType === "scheduled" && availableDays.length > 0 && (
+              <div className="flex gap-2">
+                <select
+                  value={currentDayEntry?.dateKey ?? ""}
+                  onChange={(e) => {
+                    const day = availableDays.find((d) => d.dateKey === e.target.value);
+                    setSelectedDay(e.target.value);
+                    setForm((prev) => ({ ...prev, scheduledFor: day?.slots[0] ?? "" }));
+                  }}
+                  className="flex-1 text-sm border border-black/15 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  {availableDays.map((d) => (
+                    <option key={d.dateKey} value={d.dateKey}>
+                      {d.label}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={form.scheduledFor}
+                  onChange={(e) => setForm((prev) => ({ ...prev, scheduledFor: e.target.value }))}
+                  className="flex-1 text-sm border border-black/15 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  {(currentDayEntry?.slots ?? []).map((iso) => (
+                    <option key={iso} value={iso}>
+                      {formatSlotLabel(iso)}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
           </div>
 
