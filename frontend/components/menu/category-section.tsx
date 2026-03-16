@@ -16,7 +16,7 @@ export function CategorySection({ category }: CategorySectionProps) {
   return (
     <section className="mt-6">
       <div className="px-3 mb-3">
-        <h2 className="text-xl font-bold">{category.name}</h2>
+        <h2 className="text-2xl font-bold">{category.name}</h2>
         {category.subHeading && (
           <p className="text-[#676767] text-base">{category.subHeading}</p>
         )}

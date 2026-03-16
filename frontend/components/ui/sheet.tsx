@@ -57,8 +57,8 @@ const SheetContent = React.forwardRef<
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 focus:outline-none">
-        <X className="h-5 w-5" />
+      <DialogPrimitive.Close className="absolute right-4 top-4 z-10 flex items-center justify-center w-14 h-14 rounded-full bg-primary text-white hover:opacity-90 focus:outline-none transition-opacity">
+        <X className="h-6 w-6" strokeWidth={2} />
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </SheetPortal>
