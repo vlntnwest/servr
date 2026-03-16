@@ -21,7 +21,7 @@ export function CategorySection({ category }: CategorySectionProps) {
           <p className="text-[#676767] text-base">{category.subHeading}</p>
         )}
       </div>
-      <div className="grid md:gap-1 md:px-2 lg:grid-cols-2">
+      <div className="grid md:gap-1 md:px-2 xl:grid-cols-2 3xl:grid-cols-3">
         {products.map((pc) => (
           <ProductCard key={pc.id} product={pc.product} />
         ))}
@@ -39,7 +39,10 @@ export function CategorySectionSkeleton() {
       </div>
       <div className="grid md:gap-1 md:px-2 lg:grid-cols-2">
         {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-32 w-full mb-0.5 rounded-none md:rounded-lg" />
+          <Skeleton
+            key={i}
+            className="h-32 w-full mb-0.5 rounded-none md:rounded-lg"
+          />
         ))}
       </div>
     </section>

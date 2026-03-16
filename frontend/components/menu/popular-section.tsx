@@ -27,7 +27,9 @@ function PopularCard({ product }: { product: Product }) {
           />
         )}
         <div className="flex flex-col flex-1 p-2 gap-1">
-          <p className="font-bold text-sm leading-tight flex-1">{product.name}</p>
+          <p className="font-bold text-sm leading-tight flex-1">
+            {product.name}
+          </p>
           <p className="text-sm text-[#676767]">{formatEuros(price)}</p>
           <div className="border border-black/10 rounded text-black/25 flex items-center justify-center mt-1 min-h-[34px]">
             <Plus className="w-4 h-4" />
@@ -52,9 +54,9 @@ export default function PopularSection({ products }: PopularSectionProps) {
   if (products.length === 0) return null;
 
   return (
-    <div className="pt-4">
-      <h2 className="font-bold text-2xl px-4 mb-3">Populaire</h2>
-      <div className="flex gap-2 px-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth snap-x snap-mandatory">
+    <div className="pt-4 px-4">
+      <h2 className="font-bold text-2xl  mb-3">Populaire</h2>
+      <div className="flex gap-2  overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth snap-x snap-mandatory">
         {products.map((product) => (
           <div key={product.id} className="snap-center">
             <PopularCard product={product} />

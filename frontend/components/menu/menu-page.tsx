@@ -15,13 +15,13 @@ export default function MenuPage({ categories }: MenuPageProps) {
     .filter(
       (product, index, self) =>
         product.tags.includes("bestseller") &&
-        self.findIndex((p) => p.id === product.id) === index
+        self.findIndex((p) => p.id === product.id) === index,
     );
 
   return (
-    <div className="flex max-w-screen-2xl mx-auto">
+    <div className="max-w-screen-3xl mx-auto sm:grid lg:[grid-template-columns:minmax(50%,60%)_minmax(420px,1fr)] 2xl:[grid-template-columns:minmax(60%,70%)_minmax(420px,1fr)]">
       {/* Menu content */}
-      <div className="flex-1 min-w-0 max-w-full md:max-w-[60%] lg:max-w-[70%]">
+      <div className="min-w-0">
         <div className="pb-20 md:pb-6">
           <PopularSection products={popularProducts} />
           {categories.map((cat) => (
@@ -31,7 +31,7 @@ export default function MenuPage({ categories }: MenuPageProps) {
       </div>
 
       {/* Desktop cart */}
-      <div className="hidden md:block w-[420px] flex-shrink-0">
+      <div className="hidden lg:block">
         <div className="sticky top-[65px] h-[calc(100vh-65px)] p-4 pl-0">
           <div className="h-full border border-black/5 bg-white overflow-hidden flex flex-col rounded-lg">
             <Cart />
