@@ -110,7 +110,7 @@ export default function OptionsTab() {
   };
 
   return (
-    <div className="pt-4 border-t">
+    <div className="pt-4">
       {notification && (
         <div
           className={cn(

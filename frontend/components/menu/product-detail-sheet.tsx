@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus, X } from "lucide-react";
 import type { Product, OptionGroup, OptionChoice } from "@/types/api";
 import {
   ResponsiveModal,
@@ -135,7 +135,7 @@ export default function ProductDetailSheet({
         className="p-0"
       >
         <div className="flex-1 overflow-y-auto">
-          {product.imageUrl && (
+          {product.imageUrl ? (
             <div className="relative w-full aspect-[4/3]">
               <Image
                 src={product.imageUrl}
@@ -144,10 +144,28 @@ export default function ProductDetailSheet({
                 sizes="(max-width: 768px) 100vw, 576px"
                 className="object-cover"
               />
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
+                aria-label="Fermer"
+              >
+                <X className="h-5 w-5" strokeWidth={2} />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between px-4 pt-4">
+              <ResponsiveModalTitle className="text-3xl font-bold">{product.name}</ResponsiveModalTitle>
+              <button
+                onClick={onClose}
+                className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 transition-colors shrink-0"
+                aria-label="Fermer"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
           )}
           <div className="p-4">
-            <ResponsiveModalTitle className="text-3xl font-bold">{product.name}</ResponsiveModalTitle>
+            {product.imageUrl && <ResponsiveModalTitle className="text-3xl font-bold">{product.name}</ResponsiveModalTitle>}
             {product.description && (
               <p className="text-[#676767] text-sm mt-1">{product.description}</p>
             )}

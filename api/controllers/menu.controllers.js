@@ -269,12 +269,44 @@ module.exports.linkOptionGroups = async (req, res, next) => {
   const { optionGroupIds } = req.body;
 
   try {
+    const existing = await prisma.productOptionGroup.findMany({
+      where: { productId },
+      orderBy: { displayOrder: "asc" },
+    });
+    const nextOrder = existing.length > 0
+      ? Math.max(...existing.map((e) => e.displayOrder)) + 1
+      : 0;
+
     await prisma.productOptionGroup.createMany({
-      data: optionGroupIds.map((id) => ({ productId, optionGroupId: id })),
+      data: optionGroupIds.map((id, i) => ({
+        productId,
+        optionGroupId: id,
+        displayOrder: nextOrder + i,
+      })),
       skipDuplicates: true,
     });
     logger.info({ productId, optionGroupIds }, "Option groups linked to product");
     return res.status(200).json({ message: "Option groups linked" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports.reorderProductOptionGroups = async (req, res, next) => {
+  const { restaurantId, productId } = req.params;
+  const { orderedIds } = req.body;
+
+  try {
+    await prisma.$transaction(
+      orderedIds.map((id, i) =>
+        prisma.productOptionGroup.update({
+          where: { productId_optionGroupId: { productId, optionGroupId: id } },
+          data: { displayOrder: i },
+        })
+      )
+    );
+    logger.info({ productId, orderedIds }, "Option groups reordered for product");
+    return res.status(200).json({ message: "Option groups reordered" });
   } catch (error) {
     next(error);
   }
@@ -368,13 +400,14 @@ function flattenOptionGroups(product) {
   return {
     ...rest,
     optionGroups: (productOptionGroups || [])
-      .map((pog) => pog.optionGroup)
-      .sort((a, b) => a.displayOrder - b.displayOrder),
+      .sort((a, b) => a.displayOrder - b.displayOrder)
+      .map((pog) => pog.optionGroup),
   };
 }
 
 const PRODUCT_OPTION_INCLUDE = {
   productOptionGroups: {
+    orderBy: { displayOrder: "asc" },
     include: {
       optionGroup: {
         include: { optionChoices: { orderBy: { displayOrder: "asc" } } },

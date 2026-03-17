@@ -52,7 +52,7 @@ export default function MembersTab() {
   }, [loadMembers]);
 
   return (
-    <div className="pt-4 border-t">
+    <div className="pt-4">
       {notification && (
         <div
           className={cn(
