@@ -151,9 +151,12 @@ export async function createOrder(payload: {
 export async function getOrders(
   page = 1,
   limit = 20,
+  status?: string,
 ): Promise<PaginatedResponse<Order>> {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (status) params.set("status", status);
   const result = await apiFetch<never>(
-    `/restaurants/${RESTAURANT_ID}/orders?page=${page}&limit=${limit}`,
+    `/restaurants/${RESTAURANT_ID}/orders?${params}`,
   );
   if ("error" in result) return { data: [], pagination: { page, limit, total: 0, totalPages: 0 } };
   return result as unknown as PaginatedResponse<Order>;

@@ -6,6 +6,7 @@ export type OptionChoice = {
   name: string;
   priceModifier: string; // Decimal as string — use parseFloat()
   displayOrder: number;
+  optionGroup?: { id: string; name: string };
 };
 
 export type OptionGroup = {
@@ -32,6 +33,7 @@ export type Product = {
   isAvailable: boolean;
   displayOrder: number;
   optionGroups: OptionGroup[];
+  productCategories?: ProductCategory[];
 };
 
 export type ProductCategory = {
@@ -39,6 +41,7 @@ export type ProductCategory = {
   productId: string;
   categorieId: string;
   product: Product;
+  categorie?: { id: string; name: string };
 };
 
 export type Category = {
@@ -93,6 +96,7 @@ export type OrderStatus =
 
 export type Order = {
   id: string;
+  orderNumber: string | null;
   restaurantId: string;
   fullName: string | null;
   phone: string | null;

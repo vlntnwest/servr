@@ -162,10 +162,28 @@ module.exports.getOrders = async (req, res, next) => {
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
   const skip = (page - 1) * limit;
 
+  const VALID_STATUSES = [
+    "PENDING",
+    "PENDING_ON_SITE_PAYMENT",
+    "IN_PROGRESS",
+    "COMPLETED",
+    "DELIVERED",
+    "CANCELLED",
+  ];
+  const statusParam = req.query.status;
+  const statusFilter = statusParam
+    ? statusParam.split(",").filter((s) => VALID_STATUSES.includes(s))
+    : null;
+
+  const where = {
+    restaurantId,
+    ...(statusFilter?.length ? { status: { in: statusFilter } } : {}),
+  };
+
   try {
     const [data, total] = await Promise.all([
       prisma.order.findMany({
-        where: { restaurantId },
+        where,
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
@@ -173,12 +191,14 @@ module.exports.getOrders = async (req, res, next) => {
           orderProducts: {
             include: {
               product: true,
-              orderProductOptions: { include: { optionChoice: true } },
+              orderProductOptions: {
+                include: { optionChoice: { include: { optionGroup: true } } },
+              },
             },
           },
         },
       }),
-      prisma.order.count({ where: { restaurantId } }),
+      prisma.order.count({ where }),
     ]);
 
     logger.info({ restaurantId, page, limit }, "Orders retrieved");
