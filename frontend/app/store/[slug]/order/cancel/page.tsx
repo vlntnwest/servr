@@ -2,7 +2,13 @@ import Link from "next/link";
 import { XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function OrderCancelPage() {
+export default async function StoreOrderCancelPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="text-center max-w-sm">
@@ -12,7 +18,7 @@ export default function OrderCancelPage() {
           Votre paiement a été annulé. Votre panier est conservé.
         </p>
         <Button asChild>
-          <Link href="/">Retour au menu</Link>
+          <Link href={`/store/${slug}`}>Retour au menu</Link>
         </Button>
       </div>
     </div>

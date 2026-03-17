@@ -198,6 +198,7 @@ model Order {
   status                 OrderStatus    @default(PENDING)
   totalPrice             Decimal        @default(0) @map("total_price") @db.Decimal(10, 2)
   stripePaymentIntentId  String?        @map("stripe_payment_intent_id")
+  stripeSessionId        String?        @map("stripe_session_id")
   scheduledFor           DateTime?      @map("scheduled_for") @db.Timestamptz(6)
   createdAt              DateTime?      @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @map("created_at") @db.Timestamptz(6)
   updatedAt              DateTime?      @map("updated_at") @db.Timestamp(6)
@@ -291,11 +292,14 @@ enum RestaurantRole {
 }
 
 enum OrderStatus {
+  DRAFT
   PENDING
   IN_PROGRESS
   COMPLETED
   DELIVERED
   CANCELLED
+  ABANDONED
+  PAYMENT_FAILED
   PENDING_ON_SITE_PAYMENT
 
   @@map("order_status")

@@ -14,7 +14,6 @@ router.post(
 
 // express.raw() is applied in app.js before JSON parsing for this route
 router.post("/webhook", checkoutControllers.handleWebhook);
-router.post("/connect-webhook", checkoutControllers.handleConnectWebhook);
 
 // Refund an order (ADMIN+ required)
 router.post(
