@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
+import { Reorder, useDragControls } from "framer-motion";
 import {
   Plus,
   Pencil,
@@ -16,6 +17,7 @@ import {
   EyeOff,
   ChevronDown,
   ChevronRight,
+  GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +45,7 @@ import {
   deleteProduct,
   linkOptionGroups,
   unlinkOptionGroup,
+  reorderProductOptionGroups,
   uploadImage,
   addOptionChoice,
 } from "@/lib/api";
@@ -111,12 +114,19 @@ export default function ProductsTab() {
       ]);
       setCategories(menu);
       setOptionGroups(groups);
+      const seen = new Set<string>();
       const flat: FlatProduct[] = menu.flatMap((cat) =>
-        cat.productCategories.map((pc) => ({
-          ...pc.product,
-          categorieId: cat.id,
-          categorieName: cat.name,
-        })),
+        cat.productCategories
+          .filter((pc) => {
+            if (seen.has(pc.product.id)) return false;
+            seen.add(pc.product.id);
+            return true;
+          })
+          .map((pc) => ({
+            ...pc.product,
+            categorieId: cat.id,
+            categorieName: cat.name,
+          })),
       );
       flat.sort((a, b) => a.displayOrder - b.displayOrder);
       setProducts(flat);
@@ -143,7 +153,7 @@ export default function ProductsTab() {
   ];
 
   return (
-    <div className="pt-4 border-t">
+    <div className="pt-4">
       {notification && (
         <div
           className={cn(
@@ -452,6 +462,149 @@ function ProductsView({
   );
 }
 
+// ─── Sortable Option Group Item ──────────────────────────────────────────────
+
+function SortableOptionGroupItem({
+  group,
+  isExpanded,
+  addingChoiceFor,
+  onToggleExpand,
+  onCollapse,
+  onRemove,
+  onStartAddChoice,
+  onChoiceSaved,
+  onCancelAddChoice,
+  onError,
+  onRefreshGroups,
+}: {
+  group: OptionGroup;
+  isExpanded: boolean;
+  addingChoiceFor: string | null;
+  onToggleExpand: () => void;
+  onCollapse: () => void;
+  onRemove: () => void;
+  onStartAddChoice: () => void;
+  onChoiceSaved: () => Promise<void>;
+  onCancelAddChoice: () => void;
+  onError: (msg: string) => void;
+  onRefreshGroups: () => Promise<void>;
+}) {
+  const controls = useDragControls();
+  const isDragging = useRef(false);
+
+  return (
+    <Reorder.Item
+      value={group}
+      dragListener={false}
+      dragControls={controls}
+      transition={{ layout: { duration: 0 } }}
+      className="border-b border-black/5 last:border-0 bg-white"
+    >
+      <div className="flex items-center gap-2 px-3 py-2.5 hover:bg-gray-50 transition-colors">
+        <GripVertical
+          className="w-3.5 h-3.5 text-gray-300 cursor-grab shrink-0 touch-none"
+          onPointerDown={(e) => {
+            isDragging.current = true;
+            if (isExpanded) onCollapse();
+            controls.start(e);
+          }}
+        />
+        <button
+          type="button"
+          onPointerUp={() => {
+            if (isDragging.current) {
+              isDragging.current = false;
+              return;
+            }
+            onToggleExpand();
+          }}
+          onClick={(e) => {
+            if (isDragging.current) e.preventDefault();
+          }}
+          className="flex-1 flex items-center gap-2 text-left min-w-0 cursor-pointer"
+        >
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate">{group.name}</p>
+            <p className="text-xs text-[#676767]">
+              {group.hasMultiple ? "Multiple" : "Unique"} ·{" "}
+              {group.optionChoices.length} choix
+              {group.isRequired && (
+                <span className="ml-1 text-[#e67400]">· Requis</span>
+              )}
+            </p>
+          </div>
+          {isExpanded ? (
+            <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+          ) : (
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="text-gray-300 hover:text-red-400 transition-colors shrink-0 cursor-pointer"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {isExpanded && (
+        <div className="border-t border-black/5 bg-gray-50/50">
+          {group.optionChoices.length === 0 &&
+            addingChoiceFor !== group.id && (
+              <p className="text-xs text-[#676767] px-8 py-2.5 italic">
+                Aucun choix pour l&apos;instant
+              </p>
+            )}
+          {[...group.optionChoices]
+            .sort((a, b) => a.displayOrder - b.displayOrder)
+            .map((choice) => (
+              <div
+                key={choice.id}
+                className="flex items-center gap-3 px-8 py-2 border-b border-black/5 last:border-0 text-xs"
+              >
+                <span className="flex-1">{choice.name}</span>
+                <span
+                  className={cn(
+                    "shrink-0",
+                    parseFloat(choice.priceModifier) > 0
+                      ? "text-[#e67400]"
+                      : "text-gray-400",
+                  )}
+                >
+                  {parseFloat(choice.priceModifier) > 0
+                    ? `+${formatEuros(parseFloat(choice.priceModifier))}`
+                    : "inclus"}
+                </span>
+              </div>
+            ))}
+          {addingChoiceFor === group.id ? (
+            <InlineChoiceAddRow
+              groupId={group.id}
+              nextOrder={group.optionChoices.length}
+              onSaved={async () => {
+                onCancelAddChoice();
+                await onRefreshGroups();
+              }}
+              onCancel={onCancelAddChoice}
+              onError={onError}
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={onStartAddChoice}
+              className="flex items-center gap-2 w-full px-8 py-2 text-xs text-primary font-medium hover:bg-primary/5 transition-colors"
+            >
+              <Plus className="w-3 h-3" />
+              Ajouter un choix
+            </button>
+          )}
+        </div>
+      )}
+    </Reorder.Item>
+  );
+}
+
 // ─── Product Sheet ────────────────────────────────────────────────────────────
 
 function ProductSheet({
@@ -484,7 +637,20 @@ function ProductSheet({
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [addingChoiceFor, setAddingChoiceFor] = useState<string | null>(null);
   const [newGroupDialogOpen, setNewGroupDialogOpen] = useState(false);
+  const [addGroupOpen, setAddGroupOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const addGroupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!addGroupOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (addGroupRef.current && !addGroupRef.current.contains(e.target as Node)) {
+        setAddGroupOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [addGroupOpen]);
 
   useEffect(() => {
     if (open) {
@@ -547,7 +713,12 @@ function ProductSheet({
     if (toAdd.length > 0) ops.push(linkOptionGroups(productId, toAdd));
     for (const id of toRemove) ops.push(unlinkOptionGroup(productId, id));
     await Promise.all(ops);
+
+    if (form.optionGroupIds.length > 0) {
+      await reorderProductOptionGroups(productId, form.optionGroupIds);
+    }
   };
+
 
   const handleSubmit = async () => {
     if (!validate()) return;
@@ -639,6 +810,7 @@ function ProductSheet({
       <SheetContent
         side="right"
         className="sm:max-w-xl w-full flex flex-col p-0"
+        hideCloseButton
       >
         <SheetHeader className="px-6 py-4">
           <SheetTitle>
@@ -939,7 +1111,84 @@ function ProductSheet({
               </button>
             </div>
 
-            {optionGroups.length === 0 ? (
+             {/* Add group dropdown */}
+            {(() => {
+              const available = optionGroups.filter(
+                (g) => !form.optionGroupIds.includes(g.id),
+              );
+              if (available.length === 0 && optionGroups.length > 0) return null;
+              return (
+                <div ref={addGroupRef} className="relative mb-2">
+                  <button
+                    type="button"
+                    onClick={() => setAddGroupOpen((o) => !o)}
+                    disabled={available.length === 0}
+                    className="w-full h-9 px-3 text-xs rounded-lg border border-black/10 bg-white text-gray-500 hover:bg-gray-50 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3 shrink-0" />
+                    {available.length === 0
+                      ? "Aucun groupe disponible"
+                      : "Ajouter un groupe d'options"}
+                  </button>
+                  {addGroupOpen && available.length > 0 && (
+                    <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-black/10 rounded-lg shadow-lg overflow-hidden">
+                      {available.map((g) => (
+                        <button
+                          key={g.id}
+                          type="button"
+                          onClick={() => {
+                            toggleOptionGroup(g.id);
+                            setAddGroupOpen(false);
+                          }}
+                          className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 transition-colors"
+                        >
+                          <span className="font-medium">{g.name}</span>
+                          <span className="ml-2 text-[#676767]">
+                            {g.hasMultiple ? "Multiple" : "Unique"} · {g.optionChoices.length} choix
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Selected groups — draggable list */}
+            {form.optionGroupIds.length > 0 && (() => {
+              const selectedGroups = form.optionGroupIds
+                .map((id) => optionGroups.find((g) => g.id === id))
+                .filter(Boolean) as OptionGroup[];
+              return (
+                <Reorder.Group
+                  axis="y"
+                  values={selectedGroups}
+                  onReorder={(newOrder) =>
+                    setField("optionGroupIds", newOrder.map((g) => g.id))
+                  }
+                  className="border border-black/10 rounded-lg overflow-hidden mb-2 select-none"
+                >
+                  {selectedGroups.map((group) => (
+                    <SortableOptionGroupItem
+                      key={group.id}
+                      group={group}
+                      isExpanded={expandedGroups.has(group.id)}
+                      addingChoiceFor={addingChoiceFor}
+                      onToggleExpand={() => toggleExpandGroup(group.id)}
+                      onCollapse={() => setExpandedGroups((prev) => { const next = new Set(prev); next.delete(group.id); return next; })}
+                      onRemove={() => toggleOptionGroup(group.id)}
+                      onStartAddChoice={() => setAddingChoiceFor(group.id)}
+                      onChoiceSaved={async () => {}}
+                      onCancelAddChoice={() => setAddingChoiceFor(null)}
+                      onError={onError}
+                      onRefreshGroups={onRefreshGroups}
+                    />
+                  ))}
+                </Reorder.Group>
+              );
+            })()}
+
+            {optionGroups.length === 0 && (
               <div className="text-center py-6 border-2 border-dashed border-black/10 rounded-lg">
                 <p className="text-xs text-[#676767]">
                   Aucun groupe d&apos;options
@@ -951,107 +1200,6 @@ function ProductSheet({
                 >
                   + Créer un groupe
                 </button>
-              </div>
-            ) : (
-              <div className="border border-black/10 rounded-lg overflow-hidden">
-                {optionGroups.map((group) => {
-                  const checked = form.optionGroupIds.includes(group.id);
-                  const isExpanded = expandedGroups.has(group.id);
-                  return (
-                    <div
-                      key={group.id}
-                      className="border-b border-black/5 last:border-0"
-                    >
-                      <div className="flex items-center gap-2 px-3 py-2.5 hover:bg-gray-50 transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => toggleOptionGroup(group.id)}
-                          className="w-4 h-4 rounded border-gray-300 accent-primary shrink-0"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => toggleExpandGroup(group.id)}
-                          className="flex-1 flex items-center gap-2 text-left min-w-0"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium truncate">
-                              {group.name}
-                            </p>
-                            <p className="text-xs text-[#676767]">
-                              {group.hasMultiple ? "Multiple" : "Unique"} ·{" "}
-                              {group.optionChoices.length} choix
-                              {group.isRequired && (
-                                <span className="ml-1 text-[#e67400]">
-                                  · Requis
-                                </span>
-                              )}
-                            </p>
-                          </div>
-                          {isExpanded ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                          ) : (
-                            <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                          )}
-                        </button>
-                      </div>
-
-                      {isExpanded && (
-                        <div className="border-t border-black/5 bg-gray-50/50">
-                          {group.optionChoices.length === 0 &&
-                            addingChoiceFor !== group.id && (
-                              <p className="text-xs text-[#676767] px-8 py-2.5 italic">
-                                Aucun choix pour l&apos;instant
-                              </p>
-                            )}
-                          {[...group.optionChoices]
-                            .sort((a, b) => a.displayOrder - b.displayOrder)
-                            .map((choice) => (
-                              <div
-                                key={choice.id}
-                                className="flex items-center gap-3 px-8 py-2 border-b border-black/5 last:border-0 text-xs"
-                              >
-                                <span className="flex-1">{choice.name}</span>
-                                <span
-                                  className={cn(
-                                    "shrink-0",
-                                    parseFloat(choice.priceModifier) > 0
-                                      ? "text-[#e67400]"
-                                      : "text-gray-400",
-                                  )}
-                                >
-                                  {parseFloat(choice.priceModifier) > 0
-                                    ? `+${formatEuros(parseFloat(choice.priceModifier))}`
-                                    : "inclus"}
-                                </span>
-                              </div>
-                            ))}
-                          {addingChoiceFor === group.id ? (
-                            <InlineChoiceAddRow
-                              groupId={group.id}
-                              nextOrder={group.optionChoices.length}
-                              onSaved={async () => {
-                                setAddingChoiceFor(null);
-                                await onRefreshGroups();
-                              }}
-                              onCancel={() => setAddingChoiceFor(null)}
-                              onError={onError}
-                            />
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => setAddingChoiceFor(group.id)}
-                              className="flex items-center gap-2 w-full px-8 py-2 text-xs text-primary font-medium hover:bg-primary/5 transition-colors"
-                            >
-                              <Plus className="w-3 h-3" />
-                              Ajouter un choix
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
               </div>
             )}
 
@@ -1077,7 +1225,7 @@ function ProductSheet({
         </div>
 
         {/* Footer */}
-        <div className="border-t px-6 py-4 flex gap-2">
+        <div className="border-t border-black/8 px-6 py-4 flex gap-2">
           <SheetClose asChild>
             <Button
               variant="outline"

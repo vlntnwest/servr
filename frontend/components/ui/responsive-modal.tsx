@@ -76,7 +76,7 @@ const ResponsiveModalContent = React.forwardRef<
         >
           {children}
           {!hideCloseButton && (
-            <DialogPrimitive.Close className="absolute right-4 top-4 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-black/5 hover:bg-black/10 transition-colors focus:outline-none">
+            <DialogPrimitive.Close className="absolute right-4 top-4 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors focus:outline-none">
               <X className="h-5 w-5" strokeWidth={2} />
             </DialogPrimitive.Close>
           )}
@@ -91,7 +91,7 @@ const ResponsiveModalHeader = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col space-y-1.5 p-4 border-b", className)} {...props} />
+  <div className={cn("flex flex-col space-y-1.5 p-4 border-b border-black/8", className)} {...props} />
 );
 ResponsiveModalHeader.displayName = "ResponsiveModalHeader";
 

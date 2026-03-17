@@ -40,16 +40,18 @@ const DialogContent = React.forwardRef<
       {...props}
     >
       {children}
-      <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 focus:outline-none">
-        <X className="h-4 w-4" />
-      </DialogClose>
     </DialogPrimitive.Content>
   </DialogPortal>
 ));
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
-const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("p-4 border-b", className)} {...props} />
+const DialogHeader = ({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn("flex items-center justify-between p-4 border-b border-black/8", className)} {...props}>
+    <div>{children}</div>
+    <DialogClose className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 transition-colors focus:outline-none shrink-0">
+      <X className="h-4 w-4" />
+    </DialogClose>
+  </div>
 );
 DialogHeader.displayName = "DialogHeader";
 

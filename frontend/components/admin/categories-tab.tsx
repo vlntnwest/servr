@@ -78,7 +78,7 @@ export default function CategoriesTab() {
   };
 
   return (
-    <div className="pt-4 border-t">
+    <div className="pt-4">
       {notification && (
         <div
           className={cn(

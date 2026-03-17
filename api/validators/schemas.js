@@ -117,6 +117,10 @@ const linkOptionGroupsSchema = z.object({
   optionGroupIds: z.array(z.string().uuid()).min(1),
 });
 
+const reorderOptionGroupsSchema = z.object({
+  orderedIds: z.array(z.string().uuid()).min(1),
+});
+
 // Order schemas
 const orderItemSchema = z.object({
   productId: z.string().uuid(),
@@ -213,6 +217,7 @@ module.exports = {
   bulkOptionChoicesSchema,
   updateProductOptionChoiceSchema,
   linkOptionGroupsSchema,
+  reorderOptionGroupsSchema,
 
   // Orders
   orderSchema,

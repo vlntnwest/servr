@@ -15,6 +15,7 @@ const {
   bulkOptionChoicesSchema,
   updateProductOptionChoiceSchema,
   linkOptionGroupsSchema,
+  reorderOptionGroupsSchema,
 } = require("../validators/schemas");
 
 // Menu (public)
@@ -107,13 +108,20 @@ router.delete(
   menuControllers.deleteProductOptionGroup,
 );
 
-// Link / unlink option groups to products
+// Link / unlink / reorder option groups on products
 router.post(
   "/restaurants/:restaurantId/products/:productId/option-groups",
   checkAuth,
   isAdmin,
   validate({ body: linkOptionGroupsSchema }),
   menuControllers.linkOptionGroups,
+);
+router.put(
+  "/restaurants/:restaurantId/products/:productId/option-groups/reorder",
+  checkAuth,
+  isAdmin,
+  validate({ body: reorderOptionGroupsSchema }),
+  menuControllers.reorderProductOptionGroups,
 );
 router.delete(
   "/restaurants/:restaurantId/products/:productId/option-groups/:optionGroupId",

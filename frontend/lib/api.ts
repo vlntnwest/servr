@@ -456,6 +456,17 @@ export async function unlinkOptionGroup(
   return "error" in result ? { error: result.error } : {};
 }
 
+export async function reorderProductOptionGroups(
+  productId: string,
+  orderedIds: string[],
+): Promise<{ error?: string }> {
+  const result = await apiFetch<{ message: string }>(
+    `/menu/restaurants/${RESTAURANT_ID}/products/${productId}/option-groups/reorder`,
+    { method: "PUT", body: JSON.stringify({ orderedIds }) },
+  );
+  return "error" in result ? { error: result.error } : {};
+}
+
 // ── Stripe Connect (OWNER) ────────────────────────────────────────────────────
 
 export async function initiateStripeOnboarding(): Promise<{
