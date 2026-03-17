@@ -1,10 +1,15 @@
 "use client";
 
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, X, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/contexts/cart-context";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useState } from "react";
 import Cart from "@/components/cart/cart";
 import AuthButton from "@/components/auth/auth-button";
@@ -14,9 +19,13 @@ interface HeaderProps {
   showAuth?: boolean;
 }
 
-export default function Header({ showCart = true, showAuth = true }: HeaderProps) {
-  const { itemCount } = useCart();
+export default function Header({
+  showCart = true,
+  showAuth = true,
+}: HeaderProps) {
+  const { itemCount, clearCart } = useCart();
   const [cartOpen, setCartOpen] = useState(false);
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-black/8">
@@ -53,12 +62,61 @@ export default function Header({ showCart = true, showAuth = true }: HeaderProps
 
       {/* Mobile cart drawer */}
       <Sheet open={cartOpen} onOpenChange={setCartOpen}>
-        <SheetContent side="bottom" className="h-[90dvh] flex flex-col p-0">
-          <SheetHeader className="px-4 py-3">
-            <SheetTitle>Votre panier</SheetTitle>
+        <SheetContent
+          side="bottom"
+          className="border-none h-dvh flex flex-col p-0"
+          hideCloseButton
+        >
+          <SheetHeader className="flex flex-row items-center justify-between px-4 py-3 shadow-xs border-none">
+            <SheetTitle className="sr-only">Panier</SheetTitle>
+            <button
+              onClick={() => setCartOpen(false)}
+              className="p-2 rounded-full hover:bg-black/5 transition-colors m-0"
+              aria-label="Fermer le panier"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setConfirmClearOpen(true)}
+              className="p-2 rounded-full hover:bg-black/5 transition-colors"
+              aria-label="Vider le panier"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
           </SheetHeader>
           <div className="flex-1 overflow-hidden flex flex-col">
+            <p className="text-2xl font-bold px-4 py-3">Panier</p>
             <Cart onClose={() => setCartOpen(false)} />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Confirmation suppression panier */}
+      <Sheet open={confirmClearOpen} onOpenChange={setConfirmClearOpen}>
+        <SheetContent side="bottom" className="p-6" hideCloseButton>
+          <SheetTitle className="text-lg font-bold mb-1">
+            Vider le panier
+          </SheetTitle>
+          <p className="text-sm text-muted-foreground mb-6">
+            Es-tu sûr de vouloir supprimer tous les articles ?
+          </p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => {
+                clearCart();
+                setConfirmClearOpen(false);
+                setCartOpen(false);
+              }}
+              className="w-full h-11 rounded-md bg-red-600 text-white font-semibold text-sm hover:opacity-90 transition-opacity"
+            >
+              Vider le panier
+            </button>
+            <button
+              onClick={() => setConfirmClearOpen(false)}
+              className="w-full h-11 rounded-md bg-black/5 font-semibold text-sm hover:bg-black/10 transition-colors"
+            >
+              Annuler
+            </button>
           </div>
         </SheetContent>
       </Sheet>

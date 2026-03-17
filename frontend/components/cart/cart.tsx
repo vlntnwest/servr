@@ -39,7 +39,7 @@ export default function Cart({ onClose }: CartProps) {
         ))}
       </div>
 
-      <div className="border-t p-4 bg-white shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
+      <div className=" p-4 bg-white shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
         <div className="flex justify-between items-center mb-3">
           <span className="text-sm font-bold">Total de la commande</span>
           <span className="text-sm font-bold">{formatEuros(total)}</span>
