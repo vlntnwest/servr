@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Minus, Plus } from "lucide-react";
 import type { Product, OptionGroup, OptionChoice } from "@/types/api";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalTitle,
+} from "@/components/ui/responsive-modal";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -123,41 +127,43 @@ export default function ProductDetailSheet({
   };
 
   return (
-    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-      <SheetContent
-        side="bottom"
-        className="h-[90dvh] flex flex-col p-0 md:max-w-lg md:mx-auto md:left-1/2 md:-translate-x-1/2 md:inset-y-4 md:rounded-lg md:h-auto md:max-h-[90vh]"
+    <ResponsiveModal open={open} onOpenChange={(v) => !v && onClose()}>
+      <ResponsiveModalContent
+        hideCloseButton
+        mobileClassName="h-[90dvh] rounded-t-2xl overflow-hidden flex flex-col"
+        desktopClassName="max-w-xl max-h-[90vh] overflow-hidden flex flex-col p-0"
+        className="p-0"
       >
         <div className="flex-1 overflow-y-auto">
           {product.imageUrl && (
-            <div className="relative w-full h-48">
+            <div className="relative w-full aspect-[4/3]">
               <Image
                 src={product.imageUrl}
                 alt={product.name}
                 fill
+                sizes="(max-width: 768px) 100vw, 576px"
                 className="object-cover"
               />
             </div>
           )}
           <div className="p-4">
-            <SheetTitle className="text-xl font-bold">{product.name}</SheetTitle>
+            <ResponsiveModalTitle className="text-3xl font-bold">{product.name}</ResponsiveModalTitle>
             {product.description && (
               <p className="text-[#676767] text-sm mt-1">{product.description}</p>
             )}
-            <p className="font-semibold mt-2">{formatEuros(basePrice)}</p>
           </div>
 
           {product.optionGroups.map((group) => (
             <div key={group.id} className="px-4 pb-4">
               <Separator className="mb-4" />
               <div className="mb-3">
-                <h4 className="font-bold text-sm">{group.name}</h4>
+                <h4 className="font-bold text-xl">{group.name}</h4>
                 {group.isRequired ? (
                   <p className="text-xs text-[#676767]">Obligatoire</p>
                 ) : (
                   <p className="text-xs text-[#676767]">
                     Optionnel
-                    {group.maxQuantity > 1 ? ` · max ${group.maxQuantity}` : ""}
+                    {group.maxQuantity > 1 ? ` · Max ${group.maxQuantity}` : ""}
                   </p>
                 )}
               </div>
@@ -166,30 +172,43 @@ export default function ProductDetailSheet({
                 <RadioGroup
                   value={(selectedOptions[group.id] ?? [])[0] ?? ""}
                   onValueChange={(val) => handleRadioChange(group.id, val)}
+                  className="gap-0"
                 >
                   {group.optionChoices.map((choice) => (
-                    <div key={choice.id} className="flex items-center gap-3 py-1.5">
-                      <RadioGroupItem value={choice.id} id={choice.id} />
-                      <Label htmlFor={choice.id} className="flex-1 cursor-pointer font-normal">
+                    <div key={choice.id} className="flex items-center py-1">
+                      <Label htmlFor={choice.id} className="flex-1 cursor-pointer font-normal text-base py-1">
                         {choice.name}
-                      </Label>
+                      </Label> 
                       {parseFloat(choice.priceModifier) > 0 && (
                         <span className="text-sm text-[#676767]">
                           +{formatEuros(parseFloat(choice.priceModifier))}
                         </span>
                       )}
+                      <RadioGroupItem value={choice.id} id={choice.id} className="m-2 border-2" />
+                     
                     </div>
                   ))}
                 </RadioGroup>
               ) : (
-                <div className="space-y-1.5">
+                <div>
                   {group.optionChoices.map((choice) => {
                     const isChecked = (selectedOptions[group.id] ?? []).includes(choice.id);
                     const isDisabled =
                       !isChecked &&
                       (selectedOptions[group.id] ?? []).length >= group.maxQuantity;
                     return (
-                      <div key={choice.id} className="flex items-center gap-3 py-1.5">
+                      <div key={choice.id} className="flex items-center py-1">
+                         <Label
+                          htmlFor={choice.id}
+                          className="flex-1 cursor-pointer font-normal text-base py-1"
+                        >
+                          {choice.name}
+                        </Label>  
+                        {parseFloat(choice.priceModifier) > 0 && (
+                          <span className="text-sm text-[#676767]">
+                            +{formatEuros(parseFloat(choice.priceModifier))}
+                          </span>
+                        )}
                         <Checkbox
                           id={choice.id}
                           checked={isChecked}
@@ -197,18 +216,10 @@ export default function ProductDetailSheet({
                           onCheckedChange={(checked) =>
                             handleCheckboxChange(group, choice, !!checked)
                           }
+                          className="m-2 border-2"
                         />
-                        <Label
-                          htmlFor={choice.id}
-                          className="flex-1 cursor-pointer font-normal"
-                        >
-                          {choice.name}
-                        </Label>
-                        {parseFloat(choice.priceModifier) > 0 && (
-                          <span className="text-sm text-[#676767]">
-                            +{formatEuros(parseFloat(choice.priceModifier))}
-                          </span>
-                        )}
+                       
+                      
                       </div>
                     );
                   })}
@@ -219,26 +230,26 @@ export default function ProductDetailSheet({
         </div>
 
         {/* Footer */}
-        <div className="border-t p-4 bg-white">
-          <div className="flex items-center gap-4 mb-3">
-            <div className="flex items-center gap-3 border rounded-sm">
+        <div className="p-4 bg-white">
+          <div className="flex flex-col items-center gap-4 mb-3 w-full">
+            <div className="flex items-center justify-evenly gap-3 w-full">
               <button
-                className="p-2 hover:bg-black/5 transition-colors disabled:opacity-40"
+                className="p-0 hover:bg-black/5 transition-colors disabled:opacity-40 border border-primary border-2 rounded-full cursor-pointer disabled:cursor-not-allowed"
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                 disabled={quantity <= 1}
               >
-                <Minus className="w-4 h-4" />
+                <Minus className="w-4 h-4 text-primary" strokeWidth={3} />
               </button>
-              <span className="w-8 text-center font-semibold">{quantity}</span>
+              <span className="w-8 text-center">{quantity}</span>
               <button
-                className="p-2 hover:bg-black/5 transition-colors"
+                className="p-0 hover:bg-black/5 transition-colors border border-primary border-2 rounded-full cursor-pointer"
                 onClick={() => setQuantity((q) => q + 1)}
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4 text-primary" strokeWidth={3} />
               </button>
             </div>
             <Button
-              className="flex-1 h-11"
+              className="flex-1 h-11 w-full uppercase"
               disabled={!isValid}
               onClick={handleAddToCart}
             >
@@ -246,7 +257,7 @@ export default function ProductDetailSheet({
             </Button>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }

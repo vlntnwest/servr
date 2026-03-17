@@ -1,38 +1,55 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
 
-@font-face {
-  font-family: "Roboto Condensed";
-  src: url("/assets/fonts/RobotoCondensed-VariableFont_wght.ttf") format("truetype");
-  font-weight: 100 900;
-  font-display: swap;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  display: none;
-}
-
-:root {
+@theme {
   --color-primary: #1f4493;
+  --color-primary-foreground: #ffffff;
   --color-accent: #e67400;
-  --color-muted: #676767;
-  --color-bg: rgba(208, 208, 208, 0.12);
+  --color-muted: rgba(208, 208, 208, 0.12);
+  --color-muted-foreground: #676767;
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-background: rgba(208, 208, 208, 0.12);
+  --color-foreground: #1a1a1a;
+
+  --font-dm-sans: var(--font-dm-sans), "DM Sans", sans-serif;
+
+  --breakpoint-3xl: 1920px;
+
+  --radius-lg: 8px;
+  --radius-md: 6px;
+  --radius-sm: 4px;
+
+  --breakpoint-3xl: 120rem;
 }
 
-body {
-  font-family: "Roboto Condensed", sans-serif;
-  background-color: var(--color-bg);
-  color: #1a1a1a;
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  body {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-dm-sans), "DM Sans", sans-serif;
+  }
 }

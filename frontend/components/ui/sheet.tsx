@@ -39,12 +39,13 @@ const sheetVariants: Record<SheetSide, string> = {
 interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
   side?: SheetSide;
+  hideCloseButton?: boolean;
 }
 
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   SheetContentProps
->(({ side = "right", className, children, ...props }, ref) => (
+>(({ side = "right", className, children, hideCloseButton, ...props }, ref) => (
   <SheetPortal>
     <SheetOverlay />
     <DialogPrimitive.Content
@@ -54,12 +55,15 @@ const SheetContent = React.forwardRef<
         sheetVariants[side],
         className
       )}
+      aria-describedby={undefined}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 focus:outline-none">
-        <X className="h-5 w-5" />
-      </DialogPrimitive.Close>
+      {!hideCloseButton && (
+        <DialogPrimitive.Close className="absolute right-4 top-4 z-10 flex items-center justify-center w-14 h-14 rounded-full bg-primary text-white hover:opacity-90 focus:outline-none transition-opacity">
+          <X className="h-6 w-6" strokeWidth={2} />
+        </DialogPrimitive.Close>
+      )}
     </DialogPrimitive.Content>
   </SheetPortal>
 ));
@@ -82,6 +86,16 @@ const SheetTitle = React.forwardRef<
 ));
 SheetTitle.displayName = "SheetTitle";
 
+const SheetContentSimple = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, children, ...props }, ref) => (
+  <div ref={ref} className={cn("bg-white", className)} {...props}>
+    {children}
+  </div>
+));
+SheetContentSimple.displayName = "SheetContentSimple";
+
 export {
   Sheet,
   SheetTrigger,
@@ -89,6 +103,7 @@ export {
   SheetPortal,
   SheetOverlay,
   SheetContent,
+  SheetContentSimple,
   SheetHeader,
   SheetTitle,
 };

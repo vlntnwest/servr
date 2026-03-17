@@ -4,7 +4,11 @@ import { ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/contexts/cart-context";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useState } from "react";
 import Cart from "@/components/cart/cart";
 import AuthButton from "@/components/auth/auth-button";
@@ -14,7 +18,10 @@ interface HeaderProps {
   showAuth?: boolean;
 }
 
-export default function Header({ showCart = true, showAuth = true }: HeaderProps) {
+export default function Header({
+  showCart = true,
+  showAuth = true,
+}: HeaderProps) {
   const { itemCount } = useCart();
   const [cartOpen, setCartOpen] = useState(false);
 
@@ -28,6 +35,7 @@ export default function Header({ showCart = true, showAuth = true }: HeaderProps
               alt="Pokey Bar"
               width={100}
               height={40}
+              style={{ width: 100, height: 40 }}
               className="object-contain"
               priority
             />
@@ -53,15 +61,18 @@ export default function Header({ showCart = true, showAuth = true }: HeaderProps
 
       {/* Mobile cart drawer */}
       <Sheet open={cartOpen} onOpenChange={setCartOpen}>
-        <SheetContent side="bottom" className="h-[90dvh] flex flex-col p-0">
-          <SheetHeader className="px-4 py-3">
-            <SheetTitle>Votre panier</SheetTitle>
-          </SheetHeader>
+        <SheetContent
+          side="bottom"
+          className="border-none h-dvh flex flex-col p-0"
+          hideCloseButton
+        >
+          <SheetTitle className="sr-only">Panier</SheetTitle>
           <div className="flex-1 overflow-hidden flex flex-col">
             <Cart onClose={() => setCartOpen(false)} />
           </div>
         </SheetContent>
       </Sheet>
+
     </header>
   );
 }
