@@ -19,11 +19,17 @@ type CartContextType = {
   total: number;
   itemCount: number;
   toCheckoutItems: () => CheckoutItem[];
+  message: string;
+  setMessage: (msg: string) => void;
+  scheduledFor: string;
+  setScheduledFor: (iso: string) => void;
 };
 
 const CartContext = createContext<CartContextType | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const [message, setMessage] = useState("");
+  const [scheduledFor, setScheduledFor] = useState("");
   const [items, setItems] = useState<CartItem[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -78,6 +84,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         total,
         itemCount,
         toCheckoutItems,
+        message,
+        setMessage,
+        scheduledFor,
+        setScheduledFor,
       }}
     >
       {children}

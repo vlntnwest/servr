@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Minus, Plus } from "lucide-react";
 import type { Product, OptionGroup, OptionChoice } from "@/types/api";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalTitle,
+} from "@/components/ui/responsive-modal";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -123,10 +127,12 @@ export default function ProductDetailSheet({
   };
 
   return (
-    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-      <SheetContent
-        side="bottom"
-        className="h-[90dvh] my-auto flex flex-col p-0 md:max-w-xl md:mx-auto md:left-1/2 md:-translate-x-1/2 md:inset-y-4 md:rounded-lg md:h-auto md:max-h-[90vh] border-none overflow-hidden"
+    <ResponsiveModal open={open} onOpenChange={(v) => !v && onClose()}>
+      <ResponsiveModalContent
+        hideCloseButton
+        mobileClassName="h-[90dvh] rounded-t-2xl overflow-hidden flex flex-col"
+        desktopClassName="max-w-xl max-h-[90vh] overflow-hidden flex flex-col p-0"
+        className="p-0"
       >
         <div className="flex-1 overflow-y-auto">
           {product.imageUrl && (
@@ -135,12 +141,13 @@ export default function ProductDetailSheet({
                 src={product.imageUrl}
                 alt={product.name}
                 fill
+                sizes="(max-width: 768px) 100vw, 576px"
                 className="object-cover"
               />
             </div>
           )}
           <div className="p-4">
-            <SheetTitle className="text-3xl font-bold">{product.name}</SheetTitle>
+            <ResponsiveModalTitle className="text-3xl font-bold">{product.name}</ResponsiveModalTitle>
             {product.description && (
               <p className="text-[#676767] text-sm mt-1">{product.description}</p>
             )}
@@ -250,7 +257,7 @@ export default function ProductDetailSheet({
             </Button>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }

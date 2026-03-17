@@ -24,6 +24,7 @@ function PopularCard({ product }: { product: Product }) {
             width={152}
             height={152}
             className="w-full aspect-square object-cover"
+            style={{ height: "auto" }}
           />
         )}
         <div className="flex flex-col flex-1 p-2 gap-1">

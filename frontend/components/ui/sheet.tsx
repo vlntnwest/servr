@@ -55,6 +55,7 @@ const SheetContent = React.forwardRef<
         sheetVariants[side],
         className
       )}
+      aria-describedby={undefined}
       {...props}
     >
       {children}
