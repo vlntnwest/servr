@@ -5,6 +5,7 @@ const { withOrderNumber } = require("../lib/orderNumber");
 const { isValidTransition, getNextStatuses } = require("../lib/orderStateMachine");
 const { getIO } = require("../lib/socket");
 const { isRestaurantOpen } = require("../lib/openingHours");
+const { refundStripePayment } = require("./checkout.controllers");
 
 function isScheduledTimeValid(openingHours, scheduledAt) {
   const dt = new Date(scheduledAt);
@@ -252,7 +253,7 @@ module.exports.updateOrderStatus = async (req, res, next) => {
   try {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      select: { id: true, status: true, email: true, restaurantId: true },
+      select: { id: true, status: true, email: true, restaurantId: true, stripePaymentIntentId: true, stripeRefundId: true },
     });
 
     if (!order) {
@@ -264,6 +265,10 @@ module.exports.updateOrderStatus = async (req, res, next) => {
         error: `Invalid transition from ${order.status} to ${status}`,
         allowedTransitions: getNextStatuses(order.status),
       });
+    }
+
+    if (status === "CANCELLED" && order.stripePaymentIntentId && !order.stripeRefundId) {
+      await refundStripePayment(order);
     }
 
     const data = await prisma.order.update({
