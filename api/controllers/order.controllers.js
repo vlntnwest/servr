@@ -144,6 +144,12 @@ module.exports.createOrder = async (req, res, next) => {
 
     logger.info({ orderId: data.id, restaurantId }, "Order created");
     sendOrderConfirmation({ to: data.email, order: data });
+
+    const io = getIO();
+    if (io) {
+      io.to(`restaurant:${restaurantId}`).emit("order:new", data);
+    }
+
     return res.status(201).json({ data });
   } catch (error) {
     next(error);
