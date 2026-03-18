@@ -50,3 +50,40 @@ module.exports.uploadImage = async (req, res, next) => {
     next(error);
   }
 };
+
+module.exports.deleteImage = async (req, res, next) => {
+  try {
+    const { imageUrl } = req.body;
+    if (!imageUrl) {
+      return res.status(400).json({ error: "imageUrl is required" });
+    }
+
+    // Extract file path from the public URL
+    const parsed = new URL(imageUrl);
+    const storagePath = parsed.pathname.split(`/object/public/${BUCKET}/`)[1];
+
+    if (!storagePath) {
+      return res.status(400).json({ error: "Invalid image URL" });
+    }
+
+    // Validate the path belongs to this restaurant
+    const { restaurantId } = req.params;
+    if (!storagePath.startsWith(`restaurants/${restaurantId}/`)) {
+      return res.status(403).json({ error: "Image does not belong to this restaurant" });
+    }
+
+    const { error } = await supabase.storage
+      .from(BUCKET)
+      .remove([storagePath]);
+
+    if (error) {
+      logger.error({ error: error.message, storagePath }, "Failed to delete from Supabase Storage");
+      return res.status(500).json({ error: "Failed to delete image" });
+    }
+
+    logger.info({ storagePath }, "Image deleted");
+    return res.status(200).json({ message: "Image deleted" });
+  } catch (error) {
+    next(error);
+  }
+};

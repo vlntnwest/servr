@@ -6,6 +6,7 @@ import type {
   Order,
   PaginatedResponse,
   OpeningHour,
+  ExceptionalHour,
   RestaurantMember,
   PromoCode,
   Stats,
@@ -224,6 +225,78 @@ export async function getPromoCodes(): Promise<PromoCode[]> {
   return [];
 }
 
+export async function createPromoCode(payload: {
+  code: string;
+  discountType: "PERCENTAGE" | "FIXED";
+  discountValue: number;
+  minOrderAmount?: number;
+  maxUses?: number;
+  expiresAt?: string;
+  isActive?: boolean;
+}): Promise<{ data?: PromoCode; error?: string }> {
+  const result = await apiFetch<PromoCode>(
+    `/restaurants/${RESTAURANT_ID}/promo-codes`,
+    { method: "POST", body: JSON.stringify(payload) },
+  );
+  return "data" in result ? { data: result.data } : { error: result.error };
+}
+
+export async function deletePromoCode(
+  promoCodeId: string,
+): Promise<{ error?: string }> {
+  const result = await apiFetch<{ message: string }>(
+    `/restaurants/${RESTAURANT_ID}/promo-codes/${promoCodeId}`,
+    { method: "DELETE" },
+  );
+  return "error" in result ? { error: result.error } : {};
+}
+
+export async function removeMember(
+  memberId: string,
+): Promise<{ error?: string }> {
+  const result = await apiFetch<{ message: string }>(
+    `/restaurants/${RESTAURANT_ID}/members/${memberId}`,
+    { method: "DELETE" },
+  );
+  return "error" in result ? { error: result.error } : {};
+}
+
+export async function getExceptionalHours(
+  restaurantId?: string,
+): Promise<ExceptionalHour[]> {
+  const rid = restaurantId ?? RESTAURANT_ID;
+  const res = await fetch(
+    `${API_URL}/api/v1/restaurants/${rid}/exceptional-hours`,
+    { next: { revalidate: 3600 } },
+  );
+  const json = await res.json();
+  return json.data ?? [];
+}
+
+export async function createExceptionalHour(payload: {
+  date: string;
+  isClosed?: boolean;
+  openTime?: string;
+  closeTime?: string;
+  label?: string;
+}): Promise<{ data?: ExceptionalHour; error?: string }> {
+  const result = await apiFetch<ExceptionalHour>(
+    `/restaurants/${RESTAURANT_ID}/exceptional-hours`,
+    { method: "POST", body: JSON.stringify(payload) },
+  );
+  return "data" in result ? { data: result.data } : { error: result.error };
+}
+
+export async function deleteExceptionalHour(
+  id: string,
+): Promise<{ error?: string }> {
+  const result = await apiFetch<{ message: string }>(
+    `/restaurants/${RESTAURANT_ID}/exceptional-hours/${id}`,
+    { method: "DELETE" },
+  );
+  return "error" in result ? { error: result.error } : {};
+}
+
 export async function updateOpeningHours(
   hours: Array<{
     dayOfWeek: number;
@@ -254,6 +327,14 @@ export async function uploadImage(file: File): Promise<string | null> {
   );
   const json = await res.json();
   return json.data?.url ?? null;
+}
+
+export async function deleteImage(imageUrl: string): Promise<{ error?: string }> {
+  const result = await apiFetch<{ message: string }>(
+    `/restaurants/${RESTAURANT_ID}/upload`,
+    { method: "DELETE", body: JSON.stringify({ imageUrl }) },
+  );
+  return "error" in result ? { error: result.error } : {};
 }
 
 export async function refundOrder(orderId: string) {
@@ -471,6 +552,16 @@ export async function reorderProductOptionGroups(
 }
 
 // ── Stripe Connect (OWNER) ────────────────────────────────────────────────────
+
+export async function updatePreparationLevel(
+  level: "EASY" | "MEDIUM" | "BUSY" | "CLOSED",
+): Promise<{ error?: string }> {
+  const result = await apiFetch<Restaurant>(
+    `/restaurants/${RESTAURANT_ID}/preparation-level`,
+    { method: "PATCH", body: JSON.stringify({ preparationLevel: level }) },
+  );
+  return "error" in result ? { error: result.error } : {};
+}
 
 export async function initiateStripeOnboarding(): Promise<{
   data?: { url: string };

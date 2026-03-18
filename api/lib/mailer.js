@@ -89,4 +89,51 @@ async function sendInvitationEmail({ to, restaurantName, inviteLink }) {
   }
 }
 
-module.exports = { sendOrderConfirmation, sendInvitationEmail };
+const STATUS_LABELS = {
+  IN_PROGRESS: "en cours de préparation",
+  COMPLETED: "prête",
+  DELIVERED: "livrée",
+  CANCELLED: "annulée",
+};
+
+const NOTIFIABLE_STATUSES = Object.keys(STATUS_LABELS);
+
+/**
+ * Send order status update email to client.
+ * Fire-and-forget: errors are logged but do not throw.
+ */
+async function sendOrderStatusUpdate({ to, order, newStatus }) {
+  if (!to) return;
+  if (!NOTIFIABLE_STATUSES.includes(newStatus)) return;
+
+  const label = STATUS_LABELS[newStatus];
+  const orderRef = order.orderNumber
+    ? `#${order.orderNumber}`
+    : `#${order.id.slice(0, 8).toUpperCase()}`;
+
+  const html = `
+    <div style="font-family:Helvetica,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+      <h2>Mise à jour de votre commande ${orderRef}</h2>
+      <p>Bonjour ${order.fullName || ""},</p>
+      <p>Votre commande est maintenant <strong>${label}</strong>.</p>
+      <p style="color:#999;font-size:14px;">Merci pour votre commande !</p>
+    </div>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: `"Pokey" <${process.env.SMTP_USER}>`,
+      to,
+      subject: `Commande ${orderRef} — ${label}`,
+      html,
+    });
+    logger.info({ orderId: order.id, to, newStatus }, "Order status update email sent");
+  } catch (err) {
+    logger.error(
+      { orderId: order.id, to, error: err.message },
+      "Failed to send order status update email",
+    );
+  }
+}
+
+module.exports = { sendOrderConfirmation, sendInvitationEmail, sendOrderStatusUpdate };

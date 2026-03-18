@@ -37,9 +37,11 @@ model Restaurant {
   email             String?
   imageUrl          String?            @map("image_url")
   stripeAccountId   String?            @map("stripe_account_id")
+  preparationLevel  PreparationLevel   @default(EASY) @map("preparation_level")
   createdAt         DateTime?          @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime?          @map("updated_at") @db.Timestamp(6)
   openingHours      OpeningHour[]
+  exceptionalHours  ExceptionalHour[]
   categories        Categorie[]
   products          Product[]
   orders            Order[]
@@ -81,6 +83,24 @@ model OpeningHour {
 
   @@index([restaurantId])
   @@map("opening_hours")
+  @@schema("public")
+}
+
+model ExceptionalHour {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  restaurantId String     @map("restaurant_id") @db.Uuid
+  date         DateTime   @db.Date
+  isClosed     Boolean    @default(true) @map("is_closed")
+  openTime     String?    @map("open_time")
+  closeTime    String?    @map("close_time")
+  label        String?    @db.VarChar(100)
+  createdAt    DateTime?  @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime?  @map("updated_at") @db.Timestamp(6)
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([restaurantId, date])
+  @@index([restaurantId])
+  @@map("exceptional_hours")
   @@schema("public")
 }
 
@@ -288,6 +308,16 @@ enum RestaurantRole {
   STAFF
 
   @@map("restaurant_role")
+  @@schema("public")
+}
+
+enum PreparationLevel {
+  EASY
+  MEDIUM
+  BUSY
+  CLOSED
+
+  @@map("preparation_level")
   @@schema("public")
 }
 

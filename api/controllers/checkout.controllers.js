@@ -4,16 +4,8 @@ const logger = require("../logger");
 const { sendOrderConfirmation } = require("../lib/mailer");
 const { withOrderNumber } = require("../lib/orderNumber");
 const { isScheduledTimeValid } = require("./order.controllers");
-
-function isRestaurantOpen(openingHours) {
-  if (!openingHours || openingHours.length === 0) return true;
-  const now = new Date();
-  const dayOfWeek = now.getDay();
-  const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-  const todayHours = openingHours.find((h) => h.dayOfWeek === dayOfWeek);
-  if (!todayHours) return false;
-  return currentTime >= todayHours.openTime && currentTime < todayHours.closeTime;
-}
+const { getIO } = require("../lib/socket");
+const { isRestaurantOpen } = require("../lib/openingHours");
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
@@ -59,7 +51,7 @@ module.exports.createCheckoutSession = async (req, res, next) => {
       if (!isScheduledTimeValid(openingHours, scheduledFor)) {
         return res.status(400).json({ error: "Scheduled time is outside opening hours or in the past" });
       }
-    } else if (!isRestaurantOpen(openingHours)) {
+    } else if (!(await isRestaurantOpen(restaurantId, openingHours))) {
       return res.status(400).json({ error: "Restaurant is currently closed" });
     }
 
@@ -67,6 +59,13 @@ module.exports.createCheckoutSession = async (req, res, next) => {
     const products = await prisma.product.findMany({ where: { id: { in: productIds }, restaurantId } });
     if (products.length !== productIds.length) {
       return res.status(404).json({ error: "One or more products not found" });
+    }
+
+    const unavailable = products.filter((p) => !p.isAvailable);
+    if (unavailable.length > 0) {
+      return res.status(400).json({
+        error: `Unavailable products: ${unavailable.map((p) => p.name).join(", ")}`,
+      });
     }
 
     const allOptionChoiceIds = [...new Set(items.flatMap((i) => i.optionChoiceIds || []))];
@@ -109,6 +108,12 @@ module.exports.createCheckoutSession = async (req, res, next) => {
 
       logger.info({ orderId: order.id, restaurantId }, "On-site payment order created");
       sendOrderConfirmation({ to: order.email, order });
+
+      const io = getIO();
+      if (io) {
+        io.to(`restaurant:${restaurantId}`).emit("order:new", order);
+      }
+
       return res.status(201).json({ data: { order, paymentMethod: "on_site" } });
     }
 
@@ -234,6 +239,11 @@ module.exports.handleWebhook = async (req, res) => {
       if (order) {
         logger.info({ orderId, sessionId: session.id }, "Order confirmed from Stripe webhook");
         sendOrderConfirmation({ to: order.email, order });
+
+        const io = getIO();
+        if (io) {
+          io.to(`restaurant:${order.restaurantId}`).emit("order:new", order);
+        }
       }
     }
 

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Loader2, Check, AlertCircle, Mail } from "lucide-react";
-import { getMembers, inviteMember } from "@/lib/api";
+import { Plus, Loader2, Check, AlertCircle, Mail, Trash2 } from "lucide-react";
+import { getMembers, inviteMember, removeMember } from "@/lib/api";
 import type { RestaurantMember } from "@/types/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,8 @@ export default function MembersTab() {
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [notification, setNotification] = useState<Notification>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const notify = useCallback((type: "success" | "error", message: string) => {
     setNotification({ type, message });
@@ -50,6 +52,19 @@ export default function MembersTab() {
   useEffect(() => {
     loadMembers();
   }, [loadMembers]);
+
+  const handleDelete = async (memberId: string) => {
+    setDeletingId(memberId);
+    const result = await removeMember(memberId);
+    setDeletingId(null);
+    setConfirmDeleteId(null);
+    if (result.error) {
+      notify("error", result.error);
+    } else {
+      notify("success", "Membre supprimé");
+      loadMembers();
+    }
+  };
 
   return (
     <div className="pt-4">
@@ -136,10 +151,57 @@ export default function MembersTab() {
               >
                 {ROLE_LABELS[member.role] ?? member.role}
               </span>
+              {member.role !== "OWNER" && (
+                <button
+                  className="p-1.5 text-[#676767] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                  onClick={() => setConfirmDeleteId(member.id)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
           ))}
         </div>
       )}
+
+      {/* Delete confirmation dialog */}
+      <Dialog
+        open={!!confirmDeleteId}
+        onOpenChange={(o) => !o && setConfirmDeleteId(null)}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Supprimer ce membre ?</DialogTitle>
+          </DialogHeader>
+          <div className="p-4 space-y-4">
+            <p className="text-sm text-[#676767]">
+              Ce membre perdra immédiatement l&apos;accès au restaurant.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setConfirmDeleteId(null)}
+                disabled={!!deletingId}
+              >
+                Annuler
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex-1"
+                onClick={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+                disabled={!!deletingId}
+              >
+                {deletingId ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  "Supprimer"
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <InviteDialog
         open={inviteOpen}

@@ -17,4 +17,12 @@ router.post(
   uploadControllers.uploadImage,
 );
 
+// Delete image for a restaurant (ADMIN+)
+router.delete(
+  "/restaurants/:restaurantId/upload",
+  checkAuth,
+  isAdmin,
+  uploadControllers.deleteImage,
+);
+
 module.exports = router;

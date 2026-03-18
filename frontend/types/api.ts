@@ -55,6 +55,8 @@ export type Category = {
   productCategories: ProductCategory[];
 };
 
+export type PreparationLevel = "EASY" | "MEDIUM" | "BUSY" | "CLOSED";
+
 export type Restaurant = {
   id: string;
   name: string;
@@ -66,6 +68,7 @@ export type Restaurant = {
   email: string | null;
   imageUrl: string | null;
   stripeAccountId: string | null;
+  preparationLevel: PreparationLevel;
   createdAt: string;
   updatedAt: string;
 };
@@ -176,6 +179,17 @@ export type Stats = {
   totalOrders: number;
   revenue: number;
   popularProducts: { name: string; count: number }[];
+};
+
+export type ExceptionalHour = {
+  id: string;
+  restaurantId: string;
+  date: string;
+  isClosed: boolean;
+  openTime: string | null;
+  closeTime: string | null;
+  label: string | null;
+  createdAt: string;
 };
 
 // Cart types (frontend only)

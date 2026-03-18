@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getOpeningHours, updateOpeningHours } from "@/lib/api";
+import ExceptionalHoursSection from "./exceptional-hours-section";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -125,6 +126,8 @@ export default function OpeningHoursTab() {
           Enregistrer
         </Button>
       </div>
+
+      <ExceptionalHoursSection />
     </div>
   );
 }

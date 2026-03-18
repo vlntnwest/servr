@@ -3,9 +3,9 @@ const router = express.Router();
 const restaurantControllers = require("../controllers/restaurant.controllers");
 const stripeControllers = require("../controllers/stripe.controllers");
 const checkAuth = require("../middleware/auth.middleware");
-const { isAdmin, isOwner } = require("../middleware/role.middleware");
+const { isAdmin, isOwner, isStaff } = require("../middleware/role.middleware");
 const { validate } = require("../middleware/validate.middleware");
-const { restaurantSchema } = require("../validators/schemas");
+const { restaurantSchema, updatePreparationLevelSchema } = require("../validators/schemas");
 
 // Public — get restaurant by slug (must be before /:restaurantId)
 router.get("/by-slug/:slug", restaurantControllers.getRestaurantBySlug);
@@ -31,6 +31,15 @@ router.delete(
   checkAuth,
   isOwner,
   restaurantControllers.deleteRestaurant,
+);
+
+// Preparation level (STAFF+)
+router.patch(
+  "/:restaurantId/preparation-level",
+  checkAuth,
+  isStaff,
+  validate({ body: updatePreparationLevelSchema }),
+  restaurantControllers.updatePreparationLevel,
 );
 
 // Stripe Connect

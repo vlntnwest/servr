@@ -11,6 +11,7 @@ import MembersTab from "@/components/admin/members-tab";
 import OpeningHoursTab from "@/components/admin/opening-hours-tab";
 import ProductsTab from "@/components/admin/products-tab";
 import SettingsTab from "@/components/admin/settings-tab";
+import PromoCodesTab from "@/components/admin/promo-codes-tab";
 import Image from "next/image";
 import { LogOut, Loader2, ChevronDown } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
@@ -206,11 +207,12 @@ export default function AdminRestaurantPage({
             <TabsTrigger value="products">Produits</TabsTrigger>
             <TabsTrigger value="members">Membres</TabsTrigger>
             <TabsTrigger value="hours">Horaires</TabsTrigger>
+            <TabsTrigger value="promos">Codes promo</TabsTrigger>
             <TabsTrigger value="settings">Paramètres</TabsTrigger>
           </TabsList>
 
           <TabsContent value="orders">
-            <OrdersTab />
+            <OrdersTab restaurantId={restaurantId} />
           </TabsContent>
           <TabsContent value="stats">
             <StatsTab />
@@ -223,6 +225,9 @@ export default function AdminRestaurantPage({
           </TabsContent>
           <TabsContent value="hours">
             <OpeningHoursTab />
+          </TabsContent>
+          <TabsContent value="promos">
+            <PromoCodesTab />
           </TabsContent>
           <TabsContent value="settings">
             <SettingsTab />

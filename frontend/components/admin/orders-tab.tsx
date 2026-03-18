@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { getOrders, updateOrderStatus } from "@/lib/api";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { getOrders, updateOrderStatus, refundOrder, getRestaurant, updatePreparationLevel } from "@/lib/api";
+import type { PreparationLevel } from "@/types/api";
+import { getSocket } from "@/lib/socket";
 import type { Order, OrderProductOption } from "@/types/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -13,10 +15,17 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   formatEuros,
   cn,
   getOrderStatusLabel,
   getOrderStatusColor,
+  getStatusActions,
 } from "@/lib/utils";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -41,7 +50,7 @@ const FINISHED_STATUSES = "DELIVERED,CANCELLED";
 
 type SubView = "En cours" | "Terminées";
 
-export default function OrdersTab() {
+export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
   const [activeOrders, setActiveOrders] = useState<Order[]>([]);
   const [finishedOrders, setFinishedOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,7 +60,10 @@ export default function OrdersTab() {
   const [finishedTotalPages, setFinishedTotalPages] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [subView, setSubView] = useState<SubView>("En cours");
-  
+  const [refundConfirmOpen, setRefundConfirmOpen] = useState(false);
+  const [refunding, setRefunding] = useState(false);
+  const [prepLevel, setPrepLevel] = useState<PreparationLevel>("EASY");
+  const fetchRef = useRef<(() => Promise<void>) | undefined>(undefined);
 
   const fetchActive = useCallback(async () => {
     const result = await getOrders(activePage, 20, ACTIVE_STATUSES);
@@ -76,7 +88,42 @@ export default function OrdersTab() {
 
   useEffect(() => {
     fetchAll();
+    getRestaurant().then((r) => {
+      if (r?.preparationLevel) setPrepLevel(r.preparationLevel);
+    });
   }, [fetchAll]);
+
+  // Keep a ref to the latest fetchAll for socket handlers
+  useEffect(() => {
+    fetchRef.current = async () => {
+      await Promise.all([fetchActive(), fetchFinished()]);
+    };
+  }, [fetchActive, fetchFinished]);
+
+  // WebSocket: listen for real-time order events
+  useEffect(() => {
+    if (!restaurantId) return;
+
+    const socket = getSocket();
+    if (!socket.connected) socket.connect();
+
+    socket.emit("join:restaurant", restaurantId);
+
+    const handleNewOrder = () => {
+      fetchRef.current?.();
+    };
+    const handleStatusUpdated = () => {
+      fetchRef.current?.();
+    };
+
+    socket.on("order:new", handleNewOrder);
+    socket.on("order:statusUpdated", handleStatusUpdated);
+
+    return () => {
+      socket.off("order:new", handleNewOrder);
+      socket.off("order:statusUpdated", handleStatusUpdated);
+    };
+  }, [restaurantId]);
 
   const handleStatusChange = async (orderId: string, status: string) => {
     await updateOrderStatus(orderId, status);
@@ -85,6 +132,20 @@ export default function OrdersTab() {
     setSelectedOrder((prev) =>
       prev?.id === orderId ? { ...prev, status: status as Order["status"] } : prev,
     );
+  };
+
+  const handleRefund = async () => {
+    if (!selectedOrder) return;
+    setRefunding(true);
+    const result = await refundOrder(selectedOrder.id);
+    setRefunding(false);
+    setRefundConfirmOpen(false);
+    if (!("error" in result)) {
+      await Promise.all([fetchActive(), fetchFinished()]);
+      setSelectedOrder((prev) =>
+        prev ? { ...prev, status: "CANCELLED" as Order["status"] } : prev,
+      );
+    }
   };
 
     const SUB_VIEWS: { key: SubView; label: string }[] = [
@@ -102,8 +163,42 @@ export default function OrdersTab() {
     );
   }
 
+  const PREP_LEVELS: { key: PreparationLevel; label: string; color: string }[] = [
+    { key: "EASY", label: "Calme", color: "bg-green-100 text-green-800" },
+    { key: "MEDIUM", label: "Modéré", color: "bg-yellow-100 text-yellow-800" },
+    { key: "BUSY", label: "Chargé", color: "bg-orange-100 text-orange-800" },
+    { key: "CLOSED", label: "Fermé", color: "bg-red-100 text-red-800" },
+  ];
+
+  const handlePrepLevelChange = async (level: PreparationLevel) => {
+    setPrepLevel(level);
+    await updatePreparationLevel(level);
+  };
+
   return (
     <>
+    {/* Preparation level toggle */}
+    <div className="flex items-center gap-3 mb-4">
+      <span className="text-xs font-semibold text-[#676767] uppercase tracking-wide">
+        Affluence
+      </span>
+      <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+        {PREP_LEVELS.map(({ key, label, color }) => (
+          <button
+            key={key}
+            onClick={() => handlePrepLevelChange(key)}
+            className={cn(
+              "px-3 py-1 rounded-md text-xs font-medium transition-all",
+              prepLevel === key
+                ? `${color} shadow-sm`
+                : "text-gray-600 hover:text-gray-900",
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
 
     {/* Sub-view toggle */}
           <div className="flex gap-1 p-1 bg-gray-100 rounded-lg w-fit mb-6">
@@ -305,30 +400,46 @@ export default function OrdersTab() {
                   )}
                 </div>
 
-                {/* Status change (only for active orders) */}
-                {["PENDING", "PENDING_ON_SITE_PAYMENT", "IN_PROGRESS", "COMPLETED"].includes(
-                  selectedOrder.status,
-                ) && (
+                {/* Status actions */}
+                {getStatusActions(selectedOrder.status).length > 0 && (
                   <>
                     <Separator />
                     <div>
                       <p className="text-xs font-semibold text-[#676767] uppercase tracking-wide mb-2">
-                        Changer le statut
+                        Actions
                       </p>
-                      <select
-                        className="w-full text-sm border border-black/15 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                        value={selectedOrder.status}
-                        onChange={(e) =>
-                          handleStatusChange(selectedOrder.id, e.target.value)
-                        }
-                      >
-                        {ORDER_STATUSES.map((s) => (
-                          <option key={s} value={s}>
-                            {getOrderStatusLabel(s)}
-                          </option>
+                      <div className="flex gap-2">
+                        {getStatusActions(selectedOrder.status).map((action) => (
+                          <Button
+                            key={action.targetStatus}
+                            variant={action.variant}
+                            size="sm"
+                            className="flex-1"
+                            onClick={() =>
+                              handleStatusChange(selectedOrder.id, action.targetStatus)
+                            }
+                          >
+                            {action.label}
+                          </Button>
                         ))}
-                      </select>
+                      </div>
                     </div>
+                  </>
+                )}
+
+                {/* Refund button */}
+                {selectedOrder.stripePaymentIntentId &&
+                  selectedOrder.status !== "CANCELLED" && (
+                  <>
+                    <Separator />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-red-600 border-red-200 hover:bg-red-50"
+                      onClick={() => setRefundConfirmOpen(true)}
+                    >
+                      Rembourser
+                    </Button>
                   </>
                 )}
               </div>
@@ -336,6 +447,39 @@ export default function OrdersTab() {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Refund confirmation dialog */}
+      <Dialog open={refundConfirmOpen} onOpenChange={setRefundConfirmOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Confirmer le remboursement</DialogTitle>
+          </DialogHeader>
+          <div className="p-4 space-y-4">
+            <p className="text-sm text-[#676767]">
+              Cette action va rembourser le paiement Stripe et annuler la commande.
+              Cette action est irréversible.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setRefundConfirmOpen(false)}
+                disabled={refunding}
+              >
+                Annuler
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex-1"
+                onClick={handleRefund}
+                disabled={refunding}
+              >
+                {refunding ? "Remboursement..." : "Rembourser"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

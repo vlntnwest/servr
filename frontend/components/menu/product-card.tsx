@@ -15,11 +15,16 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [open, setOpen] = useState(false);
   const price = parseFloat(product.price);
 
+  const isUnavailable = !product.isAvailable;
+
   return (
     <>
       <button
-        className="w-full text-left bg-white border border-black/5 hover:bg-gray-50 transition-colors rounded-sm overflow-hidden p-4"
-        onClick={() => setOpen(true)}
+        className={`w-full text-left bg-white border border-black/5 transition-colors rounded-sm overflow-hidden p-4 ${
+          isUnavailable ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
+        }`}
+        onClick={() => !isUnavailable && setOpen(true)}
+        disabled={isUnavailable}
       >
         <div className="flex items-stretch">
           {/* Text content */}
@@ -30,7 +35,10 @@ export default function ProductCard({ product }: ProductCardProps) {
             </p>
             <p className="text-sm mt-1 text-[#676767]">
               {formatEuros(price)}
-              {product.tags.includes("bestseller") && (
+              {isUnavailable && (
+                <span className="text-red-600"> · Indisponible</span>
+              )}
+              {!isUnavailable && product.tags.includes("bestseller") && (
                 <span className="text-[#e67400]"> · Populaire</span>
               )}
             </p>
@@ -44,15 +52,17 @@ export default function ProductCard({ product }: ProductCardProps) {
                 alt={product.name}
                 width={100}
                 height={100}
-                className="rounded object-cover aspect-square"
+                className={`rounded object-cover aspect-square ${isUnavailable ? "grayscale" : ""}`}
               />
             </div>
           )}
 
           {/* Full-height add button */}
-          <div className="shrink-0 w-10 border border-black/8 flex items-center justify-center text-black/25 bg-transparent hover:bg-black/4 transition-colors rounded-sm ml-4">
-            <Plus className="w-5 h-5" />
-          </div>
+          {!isUnavailable && (
+            <div className="shrink-0 w-10 border border-black/8 flex items-center justify-center text-black/25 bg-transparent hover:bg-black/4 transition-colors rounded-sm ml-4">
+              <Plus className="w-5 h-5" />
+            </div>
+          )}
         </div>
       </button>
 

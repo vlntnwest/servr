@@ -50,3 +50,31 @@ export function getOrderStatusColor(status: string): string {
   };
   return colors[status] ?? "bg-gray-100 text-gray-800";
 }
+
+export type StatusAction = {
+  targetStatus: string;
+  label: string;
+  variant: "default" | "outline" | "destructive";
+};
+
+export function getStatusActions(status: string): StatusAction[] {
+  const actions: Record<string, StatusAction[]> = {
+    PENDING: [
+      { targetStatus: "IN_PROGRESS", label: "Accepter", variant: "default" },
+      { targetStatus: "CANCELLED", label: "Annuler", variant: "destructive" },
+    ],
+    PENDING_ON_SITE_PAYMENT: [
+      { targetStatus: "IN_PROGRESS", label: "Accepter", variant: "default" },
+      { targetStatus: "CANCELLED", label: "Annuler", variant: "destructive" },
+    ],
+    IN_PROGRESS: [
+      { targetStatus: "COMPLETED", label: "Prêt", variant: "default" },
+      { targetStatus: "CANCELLED", label: "Annuler", variant: "destructive" },
+    ],
+    COMPLETED: [
+      { targetStatus: "DELIVERED", label: "Livré", variant: "default" },
+      { targetStatus: "CANCELLED", label: "Annuler", variant: "destructive" },
+    ],
+  };
+  return actions[status] ?? [];
+}

@@ -16,6 +16,7 @@ const statsRoutes = require("./routes/stats.routes");
 const uploadRoutes = require("./routes/upload.routes");
 const checkoutRoutes = require("./routes/checkout.routes");
 const promoCodeRoutes = require("./routes/promoCode.routes");
+const exceptionalHourRoutes = require("./routes/exceptionalHour.routes");
 const swaggerUi = require("swagger-ui-express");
 const openApiSpec = require("./docs/openapi.json");
 
@@ -112,6 +113,7 @@ for (const prefix of V1_PREFIXES) {
   app.use(prefix, globalLimiter, uploadRoutes);
   app.use(`${prefix}/checkout`, paymentLimiter, checkoutRoutes);
   app.use(prefix, globalLimiter, promoCodeRoutes);
+  app.use(prefix, globalLimiter, exceptionalHourRoutes);
 }
 
 // Error handler
