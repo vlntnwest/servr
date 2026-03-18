@@ -64,7 +64,7 @@ async function createOrderProducts(tx, orderId, items) {
 // ─── createCheckoutSession ────────────────────────────────────────────────────
 
 module.exports.createCheckoutSession = async (req, res, next) => {
-  const { restaurantId, fullName, phone, email, items, scheduledFor } = req.body;
+  const { restaurantId, fullName, phone, email, items, scheduledFor, promoCode } = req.body;
 
   try {
     const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
@@ -116,6 +116,34 @@ module.exports.createCheckoutSession = async (req, res, next) => {
       totalPrice += (basePrice + optionsPrice) * item.quantity;
     }
 
+    // ── Promo code validation ──────────────────────────────────────────────────
+    let appliedPromoCode = null;
+    if (promoCode) {
+      appliedPromoCode = await prisma.promoCode.findUnique({
+        where: { restaurantId_code: { restaurantId, code: promoCode.toUpperCase() } },
+      });
+      if (!appliedPromoCode || !appliedPromoCode.isActive) {
+        return res.status(400).json({ error: "Code promo invalide ou inactif" });
+      }
+      if (appliedPromoCode.expiresAt && appliedPromoCode.expiresAt < new Date()) {
+        return res.status(400).json({ error: "Code promo expiré" });
+      }
+      if (appliedPromoCode.maxUses !== null && appliedPromoCode.usedCount >= appliedPromoCode.maxUses) {
+        return res.status(400).json({ error: "Limite d'utilisation du code promo atteinte" });
+      }
+      if (appliedPromoCode.minOrderAmount !== null && totalPrice < parseFloat(appliedPromoCode.minOrderAmount)) {
+        return res.status(400).json({ error: `Montant minimum de commande : ${appliedPromoCode.minOrderAmount} €` });
+      }
+
+      const discountValue = parseFloat(appliedPromoCode.discountValue);
+      if (appliedPromoCode.discountType === "PERCENTAGE") {
+        totalPrice = totalPrice * (1 - discountValue / 100);
+      } else {
+        totalPrice = Math.max(0, totalPrice - discountValue);
+      }
+      totalPrice = Math.round(totalPrice * 100) / 100;
+    }
+
     // ── On-site payment (no Stripe account) ──────────────────────────────────
     if (!restaurant.stripeAccountId) {
       const order = await withOrderNumber(async (tx, orderNumber) => {
@@ -132,6 +160,12 @@ module.exports.createCheckoutSession = async (req, res, next) => {
           },
         });
         await createOrderProducts(tx, created.id, items);
+        if (appliedPromoCode) {
+          await tx.promoCode.update({
+            where: { id: appliedPromoCode.id },
+            data: { usedCount: { increment: 1 } },
+          });
+        }
         return tx.order.findUnique({ where: { id: created.id }, include: ORDER_INCLUDE });
       });
 
@@ -195,12 +229,30 @@ module.exports.createCheckoutSession = async (req, res, next) => {
       (sum, li) => sum + li.price_data.unit_amount * li.quantity,
       0,
     );
-    const applicationFeeAmount = Math.round(totalAmountCents * PLATFORM_FEE_PERCENT);
+
+    // Apply promo discount via Stripe coupon on the connected account
+    let discounts = [];
+    if (appliedPromoCode) {
+      const couponParams =
+        appliedPromoCode.discountType === "PERCENTAGE"
+          ? { percent_off: parseFloat(appliedPromoCode.discountValue) }
+          : { amount_off: Math.round(parseFloat(appliedPromoCode.discountValue) * 100), currency: "eur" };
+
+      const coupon = await stripe.coupons.create(
+        { ...couponParams, max_redemptions: 1, name: appliedPromoCode.code },
+        { stripeAccount: restaurant.stripeAccountId },
+      );
+      discounts = [{ coupon: coupon.id }];
+    }
+
+    const discountedCents = Math.round(totalPrice * 100);
+    const applicationFeeAmount = Math.round(discountedCents * PLATFORM_FEE_PERCENT);
 
     const session = await stripe.checkout.sessions.create(
       {
         payment_method_types: ["card"],
         line_items: lineItems,
+        ...(discounts.length > 0 ? { discounts } : {}),
         mode: "payment",
         success_url: `${process.env.CLIENT_URL}/store/${restaurant.slug}/order/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${process.env.CLIENT_URL}/store/${restaurant.slug}/order/cancel`,
@@ -210,7 +262,10 @@ module.exports.createCheckoutSession = async (req, res, next) => {
           application_fee_amount: applicationFeeAmount,
           metadata: { orderId: draftOrder.id },
         },
-        metadata: { orderId: draftOrder.id },
+        metadata: {
+          orderId: draftOrder.id,
+          ...(appliedPromoCode ? { promoCodeId: appliedPromoCode.id } : {}),
+        },
       },
       { stripeAccount: restaurant.stripeAccountId },
     );
@@ -245,7 +300,7 @@ module.exports.handleWebhook = async (req, res) => {
   try {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
-      const { orderId } = session.metadata;
+      const { orderId, promoCodeId } = session.metadata;
 
       const order = await withOrderNumber(async (tx, orderNumber) => {
         const existing = await tx.order.findUnique({
@@ -253,6 +308,13 @@ module.exports.handleWebhook = async (req, res) => {
           select: { id: true, status: true },
         });
         if (!existing || !isValidTransition(existing.status, "PENDING")) return null;
+
+        if (promoCodeId) {
+          await tx.promoCode.update({
+            where: { id: promoCodeId },
+            data: { usedCount: { increment: 1 } },
+          });
+        }
 
         return tx.order.update({
           where: { id: orderId },
