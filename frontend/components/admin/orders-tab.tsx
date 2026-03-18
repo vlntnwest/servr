@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { getOrders, updateOrderStatus, refundOrder, getRestaurant, updatePreparationLevel } from "@/lib/api";
 import type { PreparationLevel } from "@/types/api";
 import { getSocket } from "@/lib/socket";
@@ -64,6 +64,7 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
   const [refundConfirmOpen, setRefundConfirmOpen] = useState(false);
   const [refunding, setRefunding] = useState(false);
   const [prepLevel, setPrepLevel] = useState<PreparationLevel>("EASY");
+  const [socketConnected, setSocketConnected] = useState(false);
   const fetchRef = useRef<(() => Promise<void>) | undefined>(undefined);
 
   const fetchActive = useCallback(async () => {
@@ -109,6 +110,9 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
     const handleNewOrder = () => fetchRef.current?.();
     const handleStatusUpdated = () => fetchRef.current?.();
 
+    const handleConnect = () => setSocketConnected(true);
+    const handleDisconnect = () => setSocketConnected(false);
+
     const supabase = createClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
       const token = session?.access_token;
@@ -118,6 +122,9 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
       if (!socket.connected) socket.connect();
       socket.emit("join:restaurant", restaurantId);
 
+      setSocketConnected(socket.connected);
+      socket.on("connect", handleConnect);
+      socket.on("disconnect", handleDisconnect);
       socket.on("order:new", handleNewOrder);
       socket.on("order:statusUpdated", handleStatusUpdated);
     });
@@ -125,6 +132,8 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
     return () => {
       cancelled = true;
       const socket = getSocket();
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
       socket.off("order:new", handleNewOrder);
       socket.off("order:statusUpdated", handleStatusUpdated);
     };
@@ -182,9 +191,16 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
 
   return (
     <>
-    {/* Preparation level toggle */}
+    {/* Connection status + Preparation level toggle */}
     <div className="flex items-center gap-3 mb-4">
-      <span className="text-xs font-semibold text-[#676767] uppercase tracking-wide">
+      <span className="text-xs font-semibold text-[#676767] uppercase tracking-wide flex items-center gap-1.5">
+        <span
+          className={cn(
+            "inline-block w-2 h-2 rounded-full",
+            socketConnected ? "bg-green-500" : "bg-red-400 animate-pulse",
+          )}
+          title={socketConnected ? "Temps réel connecté" : "Temps réel déconnecté"}
+        />
         Affluence
       </span>
       <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">

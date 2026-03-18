@@ -9,6 +9,10 @@ export function getSocket(token?: string): Socket {
       autoConnect: false,
       withCredentials: true,
       auth: token ? { token } : undefined,
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 10000,
     });
   } else if (token) {
     socket.auth = { token };
