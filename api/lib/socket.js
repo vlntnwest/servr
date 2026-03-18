@@ -58,9 +58,17 @@ function initSocket(httpServer) {
       logger.info({ socketId: socket.id, restaurantId }, "Joined restaurant room");
     });
 
-    socket.on("disconnect", () => {
-      logger.info({ socketId: socket.id }, "Socket disconnected");
+    socket.on("error", (err) => {
+      logger.error({ socketId: socket.id, error: err.message }, "Socket error");
     });
+
+    socket.on("disconnect", (reason) => {
+      logger.info({ socketId: socket.id, reason }, "Socket disconnected");
+    });
+  });
+
+  io.engine.on("connection_error", (err) => {
+    logger.error({ code: err.code, message: err.message }, "Socket.IO connection error");
   });
 
   return io;
