@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
-import { getRestaurantBySlug, getMenuForRestaurant } from "@/lib/api";
+import { getRestaurantBySlug, getMenuForRestaurant, getOpeningHours, getExceptionalHours } from "@/lib/api";
 import Header from "@/components/layout/header";
+import RestaurantHeader from "@/components/store/restaurant-header";
 import MenuPage from "@/components/menu/menu-page";
 import { CategorySectionSkeleton } from "@/components/menu/category-section";
 import { Suspense } from "react";
@@ -17,7 +18,11 @@ export default async function StorePage({
     notFound();
   }
 
-  const categories = await getMenuForRestaurant(restaurant.id);
+  const [categories, openingHours, exceptionalHours] = await Promise.all([
+    getMenuForRestaurant(restaurant.id),
+    getOpeningHours(restaurant.id),
+    getExceptionalHours(restaurant.id),
+  ]);
   const sorted = [...categories].sort(
     (a, b) => a.displayOrder - b.displayOrder,
   );
@@ -25,6 +30,7 @@ export default async function StorePage({
   return (
     <>
       <Header />
+      <RestaurantHeader restaurant={restaurant} openingHours={openingHours} exceptionalHours={exceptionalHours} />
       <main>
         <Suspense
           fallback={

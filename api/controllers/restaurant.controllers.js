@@ -112,3 +112,20 @@ module.exports.deleteRestaurant = async (req, res, next) => {
     next(error);
   }
 };
+
+module.exports.updatePreparationLevel = async (req, res, next) => {
+  const { restaurantId } = req.params;
+  const { preparationLevel } = req.body;
+
+  try {
+    const data = await prisma.restaurant.update({
+      where: { id: restaurantId },
+      data: { preparationLevel },
+    });
+
+    logger.info({ restaurantId, preparationLevel }, "Preparation level updated");
+    return res.status(200).json({ data });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -1,17 +1,10 @@
 const prisma = require("../lib/prisma");
 const logger = require("../logger");
-const { sendOrderConfirmation } = require("../lib/mailer");
+const { sendOrderConfirmation, sendOrderStatusUpdate } = require("../lib/mailer");
 const { withOrderNumber } = require("../lib/orderNumber");
-
-function isRestaurantOpen(openingHours) {
-  if (!openingHours || openingHours.length === 0) return true;
-  const now = new Date();
-  const dayOfWeek = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
-  const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-  const todayHours = openingHours.find((h) => h.dayOfWeek === dayOfWeek);
-  if (!todayHours) return false;
-  return currentTime >= todayHours.openTime && currentTime < todayHours.closeTime;
-}
+const { isValidTransition, getNextStatuses } = require("../lib/orderStateMachine");
+const { getIO } = require("../lib/socket");
+const { isRestaurantOpen } = require("../lib/openingHours");
 
 function isScheduledTimeValid(openingHours, scheduledAt) {
   const dt = new Date(scheduledAt);
@@ -40,7 +33,7 @@ module.exports.createOrder = async (req, res, next) => {
       if (!isScheduledTimeValid(openingHours, scheduledFor)) {
         return res.status(400).json({ error: "Scheduled time is outside opening hours or in the past" });
       }
-    } else if (!isRestaurantOpen(openingHours)) {
+    } else if (!(await isRestaurantOpen(restaurantId, openingHours))) {
       return res.status(400).json({ error: "Restaurant is currently closed" });
     }
 
@@ -51,6 +44,13 @@ module.exports.createOrder = async (req, res, next) => {
 
     if (products.length !== productIds.length) {
       return res.status(404).json({ error: "One or more products not found" });
+    }
+
+    const unavailable = products.filter((p) => !p.isAvailable);
+    if (unavailable.length > 0) {
+      return res.status(400).json({
+        error: `Unavailable products: ${unavailable.map((p) => p.name).join(", ")}`,
+      });
     }
 
     const allOptionChoiceIds = [
@@ -162,10 +162,28 @@ module.exports.getOrders = async (req, res, next) => {
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
   const skip = (page - 1) * limit;
 
+  const VALID_STATUSES = [
+    "PENDING",
+    "PENDING_ON_SITE_PAYMENT",
+    "IN_PROGRESS",
+    "COMPLETED",
+    "DELIVERED",
+    "CANCELLED",
+  ];
+  const statusParam = req.query.status;
+  const statusFilter = statusParam
+    ? statusParam.split(",").filter((s) => VALID_STATUSES.includes(s))
+    : null;
+
+  const where = {
+    restaurantId,
+    ...(statusFilter?.length ? { status: { in: statusFilter } } : {}),
+  };
+
   try {
     const [data, total] = await Promise.all([
       prisma.order.findMany({
-        where: { restaurantId },
+        where,
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
@@ -173,12 +191,14 @@ module.exports.getOrders = async (req, res, next) => {
           orderProducts: {
             include: {
               product: true,
-              orderProductOptions: { include: { optionChoice: true } },
+              orderProductOptions: {
+                include: { optionChoice: { include: { optionGroup: true } } },
+              },
             },
           },
         },
       }),
-      prisma.order.count({ where: { restaurantId } }),
+      prisma.order.count({ where }),
     ]);
 
     logger.info({ restaurantId, page, limit }, "Orders retrieved");
@@ -223,13 +243,36 @@ module.exports.updateOrderStatus = async (req, res, next) => {
   const { status } = req.body;
 
   try {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { id: true, status: true, email: true, restaurantId: true },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    if (!isValidTransition(order.status, status)) {
+      return res.status(400).json({
+        error: `Invalid transition from ${order.status} to ${status}`,
+        allowedTransitions: getNextStatuses(order.status),
+      });
+    }
+
     const data = await prisma.order.update({
       where: { id: orderId },
       data: { status },
     });
 
-    logger.info({ orderId, status }, "Order status updated");
-    return res.status(200).json({ data });
+    const io = getIO();
+    if (io) {
+      io.to(`restaurant:${order.restaurantId}`).emit("order:statusUpdated", data);
+    }
+
+    sendOrderStatusUpdate({ to: order.email, order: data, newStatus: status });
+
+    logger.info({ orderId, from: order.status, to: status }, "Order status updated");
+    return res.status(200).json({ data, allowedTransitions: getNextStatuses(status) });
   } catch (error) {
     next(error);
   }

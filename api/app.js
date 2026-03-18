@@ -16,6 +16,7 @@ const statsRoutes = require("./routes/stats.routes");
 const uploadRoutes = require("./routes/upload.routes");
 const checkoutRoutes = require("./routes/checkout.routes");
 const promoCodeRoutes = require("./routes/promoCode.routes");
+const exceptionalHourRoutes = require("./routes/exceptionalHour.routes");
 const swaggerUi = require("swagger-ui-express");
 const openApiSpec = require("./docs/openapi.json");
 
@@ -54,7 +55,7 @@ const paymentLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many payment attempts, please try again later." },
-  skip: (req) => req.path === "/webhook" || req.path === "/connect-webhook",
+  skip: (req) => req.path === "/webhook",
 });
 
 // Request ID (must be before other middleware)
@@ -63,11 +64,9 @@ app.use(requestId);
 // Security headers
 app.use(helmet());
 
-// Webhook route FIRST - before CORS to avoid blocking Stripe requests
+// Webhook route FIRST - before CORS and JSON parsing to preserve raw body for signature verification
 app.use("/api/checkout/webhook", express.raw({ type: "application/json" }));
 app.use("/api/v1/checkout/webhook", express.raw({ type: "application/json" }));
-app.use("/api/checkout/connect-webhook", express.raw({ type: "application/json" }));
-app.use("/api/v1/checkout/connect-webhook", express.raw({ type: "application/json" }));
 
 // CORS
 const corsOption = {
@@ -81,7 +80,7 @@ const corsOption = {
 
 // Apply CORS to all routes EXCEPT webhook
 app.use((req, res, next) => {
-  if (req.path.endsWith("/checkout/webhook") || req.path.endsWith("/checkout/connect-webhook")) {
+  if (req.path.endsWith("/checkout/webhook")) {
     return next();
   }
   cors(corsOption)(req, res, next);
@@ -114,6 +113,7 @@ for (const prefix of V1_PREFIXES) {
   app.use(prefix, globalLimiter, uploadRoutes);
   app.use(`${prefix}/checkout`, paymentLimiter, checkoutRoutes);
   app.use(prefix, globalLimiter, promoCodeRoutes);
+  app.use(prefix, globalLimiter, exceptionalHourRoutes);
 }
 
 // Error handler

@@ -4,85 +4,91 @@ const logger = require("../logger");
 const { sendOrderConfirmation } = require("../lib/mailer");
 const { withOrderNumber } = require("../lib/orderNumber");
 const { isScheduledTimeValid } = require("./order.controllers");
-
-function isRestaurantOpen(openingHours) {
-  if (!openingHours || openingHours.length === 0) return true;
-  const now = new Date();
-  const dayOfWeek = now.getDay();
-  const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-  const todayHours = openingHours.find((h) => h.dayOfWeek === dayOfWeek);
-  if (!todayHours) return false;
-  return currentTime >= todayHours.openTime && currentTime < todayHours.closeTime;
-}
+const { getIO } = require("../lib/socket");
+const { isRestaurantOpen } = require("../lib/openingHours");
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
-const CONNECT_WEBHOOK_SECRET = process.env.STRIPE_CONNECT_WEBHOOK_SECRET;
 
-// Platform commission: 5% (in cents)
 const PLATFORM_FEE_PERCENT = 0.05;
+
+const ORDER_INCLUDE = {
+  orderProducts: {
+    include: {
+      product: true,
+      orderProductOptions: { include: { optionChoice: true } },
+    },
+  },
+};
+
+async function createOrderProducts(tx, orderId, items) {
+  for (const item of items) {
+    const orderProduct = await tx.orderProduct.create({
+      data: { orderId, productId: item.productId, quantity: item.quantity },
+    });
+    if (item.optionChoiceIds && item.optionChoiceIds.length > 0) {
+      await tx.orderProductOption.createMany({
+        data: item.optionChoiceIds.map((ocId) => ({
+          orderProductId: orderProduct.id,
+          optionChoiceId: ocId,
+        })),
+      });
+    }
+  }
+}
+
+// ─── createCheckoutSession ────────────────────────────────────────────────────
 
 module.exports.createCheckoutSession = async (req, res, next) => {
   const { restaurantId, fullName, phone, email, items, scheduledFor } = req.body;
 
   try {
-    const restaurant = await prisma.restaurant.findUnique({
-      where: { id: restaurantId },
-    });
+    const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
+    if (!restaurant) return res.status(404).json({ error: "Restaurant not found" });
 
-    if (!restaurant) {
-      return res.status(404).json({ error: "Restaurant not found" });
-    }
-
-    const openingHours = await prisma.openingHour.findMany({
-      where: { restaurantId },
-    });
+    const openingHours = await prisma.openingHour.findMany({ where: { restaurantId } });
     if (scheduledFor) {
       if (!isScheduledTimeValid(openingHours, scheduledFor)) {
         return res.status(400).json({ error: "Scheduled time is outside opening hours or in the past" });
       }
-    } else if (!isRestaurantOpen(openingHours)) {
+    } else if (!(await isRestaurantOpen(restaurantId, openingHours))) {
       return res.status(400).json({ error: "Restaurant is currently closed" });
     }
 
     const productIds = [...new Set(items.map((i) => i.productId))];
-    const products = await prisma.product.findMany({
-      where: { id: { in: productIds }, restaurantId },
-    });
-
+    const products = await prisma.product.findMany({ where: { id: { in: productIds }, restaurantId } });
     if (products.length !== productIds.length) {
       return res.status(404).json({ error: "One or more products not found" });
     }
 
-    const allOptionChoiceIds = [
-      ...new Set(items.flatMap((i) => i.optionChoiceIds || [])),
-    ];
-    let optionChoices = [];
-    if (allOptionChoiceIds.length > 0) {
-      optionChoices = await prisma.optionChoice.findMany({
-        where: { id: { in: allOptionChoiceIds } },
+    const unavailable = products.filter((p) => !p.isAvailable);
+    if (unavailable.length > 0) {
+      return res.status(400).json({
+        error: `Unavailable products: ${unavailable.map((p) => p.name).join(", ")}`,
       });
     }
+
+    const allOptionChoiceIds = [...new Set(items.flatMap((i) => i.optionChoiceIds || []))];
+    const optionChoices = allOptionChoiceIds.length > 0
+      ? await prisma.optionChoice.findMany({ where: { id: { in: allOptionChoiceIds } } })
+      : [];
 
     const productMap = new Map(products.map((p) => [p.id, p]));
     const optionChoiceMap = new Map(optionChoices.map((oc) => [oc.id, oc]));
 
-    // Fallback: restaurant has no Stripe account → create order for on-site payment
-    if (!restaurant.stripeAccountId) {
-      let totalPrice = 0;
-      for (const item of items) {
-        const product = productMap.get(item.productId);
-        const basePrice = parseFloat(product.price);
-        const optionsPrice = (item.optionChoiceIds || []).reduce(
-          (sum, ocId) => {
-            const oc = optionChoiceMap.get(ocId);
-            return sum + (oc ? parseFloat(oc.priceModifier) : 0);
-          },
-          0,
-        );
-        totalPrice += (basePrice + optionsPrice) * item.quantity;
-      }
+    let totalPrice = 0;
+    for (const item of items) {
+      const product = productMap.get(item.productId);
+      const basePrice = parseFloat(product.price);
+      const optionsPrice = (item.optionChoiceIds || []).reduce((sum, ocId) => {
+        const oc = optionChoiceMap.get(ocId);
+        return sum + (oc ? parseFloat(oc.priceModifier) : 0);
+      }, 0);
+      totalPrice += (basePrice + optionsPrice) * item.quantity;
+    }
 
+    // ── On-site payment (no Stripe account) ──────────────────────────────────
+    if (!restaurant.stripeAccountId) {
       const order = await withOrderNumber(async (tx, orderNumber) => {
         const created = await tx.order.create({
           data: {
@@ -96,50 +102,38 @@ module.exports.createCheckoutSession = async (req, res, next) => {
             scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
           },
         });
-
-        for (const item of items) {
-          const orderProduct = await tx.orderProduct.create({
-            data: {
-              orderId: created.id,
-              productId: item.productId,
-              quantity: item.quantity,
-            },
-          });
-
-          if (item.optionChoiceIds && item.optionChoiceIds.length > 0) {
-            await tx.orderProductOption.createMany({
-              data: item.optionChoiceIds.map((ocId) => ({
-                orderProductId: orderProduct.id,
-                optionChoiceId: ocId,
-              })),
-            });
-          }
-        }
-
-        return tx.order.findUnique({
-          where: { id: created.id },
-          include: {
-            orderProducts: {
-              include: {
-                product: true,
-                orderProductOptions: { include: { optionChoice: true } },
-              },
-            },
-          },
-        });
+        await createOrderProducts(tx, created.id, items);
+        return tx.order.findUnique({ where: { id: created.id }, include: ORDER_INCLUDE });
       });
 
-      logger.info(
-        { orderId: order.id, restaurantId },
-        "On-site payment order created (no Stripe account)",
-      );
+      logger.info({ orderId: order.id, restaurantId }, "On-site payment order created");
       sendOrderConfirmation({ to: order.email, order });
-      return res
-        .status(201)
-        .json({ data: { order, paymentMethod: "on_site" } });
+
+      const io = getIO();
+      if (io) {
+        io.to(`restaurant:${restaurantId}`).emit("order:new", order);
+      }
+
+      return res.status(201).json({ data: { order, paymentMethod: "on_site" } });
     }
 
-    // Stripe Connect: build line items
+    // ── Stripe: create DRAFT order, then Stripe session ──────────────────────
+    const draftOrder = await prisma.$transaction(async (tx) => {
+      const created = await tx.order.create({
+        data: {
+          restaurantId,
+          fullName,
+          phone,
+          email,
+          totalPrice,
+          status: "DRAFT",
+          scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
+        },
+      });
+      await createOrderProducts(tx, created.id, items);
+      return created;
+    });
+
     const lineItems = items.map((item) => {
       const product = productMap.get(item.productId);
       const basePrice = parseFloat(product.price);
@@ -172,48 +166,45 @@ module.exports.createCheckoutSession = async (req, res, next) => {
       (sum, li) => sum + li.price_data.unit_amount * li.quantity,
       0,
     );
-    const applicationFeeAmount = Math.round(
-      totalAmountCents * PLATFORM_FEE_PERCENT,
-    );
+    const applicationFeeAmount = Math.round(totalAmountCents * PLATFORM_FEE_PERCENT);
 
     const session = await stripe.checkout.sessions.create(
       {
         payment_method_types: ["card"],
         line_items: lineItems,
         mode: "payment",
-        success_url: `${process.env.CLIENT_URL}/order/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.CLIENT_URL}/order/cancel`,
+        success_url: `${process.env.CLIENT_URL}/store/${restaurant.slug}/order/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.CLIENT_URL}/store/${restaurant.slug}/order/cancel`,
         customer_email: email || undefined,
+        expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
         payment_intent_data: {
           application_fee_amount: applicationFeeAmount,
+          metadata: { orderId: draftOrder.id },
         },
-        metadata: {
-          restaurantId,
-          fullName: fullName || "",
-          phone: phone || "",
-          email: email || "",
-          items: JSON.stringify(items),
-          scheduledFor: scheduledFor || "",
-        },
+        metadata: { orderId: draftOrder.id },
       },
       { stripeAccount: restaurant.stripeAccountId },
     );
 
+    await prisma.order.update({
+      where: { id: draftOrder.id },
+      data: { stripeSessionId: session.id },
+    });
+
     logger.info(
-      { sessionId: session.id, restaurantId },
-      "Stripe Connect checkout session created",
+      { orderId: draftOrder.id, sessionId: session.id, restaurantId },
+      "Stripe checkout session created",
     );
-    return res
-      .status(201)
-      .json({ data: { sessionId: session.id, url: session.url } });
+    return res.status(201).json({ data: { sessionId: session.id, url: session.url } });
   } catch (error) {
     next(error);
   }
 };
 
+// ─── handleWebhook ────────────────────────────────────────────────────────────
+
 module.exports.handleWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
-
   let event;
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, WEBHOOK_SECRET);
@@ -222,103 +213,108 @@ module.exports.handleWebhook = async (req, res) => {
     return res.status(400).json({ error: `Webhook error: ${err.message}` });
   }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-    const { restaurantId, fullName, phone, email, scheduledFor } = session.metadata;
-    const items = JSON.parse(session.metadata.items || "[]");
-    const totalPrice = session.amount_total / 100;
+  try {
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+      const { orderId } = session.metadata;
 
-    try {
       const order = await withOrderNumber(async (tx, orderNumber) => {
-        const created = await tx.order.create({
-          data: {
-            restaurantId,
-            fullName: fullName || null,
-            phone: phone || null,
-            email: email || null,
-            totalPrice,
-            status: "PENDING",
-            stripePaymentIntentId: session.payment_intent || null,
-            orderNumber,
-            scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
-          },
+        const existing = await tx.order.findUnique({
+          where: { id: orderId },
+          select: { id: true, status: true },
         });
+        if (!existing || ["PENDING", "CANCELLED"].includes(existing.status)) return null;
 
-        for (const item of items) {
-          const orderProduct = await tx.orderProduct.create({
-            data: {
-              orderId: created.id,
-              productId: item.productId,
-              quantity: item.quantity,
-            },
-          });
-
-          if (item.optionChoiceIds && item.optionChoiceIds.length > 0) {
-            await tx.orderProductOption.createMany({
-              data: item.optionChoiceIds.map((ocId) => ({
-                orderProductId: orderProduct.id,
-                optionChoiceId: ocId,
-              })),
-            });
-          }
-        }
-
-        return created;
+        return tx.order.update({
+          where: { id: orderId },
+          data: {
+            status: "PENDING",
+            orderNumber,
+            stripePaymentIntentId: session.payment_intent || null,
+          },
+          include: ORDER_INCLUDE,
+        });
       });
 
-      logger.info(
-        { orderId: order.id, restaurantId, sessionId: session.id },
-        "Order created from Stripe webhook",
-      );
-      sendOrderConfirmation({ to: email || null, order });
-    } catch (err) {
-      logger.error(
-        { error: err.message, sessionId: session.id, restaurantId },
-        "Failed to create order from webhook",
-      );
-      // Return 500 so Stripe retries the webhook
-      return res.status(500).json({ error: "Failed to create order" });
-    }
-  }
+      if (order) {
+        logger.info({ orderId, sessionId: session.id }, "Order confirmed from Stripe webhook");
+        sendOrderConfirmation({ to: order.email, order });
 
-  if (event.type === "account.updated") {
-    const account = event.data.object;
-    if (account.charges_enabled) {
-      logger.info(
-        { stripeAccountId: account.id },
-        "Stripe Connect account charges_enabled",
-      );
+        const io = getIO();
+        if (io) {
+          io.to(`restaurant:${order.restaurantId}`).emit("order:new", order);
+        }
+      }
     }
+
+    if (event.type === "checkout.session.expired") {
+      const session = event.data.object;
+      const { orderId } = session.metadata;
+
+      await prisma.order.updateMany({
+        where: { id: orderId, status: { notIn: ["PENDING", "CANCELLED"] } },
+        data: { status: "ABANDONED" },
+      });
+
+      logger.info({ orderId, sessionId: session.id }, "Order marked as ABANDONED");
+    }
+
+    if (event.type === "payment_intent.payment_failed") {
+      const paymentIntent = event.data.object;
+      const { orderId } = paymentIntent.metadata || {};
+
+      if (orderId) {
+        await prisma.order.updateMany({
+          where: { id: orderId, status: "DRAFT" },
+          data: { status: "PAYMENT_FAILED" },
+        });
+        logger.info({ orderId, paymentIntentId: paymentIntent.id }, "Order marked as PAYMENT_FAILED");
+      }
+    }
+
+    if (event.type === "account.updated") {
+      const account = event.data.object;
+      if (account.charges_enabled) {
+        logger.info({ stripeAccountId: account.id }, "Stripe Connect account charges_enabled");
+      }
+    }
+  } catch (err) {
+    logger.error({ error: err.message, eventType: event.type }, "Failed to process webhook event");
+    return res.status(500).json({ error: "Failed to process webhook" });
   }
 
   res.status(200).json({ received: true });
 };
 
+// ─── refundOrder ──────────────────────────────────────────────────────────────
+
 module.exports.refundOrder = async (req, res, next) => {
   const { restaurantId, orderId } = req.params;
 
   try {
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
-    });
+    if (!stripe) {
+      return res.status(503).json({ error: "Stripe is not configured" });
+    }
+
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
 
     if (!order || order.restaurantId !== restaurantId) {
       return res.status(404).json({ error: "Order not found" });
     }
 
     if (!order.stripePaymentIntentId) {
-      return res
-        .status(400)
-        .json({ error: "No Stripe payment associated with this order" });
+      return res.status(400).json({ error: "No Stripe payment associated with this order" });
     }
 
     if (order.status === "CANCELLED") {
       return res.status(409).json({ error: "Order is already cancelled" });
     }
 
-    const restaurant = await prisma.restaurant.findUnique({
-      where: { id: restaurantId },
-    });
+    if (!stripe) {
+      return res.status(503).json({ error: "Stripe is not configured" });
+    }
+
+    const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
     if (!restaurant || !restaurant.stripeAccountId) {
       return res.status(400).json({ error: "No Stripe account associated with this restaurant" });
     }
@@ -333,84 +329,11 @@ module.exports.refundOrder = async (req, res, next) => {
       data: { status: "CANCELLED" },
     });
 
-    logger.info(
-      { orderId, restaurantId, refundId: refund.id },
-      "Order refunded and cancelled",
-    );
-    return res.status(200).json({ data: { order: updated, refund: { id: refund.id, status: refund.status } } });
+    logger.info({ orderId, restaurantId, refundId: refund.id }, "Order refunded and cancelled");
+    return res.status(200).json({
+      data: { order: updated, refund: { id: refund.id, status: refund.status } },
+    });
   } catch (error) {
     next(error);
   }
-};
-
-module.exports.handleConnectWebhook = async (req, res) => {
-  const sig = req.headers["stripe-signature"];
-
-  let event;
-  try {
-    event = stripe.webhooks.constructEvent(req.body, sig, CONNECT_WEBHOOK_SECRET);
-  } catch (err) {
-    logger.warn({ error: err.message }, "Stripe connect webhook signature verification failed");
-    return res.status(400).json({ error: `Webhook error: ${err.message}` });
-  }
-
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-    const { restaurantId, fullName, phone, email, scheduledFor } = session.metadata;
-    const items = JSON.parse(session.metadata.items || "[]");
-    const totalPrice = session.amount_total / 100;
-
-    try {
-      const order = await withOrderNumber(async (tx, orderNumber) => {
-        const created = await tx.order.create({
-          data: {
-            restaurantId,
-            fullName: fullName || null,
-            phone: phone || null,
-            email: email || null,
-            totalPrice,
-            status: "PENDING",
-            stripePaymentIntentId: session.payment_intent || null,
-            orderNumber,
-            scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
-          },
-        });
-
-        for (const item of items) {
-          const orderProduct = await tx.orderProduct.create({
-            data: {
-              orderId: created.id,
-              productId: item.productId,
-              quantity: item.quantity,
-            },
-          });
-
-          if (item.optionChoiceIds && item.optionChoiceIds.length > 0) {
-            await tx.orderProductOption.createMany({
-              data: item.optionChoiceIds.map((ocId) => ({
-                orderProductId: orderProduct.id,
-                optionChoiceId: ocId,
-              })),
-            });
-          }
-        }
-
-        return created;
-      });
-
-      logger.info(
-        { orderId: order.id, restaurantId, sessionId: session.id },
-        "Order created from Stripe connect webhook",
-      );
-      sendOrderConfirmation({ to: email || null, order });
-    } catch (err) {
-      logger.error(
-        { error: err.message, sessionId: session.id, restaurantId },
-        "Failed to create order from connect webhook",
-      );
-      return res.status(500).json({ error: "Failed to create order" });
-    }
-  }
-
-  res.status(200).json({ received: true });
 };

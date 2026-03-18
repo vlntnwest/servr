@@ -39,7 +39,7 @@ const restaurantSchema = z.object({
   city: z.string().min(1).max(50),
   phone: phoneSchema,
   email: z.string().email().optional(),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.string().url().nullable().optional(),
 });
 
 const categorieSchema = z.object({
@@ -188,6 +188,20 @@ const validatePromoCodeSchema = z.object({
   orderTotal: z.number().positive(),
 });
 
+// Preparation level schema
+const updatePreparationLevelSchema = z.object({
+  preparationLevel: z.enum(["EASY", "MEDIUM", "BUSY", "CLOSED"]),
+});
+
+// Exceptional hours schemas
+const exceptionalHourSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+  isClosed: z.boolean().default(true),
+  openTime: z.string().regex(/^\d{2}:\d{2}$/, "Time must be HH:MM").optional(),
+  closeTime: z.string().regex(/^\d{2}:\d{2}$/, "Time must be HH:MM").optional(),
+  label: z.string().max(100).optional(),
+});
+
 // Checkout schemas
 const checkoutSessionSchema = z.object({
   restaurantId: z.string().uuid(),
@@ -230,6 +244,12 @@ module.exports = {
 
   // Opening hours
   openingHoursSchema,
+
+  // Preparation level
+  updatePreparationLevelSchema,
+
+  // Exceptional hours
+  exceptionalHourSchema,
 
   // Checkout
   checkoutSessionSchema,

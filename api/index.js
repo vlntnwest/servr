@@ -2,8 +2,10 @@ require("dotenv").config({ path: "./.env" });
 // Sentry must be initialized before everything else
 require("./lib/sentry");
 
+const http = require("http");
 const app = require("./app");
 const logger = require("./logger");
+const { initSocket } = require("./lib/socket");
 
 process.on("uncaughtException", (err) => {
   logger.fatal({ error: err.message, stack: err.stack }, "Uncaught exception");
@@ -17,6 +19,9 @@ process.on("unhandledRejection", (reason) => {
 
 // server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const server = http.createServer(app);
+initSocket(server);
+
+server.listen(PORT, () => {
   logger.info(`Listening on port ${PORT}`);
 });
