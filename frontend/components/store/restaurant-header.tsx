@@ -39,33 +39,39 @@ export default function RestaurantHeader({
 
   return (
     <div className="border-b border-black/5">
-      {/* Hero image */}
-      {restaurant.imageUrl && (
-        <div className="relative w-full h-40 sm:h-56 bg-gray-100">
-          <Image
-            src={restaurant.imageUrl}
-            alt={restaurant.name}
-            fill
-            className="object-cover"
-            priority
-          />
-        </div>
-      )}
+      <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row md:items-start md:gap-6 md:p-6">
+        {/* Image — full bleed on mobile, rounded card on desktop */}
+        {restaurant.imageUrl && (
+          <div className="relative w-full aspect-[16/9] md:w-[380px] md:shrink-0 md:rounded-xl overflow-hidden bg-gray-100">
+            <Image
+              src={restaurant.imageUrl}
+              alt={restaurant.name}
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        )}
 
-      {/* Info */}
-      <div className="max-w-screen-xl mx-auto px-4 py-5">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">{restaurant.name}</h1>
-            <div className="flex items-center gap-1.5 text-sm text-[#676767] mt-1">
-              <MapPin className="w-3.5 h-3.5 shrink-0" />
-              <span>
-                {restaurant.address}, {restaurant.zipCode} {restaurant.city}
-              </span>
-            </div>
+        {/* Info */}
+        <div className="flex-1 px-4 py-5 md:px-0 md:py-0">
+          <h1 className="text-2xl font-bold mb-1">{restaurant.name}</h1>
+
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm text-[#585c5c]">
+            <MapPin className="w-3.5 h-3.5 shrink-0" />
+            <span>
+              {restaurant.address}, {restaurant.zipCode} {restaurant.city}
+            </span>
           </div>
 
-          <div className="flex flex-col items-end gap-1.5 shrink-0">
+          {todayHours && (
+            <div className="flex items-center gap-1.5 text-sm text-[#585c5c] mt-1">
+              <Clock className="w-3.5 h-3.5 shrink-0" />
+              <span>Aujourd&apos;hui : {todayHours}</span>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2 mt-3">
             <OpenStatusBadge
               openingHours={openingHours}
               exceptionalHours={exceptionalHours}
@@ -82,13 +88,6 @@ export default function RestaurantHeader({
             )}
           </div>
         </div>
-
-        {todayHours && (
-          <div className="flex items-center gap-1.5 text-sm text-[#676767] mt-2">
-            <Clock className="w-3.5 h-3.5 shrink-0" />
-            <span>Aujourd&apos;hui : {todayHours}</span>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -301,6 +301,20 @@ export async function updateOpeningHours(
   return [];
 }
 
+export async function updateRestaurant(
+  data: Partial<
+    Pick<
+      Restaurant,
+      "name" | "address" | "zipCode" | "city" | "phone" | "email" | "imageUrl"
+    >
+  >,
+): Promise<{ data: Restaurant } | { error: string }> {
+  return apiFetch<Restaurant>(`/restaurants/${RESTAURANT_ID}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
 export async function uploadImage(file: File): Promise<string | null> {
   const authHeaders = await getAuthHeader();
   const formData = new FormData();

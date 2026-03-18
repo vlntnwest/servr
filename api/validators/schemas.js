@@ -39,7 +39,7 @@ const restaurantSchema = z.object({
   city: z.string().min(1).max(50),
   phone: phoneSchema,
   email: z.string().email().optional(),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.string().url().nullable().optional(),
 });
 
 const categorieSchema = z.object({
