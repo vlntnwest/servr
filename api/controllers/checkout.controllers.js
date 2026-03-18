@@ -5,6 +5,7 @@ const { sendOrderConfirmation } = require("../lib/mailer");
 const { withOrderNumber } = require("../lib/orderNumber");
 const { getIO } = require("../lib/socket");
 const { isRestaurantOpen, isScheduledTimeValid } = require("../lib/openingHours");
+const { isValidTransition } = require("../lib/orderStateMachine");
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
@@ -251,7 +252,7 @@ module.exports.handleWebhook = async (req, res) => {
           where: { id: orderId },
           select: { id: true, status: true },
         });
-        if (!existing || ["PENDING", "CANCELLED"].includes(existing.status)) return null;
+        if (!existing || !isValidTransition(existing.status, "PENDING")) return null;
 
         return tx.order.update({
           where: { id: orderId },
@@ -279,12 +280,11 @@ module.exports.handleWebhook = async (req, res) => {
       const session = event.data.object;
       const { orderId } = session.metadata;
 
-      await prisma.order.updateMany({
-        where: { id: orderId, status: { notIn: ["PENDING", "CANCELLED"] } },
-        data: { status: "ABANDONED" },
-      });
-
-      logger.info({ orderId, sessionId: session.id }, "Order marked as ABANDONED");
+      const existing = await prisma.order.findUnique({ where: { id: orderId }, select: { id: true, status: true } });
+      if (existing && isValidTransition(existing.status, "ABANDONED")) {
+        await prisma.order.update({ where: { id: orderId }, data: { status: "ABANDONED" } });
+        logger.info({ orderId, sessionId: session.id }, "Order marked as ABANDONED");
+      }
     }
 
     if (event.type === "payment_intent.payment_failed") {
@@ -292,11 +292,11 @@ module.exports.handleWebhook = async (req, res) => {
       const { orderId } = paymentIntent.metadata || {};
 
       if (orderId) {
-        await prisma.order.updateMany({
-          where: { id: orderId, status: "DRAFT" },
-          data: { status: "PAYMENT_FAILED" },
-        });
-        logger.info({ orderId, paymentIntentId: paymentIntent.id }, "Order marked as PAYMENT_FAILED");
+        const existing = await prisma.order.findUnique({ where: { id: orderId }, select: { id: true, status: true } });
+        if (existing && isValidTransition(existing.status, "PAYMENT_FAILED")) {
+          await prisma.order.update({ where: { id: orderId }, data: { status: "PAYMENT_FAILED" } });
+          logger.info({ orderId, paymentIntentId: paymentIntent.id }, "Order marked as PAYMENT_FAILED");
+        }
       }
     }
 
