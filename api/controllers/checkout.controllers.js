@@ -292,6 +292,10 @@ module.exports.refundOrder = async (req, res, next) => {
   const { restaurantId, orderId } = req.params;
 
   try {
+    if (!stripe) {
+      return res.status(503).json({ error: "Stripe is not configured" });
+    }
+
     const order = await prisma.order.findUnique({ where: { id: orderId } });
 
     if (!order || order.restaurantId !== restaurantId) {
@@ -304,6 +308,10 @@ module.exports.refundOrder = async (req, res, next) => {
 
     if (order.status === "CANCELLED") {
       return res.status(409).json({ error: "Order is already cancelled" });
+    }
+
+    if (!stripe) {
+      return res.status(503).json({ error: "Stripe is not configured" });
     }
 
     const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });

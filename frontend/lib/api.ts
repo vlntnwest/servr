@@ -48,7 +48,6 @@ async function apiFetch<T>(
 
 // ── Public endpoints ─────────────────────────────────────────────────────────
 
-
 export async function getRestaurant(): Promise<Restaurant | null> {
   const res = await fetch(`${API_URL}/api/v1/restaurants/${RESTAURANT_ID}`, {
     next: { revalidate: 3600 },
@@ -57,7 +56,9 @@ export async function getRestaurant(): Promise<Restaurant | null> {
   return json.data ?? null;
 }
 
-export async function getRestaurantBySlug(slug: string): Promise<Restaurant | null> {
+export async function getRestaurantBySlug(
+  slug: string,
+): Promise<Restaurant | null> {
   const res = await fetch(`${API_URL}/api/v1/restaurants/by-slug/${slug}`, {
     next: { revalidate: 3600 },
   });
@@ -66,7 +67,9 @@ export async function getRestaurantBySlug(slug: string): Promise<Restaurant | nu
   return json.data ?? null;
 }
 
-export async function getMenuForRestaurant(restaurantId: string): Promise<Category[]> {
+export async function getMenuForRestaurant(
+  restaurantId: string,
+): Promise<Category[]> {
   const res = await fetch(
     `${API_URL}/api/v1/menu/restaurants/${restaurantId}/menu`,
     { next: { revalidate: 60 } },
@@ -75,12 +78,11 @@ export async function getMenuForRestaurant(restaurantId: string): Promise<Catego
   return json.data ?? [];
 }
 
-export async function getOpeningHours(restaurantId?: string): Promise<OpeningHour[]> {
+export async function getOpeningHours(
+  restaurantId?: string,
+): Promise<OpeningHour[]> {
   const rid = restaurantId ?? RESTAURANT_ID;
-  const res = await fetch(
-    `${API_URL}/api/v1/restaurants/${rid}/opening-hours`,
-    { next: { revalidate: 3600 } },
-  );
+  const res = await fetch(`${API_URL}/api/v1/restaurants/${rid}/opening-hours`);
   const json = await res.json();
   return json.data ?? [];
 }
@@ -128,25 +130,6 @@ export async function createCheckoutSession(
   return res.json();
 }
 
-export async function createOrder(payload: {
-  fullName?: string;
-  phone?: string;
-  email?: string;
-  items: CheckoutItem[];
-  promoCode?: string;
-  scheduledFor?: string;
-}): Promise<{ data?: Order; error?: string }> {
-  const res = await fetch(
-    `${API_URL}/api/v1/restaurants/${RESTAURANT_ID}/orders`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    },
-  );
-  return res.json();
-}
-
 // ── Auth-protected (STAFF+) ──────────────────────────────────────────────────
 
 export async function getOrders(
@@ -154,12 +137,16 @@ export async function getOrders(
   limit = 20,
   status?: string,
 ): Promise<PaginatedResponse<Order>> {
-  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
   if (status) params.set("status", status);
   const result = await apiFetch<never>(
     `/restaurants/${RESTAURANT_ID}/orders?${params}`,
   );
-  if ("error" in result) return { data: [], pagination: { page, limit, total: 0, totalPages: 0 } };
+  if ("error" in result)
+    return { data: [], pagination: { page, limit, total: 0, totalPages: 0 } };
   return result as unknown as PaginatedResponse<Order>;
 }
 
@@ -198,10 +185,12 @@ export async function getOptionGroups(): Promise<OptionGroup[]> {
 export async function getMembers(): Promise<
   PaginatedResponse<RestaurantMember>
 > {
-  const result = await apiFetch<never>(
-    `/restaurants/${RESTAURANT_ID}/members`,
-  );
-  if ("error" in result) return { data: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } };
+  const result = await apiFetch<never>(`/restaurants/${RESTAURANT_ID}/members`);
+  if ("error" in result)
+    return {
+      data: [],
+      pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
+    };
   return result as unknown as PaginatedResponse<RestaurantMember>;
 }
 
@@ -267,7 +256,6 @@ export async function getExceptionalHours(
   const rid = restaurantId ?? RESTAURANT_ID;
   const res = await fetch(
     `${API_URL}/api/v1/restaurants/${rid}/exceptional-hours`,
-    { next: { revalidate: 3600 } },
   );
   const json = await res.json();
   return json.data ?? [];
@@ -329,7 +317,9 @@ export async function uploadImage(file: File): Promise<string | null> {
   return json.data?.url ?? null;
 }
 
-export async function deleteImage(imageUrl: string): Promise<{ error?: string }> {
+export async function deleteImage(
+  imageUrl: string,
+): Promise<{ error?: string }> {
   const result = await apiFetch<{ message: string }>(
     `/restaurants/${RESTAURANT_ID}/upload`,
     { method: "DELETE", body: JSON.stringify({ imageUrl }) },
@@ -449,7 +439,11 @@ export async function createOptionGroup(payload: {
   minQuantity?: number;
   maxQuantity?: number;
   displayOrder?: number;
-  choices?: Array<{ name: string; priceModifier?: number; displayOrder?: number }>;
+  choices?: Array<{
+    name: string;
+    priceModifier?: number;
+    displayOrder?: number;
+  }>;
 }): Promise<{ data?: OptionGroup; error?: string }> {
   const result = await apiFetch<OptionGroup>(
     `/menu/restaurants/${RESTAURANT_ID}/option-groups`,
@@ -499,7 +493,11 @@ export async function addOptionChoice(
 
 export async function updateOptionChoice(
   choiceId: string,
-  payload: Partial<{ name: string; priceModifier: number; displayOrder: number }>,
+  payload: Partial<{
+    name: string;
+    priceModifier: number;
+    displayOrder: number;
+  }>,
 ): Promise<{ data?: OptionChoice; error?: string }> {
   const result = await apiFetch<OptionChoice>(
     `/menu/restaurants/${RESTAURANT_ID}/option-choices/${choiceId}`,

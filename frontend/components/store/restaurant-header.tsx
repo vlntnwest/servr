@@ -1,27 +1,8 @@
 import Image from "next/image";
-import type { Restaurant, OpeningHour, PreparationLevel } from "@/types/api";
+import type { Restaurant, OpeningHour, ExceptionalHour, PreparationLevel } from "@/types/api";
 import { MapPin, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const DAY_NAMES = [
-  "Dimanche",
-  "Lundi",
-  "Mardi",
-  "Mercredi",
-  "Jeudi",
-  "Vendredi",
-  "Samedi",
-];
-
-function isOpen(openingHours: OpeningHour[]): boolean {
-  if (!openingHours || openingHours.length === 0) return true;
-  const now = new Date();
-  const dayOfWeek = now.getDay();
-  const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-  const todayHours = openingHours.find((h) => h.dayOfWeek === dayOfWeek);
-  if (!todayHours) return false;
-  return currentTime >= todayHours.openTime && currentTime < todayHours.closeTime;
-}
+import OpenStatusBadge from "./open-status-badge";
 
 function getTodayHours(openingHours: OpeningHour[]): string | null {
   const dayOfWeek = new Date().getDay();
@@ -43,13 +24,14 @@ const PREP_BADGES: Record<
 interface RestaurantHeaderProps {
   restaurant: Restaurant;
   openingHours: OpeningHour[];
+  exceptionalHours: ExceptionalHour[];
 }
 
 export default function RestaurantHeader({
   restaurant,
   openingHours,
+  exceptionalHours,
 }: RestaurantHeaderProps) {
-  const open = isOpen(openingHours);
   const todayHours = getTodayHours(openingHours);
   const prepBadge = restaurant.preparationLevel
     ? PREP_BADGES[restaurant.preparationLevel]
@@ -84,16 +66,10 @@ export default function RestaurantHeader({
           </div>
 
           <div className="flex flex-col items-end gap-1.5 shrink-0">
-            <span
-              className={cn(
-                "text-xs px-2.5 py-1 rounded-full font-medium",
-                open
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800",
-              )}
-            >
-              {open ? "Ouvert" : "Fermé"}
-            </span>
+            <OpenStatusBadge
+              openingHours={openingHours}
+              exceptionalHours={exceptionalHours}
+            />
             {prepBadge && restaurant.preparationLevel !== "EASY" && (
               <span
                 className={cn(

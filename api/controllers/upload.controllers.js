@@ -54,21 +54,33 @@ module.exports.uploadImage = async (req, res, next) => {
 module.exports.deleteImage = async (req, res, next) => {
   try {
     const { imageUrl } = req.body;
+    const { restaurantId } = req.params;
+
+    logger.info({ restaurantId, imageUrl }, "deleteImage called");
+
     if (!imageUrl) {
+      logger.warn({ restaurantId }, "deleteImage: missing imageUrl");
       return res.status(400).json({ error: "imageUrl is required" });
     }
 
     // Extract file path from the public URL
-    const parsed = new URL(imageUrl);
+    let parsed;
+    try {
+      parsed = new URL(imageUrl);
+    } catch {
+      logger.warn({ restaurantId, imageUrl }, "deleteImage: invalid URL");
+      return res.status(400).json({ error: "Invalid image URL" });
+    }
     const storagePath = parsed.pathname.split(`/object/public/${BUCKET}/`)[1];
 
     if (!storagePath) {
+      logger.warn({ restaurantId, imageUrl, pathname: parsed.pathname }, "deleteImage: could not extract storage path");
       return res.status(400).json({ error: "Invalid image URL" });
     }
 
     // Validate the path belongs to this restaurant
-    const { restaurantId } = req.params;
     if (!storagePath.startsWith(`restaurants/${restaurantId}/`)) {
+      logger.warn({ restaurantId, storagePath }, "deleteImage: path does not belong to restaurant");
       return res.status(403).json({ error: "Image does not belong to this restaurant" });
     }
 

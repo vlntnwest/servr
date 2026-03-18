@@ -47,6 +47,7 @@ import {
   unlinkOptionGroup,
   reorderProductOptionGroups,
   uploadImage,
+  deleteImage,
   addOptionChoice,
 } from "@/lib/api";
 import type { Category, Product, OptionGroup } from "@/types/api";
@@ -745,6 +746,16 @@ function ProductSheet({
       return;
     }
 
+    // If editing a product and the image was replaced (not removed via the X button),
+    // delete the old image from storage.
+    const oldImageUrl = product?.imageUrl;
+    const newImageUrl = form.imageUrl.trim();
+    if (oldImageUrl && newImageUrl && oldImageUrl !== newImageUrl) {
+      deleteImage(oldImageUrl).catch((err) =>
+        console.error("[deleteImage] failed to delete old image:", err),
+      );
+    }
+
     // Sync option groups after create/update
     if (result.data) {
       await syncOptionGroups(result.data.id);
@@ -834,7 +845,18 @@ function ProductSheet({
                 />
                 <button
                   type="button"
-                  onClick={() => setField("imageUrl", "")}
+                  onClick={() => {
+                    // Always delete from storage when the user removes an image.
+                    // For images that were uploaded this session (differ from saved product),
+                    // delete immediately. For the saved product image, it will also be
+                    // cleaned up here so the user's intent is respected immediately.
+                    if (form.imageUrl) {
+                      deleteImage(form.imageUrl).catch((err) =>
+                        console.error("[deleteImage] request failed:", err),
+                      );
+                    }
+                    setField("imageUrl", "");
+                  }}
                   className="absolute top-2 right-2 p-1 bg-black/60 rounded-full hover:bg-black/80 transition-colors"
                   aria-label="Supprimer l'image"
                 >
