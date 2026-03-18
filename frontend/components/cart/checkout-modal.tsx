@@ -5,8 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { createCheckoutSession } from "@/lib/api";
+import { Loader2, Check, X } from "lucide-react";
+import { createCheckoutSession, validatePromoCode } from "@/lib/api";
 import { useCart } from "@/contexts/cart-context";
 import { useOptionalRestaurant } from "@/contexts/restaurant-context";
 import { useRouter } from "next/navigation";
@@ -23,6 +23,14 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [promoInput, setPromoInput] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    discountAmount: number;
+    finalTotal: number;
+  } | null>(null);
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
@@ -31,6 +39,25 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleApplyPromo = async () => {
+    if (!promoInput.trim()) return;
+    setPromoLoading(true);
+    setPromoError(null);
+    const result = await validatePromoCode(promoInput.trim(), total);
+    setPromoLoading(false);
+    if ("error" in result && result.error) {
+      setPromoError(result.error);
+    } else if (result.data) {
+      setAppliedPromo(result.data);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoInput("");
+    setPromoError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,6 +74,7 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
           email: form.email || undefined,
           items,
           scheduledFor: initialScheduledFor || undefined,
+          promoCode: appliedPromo?.code || undefined,
         },
         restaurantCtx?.restaurant.id,
       );
@@ -115,6 +143,50 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
             />
           </div>
 
+          {/* Promo code */}
+          <div className="space-y-1">
+            <Label htmlFor="promoCode">Code promo</Label>
+            {appliedPromo ? (
+              <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-md px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-800">
+                    {appliedPromo.code}
+                  </span>
+                  <span className="text-sm text-green-600">
+                    −{appliedPromo.discountAmount.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}
+                  </span>
+                </div>
+                <button type="button" onClick={handleRemovePromo} className="text-green-600 hover:text-green-800">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  id="promoCode"
+                  value={promoInput}
+                  onChange={(e) => { setPromoInput(e.target.value); setPromoError(null); }}
+                  placeholder="CODE"
+                  className="uppercase"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={handleApplyPromo}
+                  disabled={promoLoading || !promoInput.trim()}
+                >
+                  {promoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Appliquer"}
+                </Button>
+              </div>
+            )}
+            {promoError && (
+              <p className="text-xs text-red-500">{promoError}</p>
+            )}
+          </div>
+
           {error && (
             <p className="text-sm text-red-500 bg-red-50 rounded p-2">{error}</p>
           )}
@@ -123,6 +195,15 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
             En passant commande, vous acceptez nos conditions générales de vente.
           </p>
 
+          {appliedPromo && (
+            <div className="flex justify-between text-sm">
+              <span className="text-[#676767]">Total après réduction</span>
+              <span className="font-semibold">
+                {appliedPromo.finalTotal.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}
+              </span>
+            </div>
+          )}
+
           <Button type="submit" className="w-full h-11" disabled={loading}>
             {loading ? (
               <>
@@ -130,7 +211,7 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
                 Traitement…
               </>
             ) : (
-              `Payer ${total.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}`
+              `Payer ${(appliedPromo?.finalTotal ?? total).toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}`
             )}
           </Button>
         </form>

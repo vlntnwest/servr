@@ -114,6 +114,7 @@ export async function createCheckoutSession(
     email?: string;
     items: CheckoutItem[];
     scheduledFor?: string;
+    promoCode?: string;
   },
   restaurantId?: string,
 ): Promise<
