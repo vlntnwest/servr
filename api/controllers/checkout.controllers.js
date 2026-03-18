@@ -300,6 +300,56 @@ module.exports.handleWebhook = async (req, res) => {
       }
     }
 
+    if (event.type === "charge.refunded") {
+      const charge = event.data.object;
+      const paymentIntentId = charge.payment_intent;
+
+      if (paymentIntentId) {
+        const order = await prisma.order.findFirst({
+          where: { stripePaymentIntentId: paymentIntentId },
+        });
+
+        if (order && !order.stripeRefundId) {
+          await prisma.order.update({
+            where: { id: order.id },
+            data: {
+              status: "CANCELLED",
+              stripeRefundId: charge.refunds?.data?.[0]?.id || null,
+            },
+          });
+          logger.info({ orderId: order.id, paymentIntentId }, "Order cancelled via charge.refunded webhook");
+        }
+      }
+    }
+
+    if (event.type === "charge.dispute.created") {
+      const dispute = event.data.object;
+      const paymentIntentId = dispute.payment_intent;
+
+      if (paymentIntentId) {
+        const order = await prisma.order.findFirst({
+          where: { stripePaymentIntentId: paymentIntentId },
+        });
+        logger.warn(
+          { orderId: order?.id, disputeId: dispute.id, paymentIntentId, reason: dispute.reason },
+          "Stripe dispute created",
+        );
+      }
+    }
+
+    if (event.type === "payment_intent.canceled") {
+      const paymentIntent = event.data.object;
+      const { orderId } = paymentIntent.metadata || {};
+
+      if (orderId) {
+        await prisma.order.updateMany({
+          where: { id: orderId, status: { in: ["DRAFT", "PENDING"] } },
+          data: { status: "CANCELLED" },
+        });
+        logger.info({ orderId, paymentIntentId: paymentIntent.id }, "Order cancelled via payment_intent.canceled webhook");
+      }
+    }
+
     if (event.type === "account.updated") {
       const account = event.data.object;
       if (account.charges_enabled) {
