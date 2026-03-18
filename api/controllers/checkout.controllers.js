@@ -314,8 +314,8 @@ module.exports.refundOrder = async (req, res, next) => {
       return res.status(409).json({ error: "Order is already cancelled" });
     }
 
-    if (!stripe) {
-      return res.status(503).json({ error: "Stripe is not configured" });
+    if (order.stripeRefundId) {
+      return res.status(409).json({ error: "Order has already been refunded" });
     }
 
     const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
@@ -325,12 +325,12 @@ module.exports.refundOrder = async (req, res, next) => {
 
     const refund = await stripe.refunds.create(
       { payment_intent: order.stripePaymentIntentId },
-      { stripeAccount: restaurant.stripeAccountId },
+      { stripeAccount: restaurant.stripeAccountId, idempotencyKey: `refund_${orderId}` },
     );
 
     const updated = await prisma.order.update({
       where: { id: orderId },
-      data: { status: "CANCELLED" },
+      data: { status: "CANCELLED", stripeRefundId: refund.id },
     });
 
     logger.info({ orderId, restaurantId, refundId: refund.id }, "Order refunded and cancelled");

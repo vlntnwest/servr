@@ -197,6 +197,7 @@ model Order {
   status                OrderStatus    @default(PENDING)
   totalPrice            Decimal        @default(0) @map("total_price") @db.Decimal(10, 2)
   stripePaymentIntentId String?        @map("stripe_payment_intent_id")
+  stripeRefundId        String?        @map("stripe_refund_id")
   createdAt             DateTime?      @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @map("created_at") @db.Timestamptz(6)
   updatedAt             DateTime?      @map("updated_at") @db.Timestamp(6)
   orderNumber           String?        @unique @map("order_number") @db.VarChar(6)
