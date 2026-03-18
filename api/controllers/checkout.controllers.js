@@ -10,7 +10,7 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
 /**
- * Refund a Stripe payment for an order if applicable.
+ * Refund a Stripe payment for an order and update status atomically.
  * Returns the refund object or null if no refund was needed.
  */
 async function refundStripePayment(order) {
@@ -26,10 +26,10 @@ async function refundStripePayment(order) {
 
   await prisma.order.update({
     where: { id: order.id },
-    data: { stripeRefundId: refund.id },
+    data: { stripeRefundId: refund.id, status: "CANCELLED" },
   });
 
-  logger.info({ orderId: order.id, refundId: refund.id }, "Stripe payment refunded");
+  logger.info({ orderId: order.id, refundId: refund.id }, "Stripe payment refunded and order cancelled");
   return refund;
 }
 
@@ -394,10 +394,7 @@ module.exports.refundOrder = async (req, res, next) => {
 
     const refund = await refundStripePayment(order);
 
-    const updated = await prisma.order.update({
-      where: { id: orderId },
-      data: { status: "CANCELLED" },
-    });
+    const updated = await prisma.order.findUnique({ where: { id: orderId } });
 
     logger.info({ orderId, restaurantId, refundId: refund?.id }, "Order refunded and cancelled");
     return res.status(200).json({
