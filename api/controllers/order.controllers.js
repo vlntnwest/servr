@@ -30,10 +30,6 @@ module.exports.createOrder = async (req, res, next) => {
     const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
     if (!restaurant) return res.status(404).json({ error: "Restaurant not found" });
 
-    if (restaurant.preparationLevel === "CLOSED") {
-      return res.status(400).json({ error: "Restaurant is currently closed" });
-    }
-
     const openingHours = await prisma.openingHour.findMany({
       where: { restaurantId },
     });
@@ -41,8 +37,13 @@ module.exports.createOrder = async (req, res, next) => {
       if (!isScheduledTimeValid(openingHours, scheduledFor)) {
         return res.status(400).json({ error: "Scheduled time is outside opening hours or in the past" });
       }
-    } else if (!(await isRestaurantOpen(restaurantId, openingHours))) {
-      return res.status(400).json({ error: "Restaurant is currently closed" });
+    } else {
+      if (restaurant.preparationLevel === "CLOSED") {
+        return res.status(400).json({ error: "Restaurant is currently closed" });
+      }
+      if (!(await isRestaurantOpen(restaurantId, openingHours))) {
+        return res.status(400).json({ error: "Restaurant is currently closed" });
+      }
     }
 
     const productIds = [...new Set(items.map((i) => i.productId))];
