@@ -6,6 +6,7 @@ const http = require("http");
 const app = require("./app");
 const logger = require("./logger");
 const { initSocket } = require("./lib/socket");
+const { verifySmtp } = require("./lib/mailer");
 
 process.on("uncaughtException", (err) => {
   logger.fatal({ error: err.message, stack: err.stack }, "Uncaught exception");
@@ -24,4 +25,5 @@ initSocket(server);
 
 server.listen(PORT, () => {
   logger.info(`Listening on port ${PORT}`);
+  verifySmtp();
 });
