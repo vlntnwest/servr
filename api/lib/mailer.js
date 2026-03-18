@@ -90,6 +90,7 @@ async function sendInvitationEmail({ to, restaurantName, inviteLink }) {
 }
 
 const STATUS_LABELS = {
+  PENDING: "confirmée",
   IN_PROGRESS: "en cours de préparation",
   COMPLETED: "prête",
   DELIVERED: "livrée",
