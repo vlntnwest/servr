@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { getOrders, updateOrderStatus, refundOrder, getRestaurant, updatePreparationLevel } from "@/lib/api";
 import type { PreparationLevel } from "@/types/api";
 import { getSocket } from "@/lib/socket";
+import { createClient } from "@/lib/supabase/client";
 import type { Order, OrderProductOption } from "@/types/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -104,22 +105,26 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
   useEffect(() => {
     if (!restaurantId) return;
 
-    const socket = getSocket();
-    if (!socket.connected) socket.connect();
+    let cancelled = false;
+    const handleNewOrder = () => fetchRef.current?.();
+    const handleStatusUpdated = () => fetchRef.current?.();
 
-    socket.emit("join:restaurant", restaurantId);
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const token = session?.access_token;
+      if (!token || cancelled) return;
 
-    const handleNewOrder = () => {
-      fetchRef.current?.();
-    };
-    const handleStatusUpdated = () => {
-      fetchRef.current?.();
-    };
+      const socket = getSocket(token);
+      if (!socket.connected) socket.connect();
+      socket.emit("join:restaurant", restaurantId);
 
-    socket.on("order:new", handleNewOrder);
-    socket.on("order:statusUpdated", handleStatusUpdated);
+      socket.on("order:new", handleNewOrder);
+      socket.on("order:statusUpdated", handleStatusUpdated);
+    });
 
     return () => {
+      cancelled = true;
+      const socket = getSocket();
       socket.off("order:new", handleNewOrder);
       socket.off("order:statusUpdated", handleStatusUpdated);
     };
