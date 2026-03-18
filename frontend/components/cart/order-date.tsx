@@ -48,9 +48,9 @@ function isCurrentlyOpen(openingHours: OpeningHour[]): boolean {
   const now = new Date();
   const dayOfWeek = now.getDay();
   const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-  const todayHours = openingHours.find((h) => h.dayOfWeek === dayOfWeek);
-  if (!todayHours) return false;
-  return currentTime >= todayHours.openTime && currentTime < todayHours.closeTime;
+  const dayRanges = openingHours.filter((h) => h.dayOfWeek === dayOfWeek);
+  if (dayRanges.length === 0) return false;
+  return dayRanges.some((h) => currentTime >= h.openTime && currentTime < h.closeTime);
 }
 
 export default function OrderDate() {
@@ -75,9 +75,11 @@ export default function OrderDate() {
       const date = new Date();
       date.setDate(date.getDate() + i);
       const dayOfWeek = date.getDay();
-      const hours = openingHours.find((h) => h.dayOfWeek === dayOfWeek);
-      if (!hours) continue;
-      const slots = generateSlotsForDate(date, hours.openTime, hours.closeTime);
+      const ranges = openingHours.filter((h) => h.dayOfWeek === dayOfWeek);
+      if (ranges.length === 0) continue;
+      const slots = ranges
+        .sort((a, b) => a.openTime.localeCompare(b.openTime))
+        .flatMap((h) => generateSlotsForDate(date, h.openTime, h.closeTime));
       if (slots.length === 0) continue;
       days.push({ dateKey: date.toDateString(), label: formatDayLabel(date), slots });
     }

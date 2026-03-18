@@ -4,23 +4,8 @@ const { sendOrderConfirmation, sendOrderStatusUpdate } = require("../lib/mailer"
 const { withOrderNumber } = require("../lib/orderNumber");
 const { isValidTransition, getNextStatuses } = require("../lib/orderStateMachine");
 const { getIO } = require("../lib/socket");
-const { isRestaurantOpen } = require("../lib/openingHours");
+const { isRestaurantOpen, isScheduledTimeValid } = require("../lib/openingHours");
 const { refundStripePayment } = require("./checkout.controllers");
-
-function isScheduledTimeValid(openingHours, scheduledAt) {
-  const dt = new Date(scheduledAt);
-  // Must be in the future
-  if (dt <= new Date()) return false;
-  // No opening hours configured → always open
-  if (!openingHours || openingHours.length === 0) return true;
-  const dayOfWeek = dt.getDay();
-  const hours = `${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`;
-  const todayHours = openingHours.find((h) => h.dayOfWeek === dayOfWeek);
-  if (!todayHours) return false;
-  return hours >= todayHours.openTime && hours < todayHours.closeTime;
-}
-
-module.exports.isScheduledTimeValid = isScheduledTimeValid;
 
 module.exports.createOrder = async (req, res, next) => {
   const { restaurantId } = req.params;
