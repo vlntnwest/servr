@@ -3,9 +3,8 @@ const prisma = require("../lib/prisma");
 const logger = require("../logger");
 const { sendOrderConfirmation } = require("../lib/mailer");
 const { withOrderNumber } = require("../lib/orderNumber");
-const { isScheduledTimeValid } = require("./order.controllers");
 const { getIO } = require("../lib/socket");
-const { isRestaurantOpen } = require("../lib/openingHours");
+const { isRestaurantOpen, isScheduledTimeValid } = require("../lib/openingHours");
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;

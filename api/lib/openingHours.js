@@ -23,12 +23,26 @@ async function isRestaurantOpen(restaurantId, openingHours) {
     }
   }
 
-  // Fall back to regular opening hours
+  // Fall back to regular opening hours (multiple ranges per day)
   const dayOfWeek = now.getDay();
   const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-  const todayHours = openingHours.find((h) => h.dayOfWeek === dayOfWeek);
-  if (!todayHours) return false;
-  return currentTime >= todayHours.openTime && currentTime < todayHours.closeTime;
+  const todayRanges = openingHours.filter((h) => h.dayOfWeek === dayOfWeek);
+  if (todayRanges.length === 0) return false;
+  return todayRanges.some((h) => currentTime >= h.openTime && currentTime < h.closeTime);
 }
 
-module.exports = { isRestaurantOpen };
+/**
+ * Check if a scheduled time falls within any opening hour range for that day.
+ */
+function isScheduledTimeValid(openingHours, scheduledAt) {
+  const dt = new Date(scheduledAt);
+  if (dt <= new Date()) return false;
+  if (!openingHours || openingHours.length === 0) return true;
+  const dayOfWeek = dt.getDay();
+  const hours = `${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`;
+  const dayRanges = openingHours.filter((h) => h.dayOfWeek === dayOfWeek);
+  if (dayRanges.length === 0) return false;
+  return dayRanges.some((h) => hours >= h.openTime && hours < h.closeTime);
+}
+
+module.exports = { isRestaurantOpen, isScheduledTimeValid };
