@@ -10,6 +10,30 @@ const { isRestaurantOpen } = require("../lib/openingHours");
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
+/**
+ * Refund a Stripe payment for an order if applicable.
+ * Returns the refund object or null if no refund was needed.
+ */
+async function refundStripePayment(order) {
+  if (!stripe || !order.stripePaymentIntentId || order.stripeRefundId) return null;
+
+  const restaurant = await prisma.restaurant.findUnique({ where: { id: order.restaurantId } });
+  if (!restaurant || !restaurant.stripeAccountId) return null;
+
+  const refund = await stripe.refunds.create(
+    { payment_intent: order.stripePaymentIntentId },
+    { stripeAccount: restaurant.stripeAccountId, idempotencyKey: `refund_${order.id}` },
+  );
+
+  await prisma.order.update({
+    where: { id: order.id },
+    data: { stripeRefundId: refund.id },
+  });
+
+  logger.info({ orderId: order.id, refundId: refund.id }, "Stripe payment refunded");
+  return refund;
+}
+
 const PLATFORM_FEE_PERCENT = 0.05;
 
 const ORDER_INCLUDE = {
@@ -318,26 +342,20 @@ module.exports.refundOrder = async (req, res, next) => {
       return res.status(409).json({ error: "Order has already been refunded" });
     }
 
-    const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
-    if (!restaurant || !restaurant.stripeAccountId) {
-      return res.status(400).json({ error: "No Stripe account associated with this restaurant" });
-    }
-
-    const refund = await stripe.refunds.create(
-      { payment_intent: order.stripePaymentIntentId },
-      { stripeAccount: restaurant.stripeAccountId, idempotencyKey: `refund_${orderId}` },
-    );
+    const refund = await refundStripePayment(order);
 
     const updated = await prisma.order.update({
       where: { id: orderId },
-      data: { status: "CANCELLED", stripeRefundId: refund.id },
+      data: { status: "CANCELLED" },
     });
 
-    logger.info({ orderId, restaurantId, refundId: refund.id }, "Order refunded and cancelled");
+    logger.info({ orderId, restaurantId, refundId: refund?.id }, "Order refunded and cancelled");
     return res.status(200).json({
-      data: { order: updated, refund: { id: refund.id, status: refund.status } },
+      data: { order: updated, refund: refund ? { id: refund.id, status: refund.status } : null },
     });
   } catch (error) {
     next(error);
   }
 };
+
+module.exports.refundStripePayment = refundStripePayment;
