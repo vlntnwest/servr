@@ -43,6 +43,16 @@ function formatSlotLabel(iso: string): string {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
+function isCurrentlyOpen(openingHours: OpeningHour[]): boolean {
+  if (!openingHours || openingHours.length === 0) return true;
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  const todayHours = openingHours.find((h) => h.dayOfWeek === dayOfWeek);
+  if (!todayHours) return false;
+  return currentTime >= todayHours.openTime && currentTime < todayHours.closeTime;
+}
+
 export default function OrderDate() {
   const { scheduledFor, setScheduledFor } = useCart();
   const restaurantCtx = useOptionalRestaurant();
@@ -53,6 +63,11 @@ export default function OrderDate() {
   useEffect(() => {
     getOpeningHours(restaurantCtx?.restaurant.id).then(setOpeningHours).catch(() => {});
   }, [restaurantCtx?.restaurant.id]);
+
+  const asapAvailable = useMemo(() => {
+    if (restaurantCtx?.restaurant.preparationLevel === "CLOSED") return false;
+    return isCurrentlyOpen(openingHours);
+  }, [restaurantCtx?.restaurant.preparationLevel, openingHours]);
 
   const availableDays = useMemo(() => {
     const days: { dateKey: string; label: string; slots: string[] }[] = [];
@@ -69,10 +84,22 @@ export default function OrderDate() {
     return days;
   }, [openingHours]);
 
+  // Auto-switch to scheduled if asap not available
+  useEffect(() => {
+    if (!asapAvailable && orderType === "asap") {
+      setOrderType("scheduled");
+      const first = availableDays[0];
+      if (first) {
+        setSelectedDay(first.dateKey);
+        setScheduledFor(first.slots[0] ?? "");
+      }
+    }
+  }, [asapAvailable, availableDays]);
+
   const currentDayEntry = availableDays.find((d) => d.dateKey === selectedDay) ?? availableDays[0];
 
   const handleTypeChange = (value: string) => {
-    if (value === "asap") {
+    if (value === "asap" && asapAvailable) {
       setOrderType("asap");
       setScheduledFor("");
     } else {
@@ -87,9 +114,9 @@ export default function OrderDate() {
     <div className="mx-4 border border-black/8 rounded-lg overflow-hidden px-4 py-3">
       <p className="font-semibold text-sm mb-2">Heure de commande</p>
       <RadioGroup value={orderType} onValueChange={handleTypeChange} className="gap-0">
-        <div onClick={() => handleTypeChange("asap")} className="flex items-center py-2 cursor-pointer hover:bg-black/[0.02] -mx-4 px-4 transition-colors">
+        <div onClick={() => asapAvailable && handleTypeChange("asap")} className={`flex items-center py-2 -mx-4 px-4 transition-colors ${asapAvailable ? "cursor-pointer hover:bg-black/[0.02]" : "opacity-40 cursor-not-allowed"}`}>
           <span className="flex-1 text-sm">Au plus vite</span>
-          <RadioGroupItem value="asap" id="asap" className="border-2 pointer-events-none" />
+          <RadioGroupItem value="asap" id="asap" className="border-2 pointer-events-none" disabled={!asapAvailable} />
         </div>
         <div onClick={() => availableDays.length > 0 && handleTypeChange("scheduled")} className={`flex items-center py-2 -mx-4 px-4 transition-colors ${availableDays.length === 0 ? "opacity-40 cursor-not-allowed" : "cursor-pointer hover:bg-black/[0.02]"}`}>
           <span className="flex-1 text-sm">Prévu pour…</span>
