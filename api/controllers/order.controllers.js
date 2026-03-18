@@ -26,6 +26,13 @@ module.exports.createOrder = async (req, res, next) => {
   const { fullName, phone, email, items, promoCode, scheduledFor } = req.body;
 
   try {
+    const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
+    if (!restaurant) return res.status(404).json({ error: "Restaurant not found" });
+
+    if (restaurant.preparationLevel === "CLOSED") {
+      return res.status(400).json({ error: "Restaurant is currently closed" });
+    }
+
     const openingHours = await prisma.openingHour.findMany({
       where: { restaurantId },
     });
