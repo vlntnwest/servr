@@ -22,6 +22,7 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
 
   const redirectTo = searchParams.get("redirect");
+  const reason = searchParams.get("reason");
   const destination = isSafeRedirect(redirectTo) ? redirectTo : "/";
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -68,7 +69,12 @@ function LoginForm() {
           />
         </div>
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {reason === "session_expired" && !error && (
+        <p className="text-sm text-amber-600 bg-amber-50 rounded p-2">
+          Session expirée, veuillez vous reconnecter.
+        </p>
+      )}
+      {error && <p className="text-sm text-red-500">{error}</p>}
 
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Se connecter"}

@@ -245,7 +245,7 @@ module.exports.updateOrderStatus = async (req, res, next) => {
   try {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      select: { id: true, status: true, email: true, restaurantId: true },
+      select: { id: true, status: true, email: true, restaurantId: true, fullName: true, orderNumber: true },
     });
 
     if (!order) {
@@ -259,10 +259,25 @@ module.exports.updateOrderStatus = async (req, res, next) => {
       });
     }
 
-    const data = await prisma.order.update({
-      where: { id: orderId },
+    // Atomic update: only update if status hasn't changed since we read it (prevents race conditions)
+    const updated = await prisma.order.updateMany({
+      where: { id: orderId, status: order.status },
       data: { status },
     });
+
+    if (updated.count === 0) {
+      // Status changed between findUnique and updateMany — return current state
+      const current = await prisma.order.findUnique({
+        where: { id: orderId },
+        select: { id: true, status: true },
+      });
+      return res.status(409).json({
+        error: "Order status was modified concurrently",
+        currentStatus: current?.status,
+      });
+    }
+
+    const data = await prisma.order.findUnique({ where: { id: orderId } });
 
     const io = getIO();
     if (io) {
@@ -271,7 +286,7 @@ module.exports.updateOrderStatus = async (req, res, next) => {
 
     sendOrderStatusUpdate({ to: order.email, order: data, newStatus: status });
 
-    logger.info({ orderId, from: order.status, to: status }, "Order status updated");
+    logger.info({ orderId, restaurantId: order.restaurantId, from: order.status, to: status }, "Order status updated");
     return res.status(200).json({ data, allowedTransitions: getNextStatuses(status) });
   } catch (error) {
     next(error);

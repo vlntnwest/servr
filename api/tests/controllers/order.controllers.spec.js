@@ -51,7 +51,7 @@ describe("order controllers", () => {
 
     test("returns 201 with created order", async () => {
       mockPrisma.product.findMany.mockResolvedValue([
-        { id: "prod-1", price: "10.00" },
+        { id: "prod-1", price: "10.00", isAvailable: true },
       ]);
       mockPrisma.optionChoice.findMany.mockResolvedValue([]);
       mockPrisma.$transaction.mockImplementation(async (fn) => {
@@ -94,7 +94,7 @@ describe("order controllers", () => {
 
     test("calculates total price correctly (base price × quantity)", async () => {
       mockPrisma.product.findMany.mockResolvedValue([
-        { id: "prod-1", price: "8.00" },
+        { id: "prod-1", price: "8.00", isAvailable: true },
       ]);
       mockPrisma.optionChoice.findMany.mockResolvedValue([]);
 
@@ -125,7 +125,7 @@ describe("order controllers", () => {
 
     test("adds option choice price modifiers to total", async () => {
       mockPrisma.product.findMany.mockResolvedValue([
-        { id: "prod-1", price: "10.00" },
+        { id: "prod-1", price: "10.00", isAvailable: true },
       ]);
       mockPrisma.optionChoice.findMany.mockResolvedValue([
         { id: "oc-1", priceModifier: "2.50" },
@@ -160,7 +160,7 @@ describe("order controllers", () => {
 
     test("creates orderProductOptions when optionChoiceIds provided", async () => {
       mockPrisma.product.findMany.mockResolvedValue([
-        { id: "prod-1", price: "10.00" },
+        { id: "prod-1", price: "10.00", isAvailable: true },
       ]);
       mockPrisma.optionChoice.findMany.mockResolvedValue([
         { id: "oc-1", priceModifier: "0" },
@@ -316,9 +316,13 @@ describe("order controllers", () => {
 
   // ─── updateOrderStatus ────────────────────────────────────────
   describe("updateOrderStatus", () => {
-    test("returns 200 with updated order", async () => {
+    test("returns 200 with updated order (atomic updateMany)", async () => {
       const updated = { ...baseOrder, status: "IN_PROGRESS" };
-      mockPrisma.order.update.mockResolvedValue(updated);
+      mockPrisma.order.updateMany = vi.fn().mockResolvedValue({ count: 1 });
+      // findUnique called twice: initial lookup + fetch after update
+      mockPrisma.order.findUnique
+        .mockResolvedValueOnce({ ...baseOrder, status: "PENDING", email: "a@b.com", restaurantId: "rest-1", fullName: "J", orderNumber: "X1" })
+        .mockResolvedValueOnce(updated);
 
       const req = {
         params: { restaurantId: "rest-1", orderId: "order-1" },
@@ -329,17 +333,45 @@ describe("order controllers", () => {
 
       await updateOrderStatus(req, res, next);
 
-      expect(mockPrisma.order.update).toHaveBeenCalledWith({
-        where: { id: "order-1" },
+      expect(mockPrisma.order.updateMany).toHaveBeenCalledWith({
+        where: { id: "order-1", status: "PENDING" },
         data: { status: "IN_PROGRESS" },
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({ data: updated });
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ data: updated }),
+      );
+    });
+
+    test("returns 409 when concurrent update races (updateMany returns count 0)", async () => {
+      mockPrisma.order.updateMany = vi.fn().mockResolvedValue({ count: 0 });
+      mockPrisma.order.findUnique
+        .mockResolvedValueOnce({ ...baseOrder, status: "PENDING", email: "a@b.com", restaurantId: "rest-1", fullName: "J", orderNumber: "X1" })
+        .mockResolvedValueOnce({ ...baseOrder, status: "IN_PROGRESS" });
+
+      const req = {
+        params: { restaurantId: "rest-1", orderId: "order-1" },
+        body: { status: "IN_PROGRESS" },
+      };
+      const res = mockRes();
+      const next = vi.fn();
+
+      await updateOrderStatus(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(409);
     });
 
     test("calls next with error on failure", async () => {
       const err = new Error("DB error");
-      mockPrisma.order.update.mockRejectedValue(err);
+      mockPrisma.order.updateMany = vi.fn().mockRejectedValue(err);
+      mockPrisma.order.findUnique.mockResolvedValue({
+        ...baseOrder,
+        status: "PENDING",
+        email: "a@b.com",
+        restaurantId: "rest-1",
+        fullName: "J",
+        orderNumber: "X1",
+      });
 
       const req = {
         params: { restaurantId: "rest-1", orderId: "order-1" },

@@ -10,7 +10,14 @@ if (process.env.SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     environment: process.env.NODE_ENV || "development",
+    release: process.env.SENTRY_RELEASE || process.env.npm_package_version,
     tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
+    // Do not capture expected client/business errors
+    beforeSend(event, hint) {
+      const status = hint?.originalException?.statusCode;
+      if (status && status < 500) return null;
+      return event;
+    },
   });
 }
 

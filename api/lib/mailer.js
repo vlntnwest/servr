@@ -33,20 +33,20 @@ function renderTemplate(data) {
 async function sendOrderConfirmation({ to, order }) {
   if (!to) return;
 
-  const createdAt = order.createdAt ? new Date(order.createdAt) : new Date();
-  const html = renderTemplate({
-    orderNumber: order.id.slice(0, 8).toUpperCase(),
-    clientName: order.fullName || "Client",
-    orderDate: createdAt.toLocaleDateString("fr-FR"),
-    orderTime: createdAt.toLocaleTimeString("fr-FR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-    totalPrice: `${parseFloat(order.totalPrice).toFixed(2)} €`,
-    orderLink: `${process.env.CLIENT_URL}/order/${order.id}`,
-  });
-
   try {
+    const createdAt = order.createdAt ? new Date(order.createdAt) : new Date();
+    const html = renderTemplate({
+      orderNumber: order.id.slice(0, 8).toUpperCase(),
+      clientName: order.fullName || "Client",
+      orderDate: createdAt.toLocaleDateString("fr-FR"),
+      orderTime: createdAt.toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      totalPrice: `${parseFloat(order.totalPrice).toFixed(2)} €`,
+      orderLink: `${process.env.CLIENT_URL}/order/${order.id}`,
+    });
+
     await transporter.sendMail({
       from: `"Pokey" <${process.env.SMTP_USER}>`,
       to,
@@ -106,21 +106,21 @@ async function sendOrderStatusUpdate({ to, order, newStatus }) {
   if (!to) return;
   if (!NOTIFIABLE_STATUSES.includes(newStatus)) return;
 
-  const label = STATUS_LABELS[newStatus];
-  const orderRef = order.orderNumber
-    ? `#${order.orderNumber}`
-    : `#${order.id.slice(0, 8).toUpperCase()}`;
-
-  const html = `
-    <div style="font-family:Helvetica,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-      <h2>Mise à jour de votre commande ${orderRef}</h2>
-      <p>Bonjour ${order.fullName || ""},</p>
-      <p>Votre commande est maintenant <strong>${label}</strong>.</p>
-      <p style="color:#999;font-size:14px;">Merci pour votre commande !</p>
-    </div>
-  `;
-
   try {
+    const label = STATUS_LABELS[newStatus];
+    const orderRef = order.orderNumber
+      ? `#${order.orderNumber}`
+      : `#${order.id.slice(0, 8).toUpperCase()}`;
+
+    const html = `
+      <div style="font-family:Helvetica,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+        <h2>Mise à jour de votre commande ${orderRef}</h2>
+        <p>Bonjour ${order.fullName || ""},</p>
+        <p>Votre commande est maintenant <strong>${label}</strong>.</p>
+        <p style="color:#999;font-size:14px;">Merci pour votre commande !</p>
+      </div>
+    `;
+
     await transporter.sendMail({
       from: `"Pokey" <${process.env.SMTP_USER}>`,
       to,
