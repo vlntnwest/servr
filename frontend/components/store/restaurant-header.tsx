@@ -1,5 +1,10 @@
 import Image from "next/image";
-import type { Restaurant, OpeningHour, ExceptionalHour, PreparationLevel } from "@/types/api";
+import type {
+  Restaurant,
+  OpeningHour,
+  ExceptionalHour,
+  PreparationLevel,
+} from "@/types/api";
 import { MapPin, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import OpenStatusBadge from "./open-status-badge";
@@ -11,15 +16,16 @@ function getTodayHours(openingHours: OpeningHour[]): string | null {
   return `${todayHours.openTime} - ${todayHours.closeTime}`;
 }
 
-const PREP_BADGES: Record<
-  PreparationLevel,
-  { label: string; color: string }
-> = {
-  EASY: { label: "Peu d'attente", color: "bg-green-100 text-green-800" },
-  MEDIUM: { label: "Attente modérée", color: "bg-yellow-100 text-yellow-800" },
-  BUSY: { label: "Forte affluence", color: "bg-orange-100 text-orange-800" },
-  CLOSED: { label: "Fermé", color: "bg-red-100 text-red-800" },
-};
+const PREP_BADGES: Record<PreparationLevel, { label: string; color: string }> =
+  {
+    EASY: { label: "Peu d'attente", color: "bg-green-100 text-green-800" },
+    MEDIUM: {
+      label: "Attente modérée",
+      color: "bg-yellow-100 text-yellow-800",
+    },
+    BUSY: { label: "Forte affluence", color: "bg-orange-100 text-orange-800" },
+    CLOSED: { label: "Fermé", color: "bg-red-100 text-red-800" },
+  };
 
 interface RestaurantHeaderProps {
   restaurant: Restaurant;
@@ -39,10 +45,10 @@ export default function RestaurantHeader({
 
   return (
     <div className="border-b border-black/5">
-      <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row md:items-start md:gap-6 md:p-6">
+      <div className="max-w-screen-3xl mx-auto flex flex-col md:flex-row md:items-start md:gap-6 md:p-8 xl:p-16">
         {/* Image — full bleed on mobile, rounded card on desktop */}
         {restaurant.imageUrl && (
-          <div className="relative w-full aspect-[16/9] md:w-[380px] md:shrink-0 md:rounded-xl overflow-hidden bg-gray-100">
+          <div className="relative w-full aspect-[16/9] md:w-[30%] min-h-[250px] md:shrink-0 md:rounded-xl overflow-hidden bg-gray-100">
             <Image
               src={restaurant.imageUrl}
               alt={restaurant.name}

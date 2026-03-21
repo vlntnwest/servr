@@ -19,7 +19,7 @@ export default function MenuPage({ categories }: MenuPageProps) {
     );
 
   return (
-    <div className="max-w-screen-3xl mx-auto sm:grid lg:[grid-template-columns:minmax(50%,60%)_minmax(420px,1fr)] 2xl:[grid-template-columns:minmax(60%,70%)_minmax(420px,1fr)]">
+    <div className="max-w-screen-3xl mx-auto sm:grid lg:[grid-template-columns:minmax(50%,60%)_minmax(420px,1fr)] 2xl:[grid-template-columns:minmax(60%,70%)_minmax(420px,1fr)] md:px-8 xl:px-16">
       {/* Menu content */}
       <div className="min-w-0">
         <div className="pb-20 md:pb-6">
