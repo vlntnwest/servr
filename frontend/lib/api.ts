@@ -34,6 +34,7 @@ async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<{ data: T } | { error: string }> {
+  const supabase = createClient();
   const authHeaders = await getAuthHeader();
   const res = await fetch(`${API_URL}/api/v1${path}`, {
     ...options,
@@ -43,6 +44,30 @@ async function apiFetch<T>(
       ...(options.headers as Record<string, string>),
     },
   });
+
+  if (res.status === 401) {
+    // Attempt token refresh
+    const { error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError) {
+      // Refresh failed — session is truly expired, redirect to login
+      if (typeof window !== "undefined") {
+        window.location.href = "/login?reason=session_expired";
+      }
+      return { error: "Session expirée, veuillez vous reconnecter." };
+    }
+    // Retry the request with the new token
+    const freshHeaders = await getAuthHeader();
+    const retryRes = await fetch(`${API_URL}/api/v1${path}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...freshHeaders,
+        ...(options.headers as Record<string, string>),
+      },
+    });
+    return retryRes.json();
+  }
+
   return res.json();
 }
 

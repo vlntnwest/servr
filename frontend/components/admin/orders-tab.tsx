@@ -63,6 +63,7 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
   const [subView, setSubView] = useState<SubView>("En cours");
   const [refundConfirmOpen, setRefundConfirmOpen] = useState(false);
   const [refunding, setRefunding] = useState(false);
+  const [statusChanging, setStatusChanging] = useState<string | null>(null); // orderId being changed
   const [prepLevel, setPrepLevel] = useState<PreparationLevel>("EASY");
   const [socketConnected, setSocketConnected] = useState(false);
   const fetchRef = useRef<(() => Promise<void>) | undefined>(undefined);
@@ -110,8 +111,15 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
     const handleNewOrder = () => fetchRef.current?.();
     const handleStatusUpdated = () => fetchRef.current?.();
 
-    const handleConnect = () => setSocketConnected(true);
     const handleDisconnect = () => setSocketConnected(false);
+
+    const handleReconnect = () => {
+      setSocketConnected(true);
+      const socket = getSocket();
+      socket.emit("join:restaurant", restaurantId);
+      // Reload orders to catch up on missed events
+      fetchRef.current?.();
+    };
 
     const supabase = createClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -123,7 +131,7 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
       socket.emit("join:restaurant", restaurantId);
 
       setSocketConnected(socket.connected);
-      socket.on("connect", handleConnect);
+      socket.on("connect", handleReconnect);
       socket.on("disconnect", handleDisconnect);
       socket.on("order:new", handleNewOrder);
       socket.on("order:statusUpdated", handleStatusUpdated);
@@ -132,7 +140,7 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
     return () => {
       cancelled = true;
       const socket = getSocket();
-      socket.off("connect", handleConnect);
+      socket.off("connect", handleReconnect);
       socket.off("disconnect", handleDisconnect);
       socket.off("order:new", handleNewOrder);
       socket.off("order:statusUpdated", handleStatusUpdated);
@@ -140,12 +148,17 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
   }, [restaurantId]);
 
   const handleStatusChange = async (orderId: string, status: string) => {
-    await updateOrderStatus(orderId, status);
-    await Promise.all([fetchActive(), fetchFinished()]);
-    // Keep sheet open but update selected order's status
-    setSelectedOrder((prev) =>
-      prev?.id === orderId ? { ...prev, status: status as Order["status"] } : prev,
-    );
+    if (statusChanging) return; // prevent double-click
+    setStatusChanging(orderId);
+    try {
+      await updateOrderStatus(orderId, status);
+      await Promise.all([fetchActive(), fetchFinished()]);
+      setSelectedOrder((prev) =>
+        prev?.id === orderId ? { ...prev, status: status as Order["status"] } : prev,
+      );
+    } finally {
+      setStatusChanging(null);
+    }
   };
 
   const handleRefund = async () => {
@@ -191,6 +204,14 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
 
   return (
     <>
+    {/* WebSocket disconnection banner */}
+    {!socketConnected && (
+      <div className="mb-4 flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-2 text-sm text-amber-800">
+        <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+        Connexion perdue, reconnexion en cours…
+      </div>
+    )}
+
     {/* Connection status + Preparation level toggle */}
     <div className="flex items-center gap-3 mb-4">
       <span className="text-xs font-semibold text-[#676767] uppercase tracking-wide flex items-center gap-1.5">
@@ -436,11 +457,12 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
                             variant={action.variant}
                             size="sm"
                             className="flex-1"
+                            disabled={statusChanging === selectedOrder.id}
                             onClick={() =>
                               handleStatusChange(selectedOrder.id, action.targetStatus)
                             }
                           >
-                            {action.label}
+                            {statusChanging === selectedOrder.id ? "En cours…" : action.label}
                           </Button>
                         ))}
                       </div>

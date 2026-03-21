@@ -248,27 +248,46 @@ module.exports.createCheckoutSession = async (req, res, next) => {
     const discountedCents = Math.round(totalPrice * 100);
     const applicationFeeAmount = Math.round(discountedCents * PLATFORM_FEE_PERCENT);
 
-    const session = await stripe.checkout.sessions.create(
-      {
-        payment_method_types: ["card"],
-        line_items: lineItems,
-        ...(discounts.length > 0 ? { discounts } : {}),
-        mode: "payment",
-        success_url: `${process.env.CLIENT_URL}/store/${restaurant.slug}/order/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.CLIENT_URL}/store/${restaurant.slug}/order/cancel`,
-        customer_email: email || undefined,
-        expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
-        payment_intent_data: {
-          application_fee_amount: applicationFeeAmount,
-          metadata: { orderId: draftOrder.id },
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create(
+        {
+          payment_method_types: ["card"],
+          line_items: lineItems,
+          ...(discounts.length > 0 ? { discounts } : {}),
+          mode: "payment",
+          success_url: `${process.env.CLIENT_URL}/store/${restaurant.slug}/order/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${process.env.CLIENT_URL}/store/${restaurant.slug}/order/cancel`,
+          customer_email: email || undefined,
+          expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+          payment_intent_data: {
+            application_fee_amount: applicationFeeAmount,
+            metadata: { orderId: draftOrder.id },
+          },
+          metadata: {
+            orderId: draftOrder.id,
+            ...(appliedPromoCode ? { promoCodeId: appliedPromoCode.id } : {}),
+          },
         },
-        metadata: {
-          orderId: draftOrder.id,
-          ...(appliedPromoCode ? { promoCodeId: appliedPromoCode.id } : {}),
-        },
-      },
-      { stripeAccount: restaurant.stripeAccountId },
-    );
+        { stripeAccount: restaurant.stripeAccountId },
+      );
+    } catch (stripeErr) {
+      logger.error(
+        { orderId: draftOrder.id, restaurantId, stripeCode: stripeErr.code, stripeMessage: stripeErr.message, stripeRequestId: stripeErr.requestId },
+        "Stripe session creation failed",
+      );
+      if (stripeErr.type === "StripePermissionError" || stripeErr.code === "account_invalid" || stripeErr.code === "charges_not_enabled") {
+        return res.status(400).json({ error: "Le compte de paiement du restaurant n'est pas configuré" });
+      }
+      if (stripeErr.type === "StripeConnectionError" || stripeErr.type === "StripeAPIError") {
+        return res.status(503).json({ error: "Service de paiement temporairement indisponible" });
+      }
+      if (stripeErr.type === "StripeInvalidRequestError") {
+        // Bug in our parameters — treat as internal error
+        return next(stripeErr);
+      }
+      return res.status(503).json({ error: "Service de paiement temporairement indisponible" });
+    }
 
     await prisma.order.update({
       where: { id: draftOrder.id },
@@ -302,12 +321,23 @@ module.exports.handleWebhook = async (req, res) => {
       const session = event.data.object;
       const { orderId, promoCodeId } = session.metadata;
 
+      if (!orderId) {
+        logger.warn({ sessionId: session.id }, "Webhook missing orderId in metadata");
+        return res.status(200).json({ received: true });
+      }
+
       const order = await withOrderNumber(async (tx, orderNumber) => {
         const existing = await tx.order.findUnique({
           where: { id: orderId },
           select: { id: true, status: true },
         });
-        if (!existing || !isValidTransition(existing.status, "PENDING")) return null;
+        // Only transition DRAFT → PENDING; any other status means already processed or advanced
+        if (!existing || existing.status !== "DRAFT") {
+          if (existing) {
+            logger.info({ orderId, status: existing.status }, "Webhook already processed, skipping");
+          }
+          return null;
+        }
 
         if (promoCodeId) {
           await tx.promoCode.update({

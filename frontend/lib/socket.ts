@@ -10,7 +10,7 @@ export function getSocket(token?: string): Socket {
       withCredentials: true,
       auth: token ? { token } : undefined,
       reconnection: true,
-      reconnectionAttempts: 10,
+      reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 10000,
     });
