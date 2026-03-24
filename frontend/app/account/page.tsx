@@ -70,7 +70,7 @@ export default function AccountPage() {
 
     if (res.ok) {
       setSuccess(true);
-      refetch(); // met à jour le UserContext pour le prochain checkout
+      refetch().catch(console.error); // met à jour le UserContext pour le prochain checkout
     } else {
       const { error } = await res.json();
       setError(error ?? "Une erreur est survenue");
