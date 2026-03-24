@@ -13,6 +13,7 @@ import type {
   OptionGroup,
   OptionChoice,
   CheckoutItem,
+  User,
 } from "@/types/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
@@ -624,4 +625,8 @@ export async function getStripeStatus(): Promise<{
     chargesEnabled?: boolean;
     detailsSubmitted?: boolean;
   }>(`/restaurants/${RESTAURANT_ID}/stripe/status`);
+}
+
+export async function getUserMe(): Promise<{ data: User } | { error: string }> {
+  return apiFetch<User>("/user/me");
 }
