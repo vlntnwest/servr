@@ -40,6 +40,7 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
   });
 
   const { user } = useUserContext();
+  // null until modal opens — snapshot of user at open time (avoids mid-session changes)
   const [localUser, setLocalUser] = useState<User | null>(null);
 
   useEffect(() => {
