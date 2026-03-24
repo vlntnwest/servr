@@ -36,23 +36,23 @@ export function UserProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const supabase = createClient();
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        loadUser().finally(() => setIsLoading(false));
-      } else {
-        setIsLoading(false);
-      }
-    });
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    // supabase is instantiated once here; loadUser is stable via useCallback
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-        loadUser();
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (
+        event === "SIGNED_IN" ||
+        event === "TOKEN_REFRESHED" ||
+        event === "INITIAL_SESSION"
+      ) {
+        if (session) {
+          loadUser().finally(() => setIsLoading(false));
+        } else {
+          // INITIAL_SESSION with no session = not logged in
+          setIsLoading(false);
+        }
       } else if (event === "SIGNED_OUT") {
         setUser(null);
+        setIsLoading(false);
       }
     });
 
