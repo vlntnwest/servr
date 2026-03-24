@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Check, X } from "lucide-react";
 import { createCheckoutSession, validatePromoCode } from "@/lib/api";
 import { useCart } from "@/contexts/cart-context";
+import { useUserContext } from "@/contexts/user-context";
+import type { User } from "@/types/api";
 import { useOptionalRestaurant } from "@/contexts/restaurant-context";
 import { useRouter } from "next/navigation";
 
@@ -36,6 +38,20 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
     phone: "",
     email: "",
   });
+
+  const { user } = useUserContext();
+  const [localUser, setLocalUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      setLocalUser(user);
+      setForm((prev) => ({
+        ...prev,
+        fullName: user?.fullName ?? "",
+        phone: user?.phone ?? "",
+      }));
+    }
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -85,7 +101,7 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
         {
           fullName: form.fullName || undefined,
           phone: form.phone || undefined,
-          email: form.email || undefined,
+          email: localUser ? localUser.email : form.email || undefined,
           items,
           scheduledFor: initialScheduledFor || undefined,
           promoCode: appliedPromo?.code || undefined,
@@ -134,17 +150,19 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
               placeholder="Jean Dupont"
             />
           </div>
-          <div className="space-y-1">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="jean@example.com"
-            />
-          </div>
+          {!localUser && (
+            <div className="space-y-1">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="jean@example.com"
+              />
+            </div>
+          )}
           <div className="space-y-1">
             <Label htmlFor="phone">Téléphone</Label>
             <Input
