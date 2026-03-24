@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 // Set env before module is imported
 vi.stubEnv("NEXT_PUBLIC_API_URL", "http://localhost:3001");
@@ -38,7 +38,7 @@ describe("getUserMe", () => {
     });
   });
 
-  it("returns error on non-ok response", async () => {
+  it("passes through server error body on non-ok response", async () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 500,
@@ -46,6 +46,7 @@ describe("getUserMe", () => {
     });
 
     const result = await getUserMe();
-    expect(result).toHaveProperty("error");
+    // apiFetch passes through the response body regardless of ok status
+    expect(result).toEqual({ error: "Server error" });
   });
 });
