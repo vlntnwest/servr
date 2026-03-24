@@ -22,13 +22,15 @@ Actuellement, le formulaire de commande (`checkout-modal.tsx`) est toujours vide
 
 ### 1. `UserContext` — `frontend/contexts/user-context.tsx`
 
-Nouveau context React exposé au niveau du layout racine.
+Nouveau context React Client Component exposé au niveau du layout racine.
+
+**Note Next.js App Router :** `layout.tsx` est un Server Component. `UserProvider` doit être un Client Component (`"use client"`). Il s'utilise comme `CartProvider` dans ce projet : ajouté comme enfant dans le body du Server Component, ce qui est supporté par Next.js.
 
 **État exposé :**
 ```typescript
 interface UserContextValue {
-  user: UserProfile | null   // null si non connecté ou en cours de chargement
-  isLoading: boolean
+  user: UserProfile | null   // null si non connecté
+  isLoading: boolean         // true uniquement pendant le fetch initial
   refetch: () => Promise<void>
 }
 
@@ -42,39 +44,49 @@ interface UserProfile {
 
 **Comportement :**
 - Au montage, s'abonne à `supabase.auth.onAuthStateChange`
-- Sur événement `SIGNED_IN` ou session active : appelle `GET /api/user/me` avec le token Bearer
+- Sur événement `SIGNED_IN` ou session active : appelle `GET /api/user/me`
+- Avant chaque appel `GET /api/user/me`, récupère un token frais via `supabase.auth.getSession()` (évite les 401 sur token expiré)
 - Sur événement `SIGNED_OUT` : remet `user` à `null`
-- `refetch()` : re-appelle `GET /api/user/me` (utilisé après édition du profil)
-- `isLoading: true` pendant le fetch initial uniquement
+- `refetch()` : appelle `supabase.auth.getSession()` puis `GET /api/user/me`, sans paramètre token (self-contained)
+- `isLoading: true` uniquement pendant le fetch initial
 
-**Placement :** dans le layout racine (`frontend/app/layout.tsx` ou le provider wrapper existant)
+**Flash d'état non-connecté :** pendant `isLoading`, les composants qui conditionnent leur affichage sur `user` (ex: `customer-sheet.tsx`) doivent vérifier `isLoading` avant de rendre l'UI auth-dépendante, pour éviter un flash "Se connecter" au chargement.
 
 ---
 
 ### 2. Préremplissage dans `checkout-modal.tsx`
 
+Le modal actuel utilise `useState` avec un objet de formulaire (pas react-hook-form). On conserve cette approche.
+
 **Comportement :**
 - Lit `user` depuis `useUserContext()`
-- À l'ouverture du modal (via `useEffect` sur un prop `open` ou `onOpenChange`), appelle `form.reset()` avec les valeurs disponibles :
+- À l'ouverture du modal, **snapshot** la valeur `user` dans un state local pour figer les données pendant toute la durée du modal (évite tout comportement inattendu si l'utilisateur se déconnecte pendant la commande).
+- **Important :** `CheckoutModal` n'est jamais démonté (il utilise `<Dialog open={open}>`), donc `useState(() => user)` n'exécuterait son initializer qu'une seule fois au premier montage. Le snapshot doit être défini à l'intérieur du `useEffect` sur `[open]` :
   ```typescript
-  form.reset({
-    fullName: user?.fullName ?? "",
-    phone: user?.phone ?? "",
-    // email non inclus si connecté
-  })
+  const [localUser, setLocalUser] = useState<UserProfile | null>(null)
+
+  useEffect(() => {
+    if (open) {
+      setLocalUser(user) // snapshot au moment de l'ouverture
+      setForm(prev => ({
+        ...prev,
+        fullName: user?.fullName ?? "",
+        phone: user?.phone ?? "",
+      }))
+    }
+  }, [open])
   ```
-- Si `user` est `null` (non connecté), le formulaire reste vide comme actuellement
+- Si `localUser === null` (non connecté), le formulaire reste vide comme actuellement
 
 **Champ email :**
-- Si `user !== null` : le champ email est **masqué** du JSX et retiré du schema Zod de validation côté client
-- L'email est envoyé au backend depuis le context (`user.email`), pas depuis le formulaire
-- Si `user === null` : le champ email est affiché normalement (commande invitée)
+- Si `localUser !== null` : le champ email est **masqué** du JSX. Pas de modification du schema de validation — le champ email reste optionnel dans le schema existant, il n'est juste pas rendu.
+- Si `localUser === null` : le champ email est affiché normalement (commande invitée)
 
-**Champ email dans le payload API :**
+**Payload envoyé au backend :**
 ```typescript
 const payload = {
   ...formValues,
-  email: user ? user.email : formValues.email,
+  email: localUser ? localUser.email : formValues.email,
 }
 ```
 
@@ -83,14 +95,16 @@ const payload = {
 ### 3. Migration des composants existants
 
 **`customer-sheet.tsx`**
-- Actuellement : appelle `supabase.auth.getUser()` directement
-- Migration : lire `user` depuis `useUserContext()` — supprime le fetch dupliqué
+- Actuellement : a son propre `onAuthStateChange` + state local `user` (type Supabase)
+- Migration : lire `user` et `isLoading` depuis `useUserContext()`
+- Supprimer la subscription locale ET son `subscription.unsubscribe()` dans le cleanup — laisser deux subscriptions actives créerait des conflits
+- `customer-sheet.tsx` n'a besoin que de savoir si un user est connecté (`user !== null`), ce que `UserProfile` fournit
 
 **`account/page.tsx`**
-- Après sauvegarde réussie du profil (`PUT /api/user/me`), appeler `refetch()` depuis le context pour maintenir la cohérence
+- Après sauvegarde réussie (`PUT /api/user/me`), appeler `refetch()` depuis le context pour maintenir la cohérence globale
 
 **`header.tsx`**
-- Si le header affiche des informations utilisateur (nom, avatar), les lire depuis le context
+- Si le header affiche des informations utilisateur, lire depuis `useUserContext()`
 
 ---
 
@@ -98,18 +112,23 @@ const payload = {
 
 ```
 App mount
-  └─ UserContext monte
-       └─ supabase.auth.getUser() → session active ?
-            ├─ Oui → GET /api/user/me → user = { id, email, fullName, phone }
-            └─ Non → user = null
+  └─ UserProvider monte (Client Component dans layout.tsx)
+       └─ supabase.auth.getSession() → session active ?
+            ├─ Oui → supabase.auth.getSession() pour token frais
+            │         → GET /api/user/me → user = { id, email, fullName, phone }
+            └─ Non → user = null, isLoading = false
 
 User ouvre le checkout modal
-  └─ useUserContext() → user
-       ├─ user !== null → form.reset({ fullName, phone }), email masqué
-       └─ user === null → formulaire vide, email affiché
+  └─ useState(() => user) → localUser (snapshot)
+       ├─ localUser !== null → setForm({ fullName, phone }), email masqué dans JSX
+       └─ localUser === null → formulaire vide, email affiché
+
+User se déconnecte pendant le modal (edge case)
+  └─ localUser reste figé (snapshot) → commande continue normalement
+     avec l'email de localUser dans le payload
 
 User soumet le formulaire
-  └─ payload = { ...formValues, email: user?.email ?? formValues.email }
+  └─ payload = { ...formValues, email: localUser?.email ?? formValues.email }
 ```
 
 ---
@@ -120,6 +139,7 @@ User soumet le formulaire
 - Le backend ne change pas : il accepte toujours `fullName`, `email`, `phone` en optionnel
 - Le comportement pour les commandes invitées (non connectés) est identique à aujourd'hui
 - Le panier (`cart-context.tsx`) et la logique de paiement ne changent pas
+- Pas d'introduction de react-hook-form dans cette itération
 
 ---
 
@@ -128,8 +148,8 @@ User soumet le formulaire
 | Fichier | Action |
 |---------|--------|
 | `frontend/contexts/user-context.tsx` | **Créer** |
-| `frontend/app/layout.tsx` (ou provider wrapper) | Ajouter `UserProvider` |
-| `frontend/components/cart/checkout-modal.tsx` | Préremplissage + masquage email |
-| `frontend/components/store/customer-sheet.tsx` | Migrer vers `useUserContext()` |
+| `frontend/app/layout.tsx` | Ajouter `UserProvider` (comme `CartProvider`) |
+| `frontend/components/cart/checkout-modal.tsx` | Snapshot + préremplissage + masquage email |
+| `frontend/components/store/customer-sheet.tsx` | Migrer vers `useUserContext()`, supprimer subscription locale |
 | `frontend/app/account/page.tsx` | Appeler `refetch()` après sauvegarde |
 | `frontend/components/layout/header.tsx` | Lire depuis context si besoin |
