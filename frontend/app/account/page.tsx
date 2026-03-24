@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { useUserContext } from "@/contexts/user-context";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,13 +16,12 @@ export default function AccountPage() {
   const router = useRouter();
   const supabase = createClient();
 
+  const { refetch } = useUserContext();
   const [token, setToken] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
-    address: "",
-    city: "",
-    zipCode: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -36,6 +36,7 @@ export default function AccountPage() {
         return;
       }
       setToken(session.access_token);
+      setEmail(session.user.email ?? null);
 
       const res = await fetch(`${API_URL}/api/user/me`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
@@ -45,9 +46,6 @@ export default function AccountPage() {
         setForm({
           fullName: data.fullName ?? "",
           phone: data.phone ?? "",
-          address: data.address ?? "",
-          city: data.city ?? "",
-          zipCode: data.zipCode ?? "",
         });
       }
       setLoading(false);
@@ -72,6 +70,7 @@ export default function AccountPage() {
 
     if (res.ok) {
       setSuccess(true);
+      refetch(); // met à jour le UserContext pour le prochain checkout
     } else {
       const { error } = await res.json();
       setError(error ?? "Une erreur est survenue");
@@ -98,6 +97,17 @@ export default function AccountPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            value={email ?? ""}
+            readOnly
+            disabled
+            autoComplete="email"
+            className="text-[#676767]"
+          />
+        </div>
+        <div className="space-y-1.5">
           <Label htmlFor="fullName">Nom complet</Label>
           <Input
             id="fullName"
@@ -114,36 +124,6 @@ export default function AccountPage() {
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
             autoComplete="tel"
           />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="address">Adresse</Label>
-          <Input
-            id="address"
-            value={form.address}
-            onChange={(e) => setForm({ ...form, address: e.target.value })}
-            autoComplete="street-address"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="zipCode">Code postal</Label>
-            <Input
-              id="zipCode"
-              value={form.zipCode}
-              onChange={(e) => setForm({ ...form, zipCode: e.target.value })}
-              autoComplete="postal-code"
-              maxLength={5}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="city">Ville</Label>
-            <Input
-              id="city"
-              value={form.city}
-              onChange={(e) => setForm({ ...form, city: e.target.value })}
-              autoComplete="address-level2"
-            />
-          </div>
         </div>
 
         {error && <p className="text-sm text-red-500">{error}</p>}
