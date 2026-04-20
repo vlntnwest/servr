@@ -201,7 +201,6 @@ module.exports.getOrders = async (req, res, next) => {
       prisma.order.count({ where }),
     ]);
 
-    logger.info({ restaurantId, page, limit }, "Orders retrieved");
     return res.status(200).json({
       data,
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
@@ -231,7 +230,6 @@ module.exports.getOrder = async (req, res, next) => {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    logger.info({ orderId }, "Order retrieved");
     return res.status(200).json({ data });
   } catch (error) {
     next(error);
@@ -314,7 +312,6 @@ module.exports.getOrderPublic = async (req, res, next) => {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    logger.info({ orderId }, "Public order lookup");
     return res.status(200).json({ data: order });
   } catch (error) {
     next(error);

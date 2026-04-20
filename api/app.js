@@ -67,8 +67,12 @@ const paymentLimiter = rateLimit({
 // HTTP request logging with response time (pino-http)
 app.use(pinoHttp({
   logger,
-  // Skip health check noise in logs
-  autoLogging: { ignore: (req) => req.url === "/health" },
+  autoLogging: false,
+  redact: ["req.headers.authorization", "req.headers.cookie"],
+  serializers: {
+    req: (req) => ({ method: req.method, url: req.url }),
+    res: (res) => ({ statusCode: res.statusCode }),
+  },
 }));
 
 // Request ID (must be before other middleware)
