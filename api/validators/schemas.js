@@ -72,8 +72,8 @@ const updateProductSchema = z.object({
   imageUrl: z.string().url().optional(),
   price: z.number().optional(),
   tags: z.array(z.string()).optional(),
-  discount: z.number().default(0).optional(),
-  isAvailable: z.boolean().default(true).optional(),
+  discount: z.number().optional(),
+  isAvailable: z.boolean().optional(),
   displayOrder: z.number().optional(),
   categorieId: z.string().uuid().optional(),
 });
