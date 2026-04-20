@@ -33,8 +33,22 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  function translateApiError(raw: string): string {
+    if (raw.includes("currently closed") || raw.includes("fermé")) return "Le restaurant est actuellement fermé.";
+    if (raw.includes("Scheduled time")) return "Le créneau sélectionné est en dehors des horaires d'ouverture.";
+    if (raw.includes("Unavailable products")) {
+      const match = raw.match(/Unavailable products: (.+)/);
+      return match ? `Ce produit n'est plus disponible : ${match[1]}.` : "Un article de votre panier n'est plus disponible.";
+    }
+    if (raw.includes("not found")) return "Un article de votre panier est introuvable. Veuillez le retirer et réessayer.";
+    if (raw.includes("paiement") || raw.includes("indisponible")) return raw;
+    if (raw.includes("configuré")) return raw;
+    return "Une erreur est survenue. Veuillez réessayer.";
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return; // prevent double-submit
     setLoading(true);
     setError(null);
 
@@ -52,7 +66,7 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
       );
 
       if ("error" in result) {
-        setError(result.error);
+        setError(translateApiError(result.error));
         return;
       }
 

@@ -17,11 +17,17 @@ const uploadRoutes = require("./routes/upload.routes");
 const checkoutRoutes = require("./routes/checkout.routes");
 const promoCodeRoutes = require("./routes/promoCode.routes");
 const exceptionalHourRoutes = require("./routes/exceptionalHour.routes");
+const adminRoutes = require("./routes/admin.routes");
 const swaggerUi = require("swagger-ui-express");
 const openApiSpec = require("./docs/openapi.json");
 
 const errorHandler = require("./middleware/error.middleware");
 const requestId = require("./middleware/requestId.middleware");
+const prisma = require("./lib/prisma");
+const supabase = require("./lib/supabase");
+const checkAuth = require("./middleware/auth.middleware");
+const logger = require("./logger");
+const pinoHttp = require("pino-http");
 
 const app = express();
 
@@ -58,6 +64,17 @@ const paymentLimiter = rateLimit({
   skip: (req) => req.path === "/webhook",
 });
 
+// HTTP request logging with response time (pino-http)
+app.use(pinoHttp({
+  logger,
+  autoLogging: false,
+  redact: ["req.headers.authorization", "req.headers.cookie"],
+  serializers: {
+    req: (req) => ({ method: req.method, url: req.url }),
+    res: (res) => ({ statusCode: res.statusCode }),
+  },
+}));
+
 // Request ID (must be before other middleware)
 app.use(requestId);
 
@@ -65,8 +82,8 @@ app.use(requestId);
 app.use(helmet());
 
 // Webhook route FIRST - before CORS and JSON parsing to preserve raw body for signature verification
-app.use("/api/checkout/webhook", express.raw({ type: "application/json" }));
-app.use("/api/v1/checkout/webhook", express.raw({ type: "application/json" }));
+app.use("/api/checkout/webhook", express.raw({ type: "application/json", limit: "1mb" }));
+app.use("/api/v1/checkout/webhook", express.raw({ type: "application/json", limit: "1mb" }));
 
 // CORS
 const corsOption = {
@@ -92,9 +109,43 @@ app.use(cookieParser());
 // Apply global rate limiter to all routes
 app.use(globalLimiter);
 
-// Health check
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
+// Health check — verifies Postgres and Supabase Auth connectivity
+app.get("/health", async (req, res) => {
+  const result = { status: "ok", db: "ok", auth: "ok" };
+  let statusCode = 200;
+
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+  } catch {
+    result.db = "error";
+    result.status = "degraded";
+    statusCode = 503;
+  }
+
+  try {
+    await supabase.auth.admin.listUsers({ page: 1, perPage: 1 });
+  } catch {
+    result.auth = "error";
+    result.status = "degraded";
+    statusCode = 503;
+  }
+
+  res.status(statusCode).json(result);
+});
+
+// Stripe health check — protected, OWNER-level (checks platform API key only)
+app.get("/health/stripe", checkAuth, async (req, res) => {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return res.status(503).json({ status: "error", detail: "Stripe not configured" });
+  }
+  try {
+    const Stripe = require("stripe");
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    await stripe.balance.retrieve();
+    return res.status(200).json({ status: "ok" });
+  } catch {
+    return res.status(503).json({ status: "error", detail: "Stripe unreachable" });
+  }
 });
 
 // API documentation
@@ -115,6 +166,9 @@ for (const prefix of V1_PREFIXES) {
   app.use(prefix, globalLimiter, promoCodeRoutes);
   app.use(prefix, globalLimiter, exceptionalHourRoutes);
 }
+
+// Platform admin routes (not versioned, auth required)
+app.use("/api/admin", adminRoutes);
 
 // Error handler
 app.use(errorHandler);

@@ -8,7 +8,15 @@ import {
   uploadImage,
   deleteImage,
   updateRestaurant,
+  cleanupDraftOrders,
 } from "@/lib/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import {
   CheckCircle,
   Clock,
@@ -185,6 +193,106 @@ function RestaurantImageSection() {
   );
 }
 
+// ── Maintenance section ───────────────────────────────────────────────────────
+
+function MaintenanceSection() {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{ deletedCount: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleCleanup = async () => {
+    setLoading(true);
+    setError(null);
+    const res = await cleanupDraftOrders();
+    setLoading(false);
+    if ("data" in res && res.data) {
+      setResult(res.data);
+    } else {
+      setError(res.error ?? "Erreur lors du nettoyage");
+    }
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setResult(null);
+    setError(null);
+  };
+
+  return (
+    <div className="py-6 max-w-xl border-t border-black/10 mt-6">
+      <h2 className="text-lg font-semibold mb-1">Maintenance</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        Outils de nettoyage et d&apos;administration de la plateforme.
+      </p>
+
+      <div className="flex items-center justify-between rounded-lg border border-black/10 px-4 py-3">
+        <div>
+          <p className="text-sm font-medium">Commandes abandonnées</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Supprime les commandes non finalisées de plus de 24h.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+          Nettoyer
+        </Button>
+      </div>
+
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent>
+          <DialogHeader className="items-start">
+            <DialogTitle>Nettoyer les commandes abandonnées</DialogTitle>
+            <DialogDescription className="pt-2 space-y-2">
+              <span className="block">
+                Cette action supprime définitivement toutes les commandes en
+                statut <strong>DRAFT</strong> créées il y a plus de 24 heures.
+              </span>
+              <span className="block">
+                Ces commandes correspondent à des paniers initiés mais jamais
+                finalisés (paiement abandonné, onglet fermé…). Elles ne sont
+                jamais visibles par les clients et n&apos;ont aucun impact sur
+                votre activité.
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+
+          {result && (
+            <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-sm">
+              <CheckCircle className="w-4 h-4 shrink-0" />
+              {result.deletedCount === 0
+                ? "Aucune commande abandonnée à supprimer."
+                : `${result.deletedCount} commande${result.deletedCount > 1 ? "s" : ""} supprimée${result.deletedCount > 1 ? "s" : ""}.`}
+            </div>
+          )}
+
+          {error && (
+            <div className="flex items-center gap-2 text-destructive text-sm">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              {error}
+            </div>
+          )}
+
+          <div className="flex justify-end px-4 pb-4 gap-2 mt-2">
+            <Button variant="outline" onClick={handleClose} disabled={loading}>
+              {result ? "Fermer" : "Annuler"}
+            </Button>
+            {!result && (
+              <Button
+                variant="destructive"
+                onClick={handleCleanup}
+                disabled={loading}
+              >
+                {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                Confirmer le nettoyage
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 // ── Stripe section ────────────────────────────────────────────────────────────
 
 export default function SettingsTab() {
@@ -216,7 +324,7 @@ export default function SettingsTab() {
     } else {
       setError(
         "error" in result
-          ? result.error ?? "Erreur lors de la connexion Stripe"
+          ? (result.error ?? "Erreur lors de la connexion Stripe")
           : "Erreur lors de la connexion Stripe",
       );
       setConnecting(false);
@@ -282,6 +390,8 @@ export default function SettingsTab() {
           </div>
         )}
       </div>
+
+      <MaintenanceSection />
     </div>
   );
 }
