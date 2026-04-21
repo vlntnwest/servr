@@ -7,7 +7,6 @@ import type {
   PaginatedResponse,
   OpeningHour,
   ExceptionalHour,
-  RestaurantMember,
   PromoCode,
   Stats,
   OptionGroup,
@@ -155,7 +154,7 @@ export async function createCheckoutSession(
   return res.json();
 }
 
-// ── Auth-protected (STAFF+) ──────────────────────────────────────────────────
+// ── Auth-protected (admin) ────────────────────────────────────────────────────
 
 export async function getOrders(
   page = 1,
@@ -187,8 +186,6 @@ export async function updateOrderStatus(
   return null;
 }
 
-// ── Auth-protected (ADMIN+) ──────────────────────────────────────────────────
-
 export async function getStats(
   period: "day" | "week" | "month" = "month",
 ): Promise<Stats | null> {
@@ -205,30 +202,6 @@ export async function getOptionGroups(): Promise<OptionGroup[]> {
   );
   if ("data" in result) return result.data;
   return [];
-}
-
-export async function getMembers(): Promise<
-  PaginatedResponse<RestaurantMember>
-> {
-  const result = await apiFetch<never>(`/restaurants/${RESTAURANT_ID}/members`);
-  if ("error" in result)
-    return {
-      data: [],
-      pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
-    };
-  return result as unknown as PaginatedResponse<RestaurantMember>;
-}
-
-export async function inviteMember(
-  email: string,
-  role: "ADMIN" | "STAFF",
-): Promise<{ error?: string }> {
-  const result = await apiFetch<{ message: string }>(
-    `/restaurants/${RESTAURANT_ID}/members/invite`,
-    { method: "POST", body: JSON.stringify({ email, role }) },
-  );
-  if ("error" in result) return { error: result.error };
-  return {};
 }
 
 export async function getPromoCodes(): Promise<PromoCode[]> {
@@ -260,16 +233,6 @@ export async function deletePromoCode(
 ): Promise<{ error?: string }> {
   const result = await apiFetch<{ message: string }>(
     `/restaurants/${RESTAURANT_ID}/promo-codes/${promoCodeId}`,
-    { method: "DELETE" },
-  );
-  return "error" in result ? { error: result.error } : {};
-}
-
-export async function removeMember(
-  memberId: string,
-): Promise<{ error?: string }> {
-  const result = await apiFetch<{ message: string }>(
-    `/restaurants/${RESTAURANT_ID}/members/${memberId}`,
     { method: "DELETE" },
   );
   return "error" in result ? { error: result.error } : {};
@@ -587,8 +550,6 @@ export async function reorderProductOptionGroups(
   );
   return "error" in result ? { error: result.error } : {};
 }
-
-// ── Stripe Connect (OWNER) ────────────────────────────────────────────────────
 
 export async function updatePreparationLevel(
   level: "EASY" | "MEDIUM" | "BUSY" | "CLOSED",

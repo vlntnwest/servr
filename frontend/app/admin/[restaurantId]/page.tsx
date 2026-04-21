@@ -7,7 +7,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { setRestaurantId } from "@/lib/api";
 import OrdersTab from "@/components/admin/orders-tab";
 import StatsTab from "@/components/admin/stats-tab";
-import MembersTab from "@/components/admin/members-tab";
 import OpeningHoursTab from "@/components/admin/opening-hours-tab";
 import ProductsTab from "@/components/admin/products-tab";
 import SettingsTab from "@/components/admin/settings-tab";
@@ -117,9 +116,7 @@ export default function AdminRestaurantPage({
 
       const { data: meData } = await meRes.json();
       const memberIds: string[] =
-        meData.restaurantMembers?.map(
-          (m: { restaurantId: string }) => m.restaurantId,
-        ) ?? [];
+        meData.restaurants?.map((r: { id: string }) => r.id) ?? [];
 
       // 3. Validate that the user is a member of the requested restaurantId
       if (!memberIds.includes(restaurantId)) {
@@ -205,7 +202,6 @@ export default function AdminRestaurantPage({
             <TabsTrigger value="orders">Commandes</TabsTrigger>
             <TabsTrigger value="stats">Statistiques</TabsTrigger>
             <TabsTrigger value="products">Produits</TabsTrigger>
-            <TabsTrigger value="members">Membres</TabsTrigger>
             <TabsTrigger value="hours">Horaires</TabsTrigger>
             <TabsTrigger value="promos">Codes promo</TabsTrigger>
             <TabsTrigger value="settings">Paramètres</TabsTrigger>
@@ -219,9 +215,6 @@ export default function AdminRestaurantPage({
           </TabsContent>
           <TabsContent value="products">
             <ProductsTab />
-          </TabsContent>
-          <TabsContent value="members">
-            <MembersTab />
           </TabsContent>
           <TabsContent value="hours">
             <OpeningHoursTab />

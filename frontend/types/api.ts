@@ -134,21 +134,6 @@ export type OpeningHour = {
   order: number;
 };
 
-export type RestaurantMember = {
-  id: string;
-  restaurantId: string;
-  userId: string;
-  role: "OWNER" | "ADMIN" | "STAFF";
-  createdAt: string;
-  updatedAt: string;
-  user: {
-    id: string;
-    email: string;
-    fullName: string | null;
-    phone: string | null;
-  };
-};
-
 export type User = {
   id: string;
   email: string;
@@ -156,7 +141,7 @@ export type User = {
   phone: string | null;
   createdAt: string;
   updatedAt: string;
-  restaurantMembers: RestaurantMember[];
+  restaurants: Restaurant[];
 };
 
 export type PromoCode = {

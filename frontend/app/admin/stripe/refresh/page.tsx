@@ -26,7 +26,7 @@ export default function StripeRefreshPage() {
       );
       if (res.ok) {
         const { data } = await res.json();
-        const restaurantId = data.restaurantMembers?.[0]?.restaurantId;
+        const restaurantId = data.restaurants?.[0]?.id;
         if (restaurantId) setRestaurantId(restaurantId);
       }
 
