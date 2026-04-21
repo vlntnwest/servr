@@ -44,29 +44,18 @@ module.exports.createRestaurant = async (req, res, next) => {
   const { name, slug, address, zipCode, city, phone, email, imageUrl } = req.body;
 
   try {
-    const data = await prisma.$transaction(async (tx) => {
-      const restaurant = await tx.restaurant.create({
-        data: {
-          name,
-          slug,
-          address,
-          zipCode,
-          city,
-          phone,
-          email,
-          imageUrl,
-        },
-      });
-
-      await tx.restaurantMember.create({
-        data: {
-          restaurantId: restaurant.id,
-          userId: user.id,
-          role: "OWNER",
-        },
-      });
-
-      return restaurant;
+    const data = await prisma.restaurant.create({
+      data: {
+        name,
+        slug,
+        address,
+        zipCode,
+        city,
+        phone,
+        email,
+        imageUrl,
+        adminId: user.id,
+      },
     });
     logger.info({ responseId: data.id }, "Restaurant created successfully");
     return res.status(201).json({ data });

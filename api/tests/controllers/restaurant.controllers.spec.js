@@ -26,26 +26,18 @@ describe("restaurant controllers", () => {
 
   beforeEach(() => {
     mockPrisma = globalThis.__mockPrisma;
-    mockPrisma.$transaction = vi.fn();
     mockPrisma.restaurant = {
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
     };
-    mockPrisma.restaurantMember = { create: vi.fn() };
   });
 
   // ─── createRestaurant ───────────────────────────────────────
   describe("createRestaurant", () => {
     test("returns 201 with created restaurant", async () => {
-      const created = { id: "rest-1", ...validBody };
-      mockPrisma.$transaction.mockImplementation(async (fn) => {
-        const tx = {
-          restaurant: { create: vi.fn().mockResolvedValue(created) },
-          restaurantMember: { create: vi.fn().mockResolvedValue({}) },
-        };
-        return fn(tx);
-      });
+      const created = { id: "rest-1", adminId: "user-1", ...validBody };
+      mockPrisma.restaurant.create.mockResolvedValue(created);
 
       const req = { user: { id: "user-1" }, body: validBody };
       const res = mockRes();
@@ -57,21 +49,12 @@ describe("restaurant controllers", () => {
       expect(res.json).toHaveBeenCalledWith({ data: created });
     });
 
-    test("creates restaurant member with OWNER role", async () => {
-      const created = { id: "rest-1", ...validBody };
-      let memberCreateArgs;
-
-      mockPrisma.$transaction.mockImplementation(async (fn) => {
-        const tx = {
-          restaurant: { create: vi.fn().mockResolvedValue(created) },
-          restaurantMember: {
-            create: vi.fn().mockImplementation((args) => {
-              memberCreateArgs = args;
-              return {};
-            }),
-          },
-        };
-        return fn(tx);
+    test("sets adminId to req.user.id", async () => {
+      const created = { id: "rest-1", adminId: "user-1", ...validBody };
+      let createArgs;
+      mockPrisma.restaurant.create.mockImplementation((args) => {
+        createArgs = args;
+        return created;
       });
 
       const req = { user: { id: "user-1" }, body: validBody };
@@ -80,18 +63,12 @@ describe("restaurant controllers", () => {
 
       await createRestaurant(req, res, next);
 
-      expect(memberCreateArgs).toEqual({
-        data: {
-          restaurantId: "rest-1",
-          userId: "user-1",
-          role: "OWNER",
-        },
-      });
+      expect(createArgs.data.adminId).toBe("user-1");
     });
 
     test("calls next with error on failure", async () => {
       const dbError = new Error("DB error");
-      mockPrisma.$transaction.mockRejectedValue(dbError);
+      mockPrisma.restaurant.create.mockRejectedValue(dbError);
 
       const req = { user: { id: "user-1" }, body: validBody };
       const res = mockRes();
