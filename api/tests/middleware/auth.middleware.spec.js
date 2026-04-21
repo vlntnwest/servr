@@ -108,7 +108,7 @@ describe("auth middleware", () => {
     const dbUser = {
       id: "user-1",
       email: "test@test.com",
-      restaurantMembers: [],
+      restaurants: [],
     };
 
     mockSupabase.auth.getUser.mockResolvedValue({
@@ -127,7 +127,7 @@ describe("auth middleware", () => {
     expect(next).toHaveBeenCalledOnce();
     expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
       where: { id: "user-1" },
-      include: { restaurantMembers: { include: { restaurant: true } } },
+      include: { restaurants: true },
     });
   });
 
