@@ -26,6 +26,8 @@ const requestId = require("./middleware/requestId.middleware");
 const prisma = require("./lib/prisma");
 const supabase = require("./lib/supabase");
 const checkAuth = require("./middleware/auth.middleware");
+const logger = require("./logger");
+const pinoHttp = require("pino-http");
 
 const app = express();
 
@@ -61,6 +63,13 @@ const paymentLimiter = rateLimit({
   message: { error: "Too many payment attempts, please try again later." },
   skip: (req) => req.path === "/webhook",
 });
+
+// HTTP request logging with response time (pino-http)
+app.use(pinoHttp({
+  logger,
+  // Skip health check noise in logs
+  autoLogging: { ignore: (req) => req.url === "/health" },
+}));
 
 // Request ID (must be before other middleware)
 app.use(requestId);
