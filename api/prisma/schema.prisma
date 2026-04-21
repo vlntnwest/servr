@@ -19,7 +19,7 @@ model User {
   address           String?            @map("address") @db.VarChar(200)
   city              String?            @map("city") @db.VarChar(50)
   zipCode           String?            @map("zip_code") @db.VarChar(5)
-  restaurantMembers RestaurantMember[]
+  restaurants       Restaurant[]
 
   @@map("users")
   @@schema("public")
@@ -39,32 +39,17 @@ model Restaurant {
   updatedAt         DateTime?          @map("updated_at") @db.Timestamp(6)
   slug              String             @unique @db.VarChar(255)
   preparationLevel  PreparationLevel   @default(EASY) @map("preparation_level")
+  adminId           String             @map("admin_id") @db.Uuid
+  admin             User               @relation(fields: [adminId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   categories        Categorie[]
   exceptionalHours  ExceptionalHour[]
-  invitationTokens  InvitationToken[]
   openingHours      OpeningHour[]
   optionGroups      OptionGroup[]
   orders            Order[]
   products          Product[]
   promoCodes        PromoCode[]
-  restaurantMembers RestaurantMember[]
 
   @@map("restaurants")
-  @@schema("public")
-}
-
-model RestaurantMember {
-  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  restaurantId String         @map("restaurant_id") @db.Uuid
-  userId       String         @map("user_id") @db.Uuid
-  role         RestaurantRole
-  createdAt    DateTime?      @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime?      @map("updated_at") @db.Timestamp(6)
-  restaurant   Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@unique([restaurantId, userId])
-  @@map("restaurant_members")
   @@schema("public")
 }
 
@@ -277,21 +262,6 @@ model PromoCode {
   @@schema("public")
 }
 
-model InvitationToken {
-  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  restaurantId String         @map("restaurant_id") @db.Uuid
-  email        String
-  role         RestaurantRole @default(STAFF)
-  token        String         @unique
-  expiresAt    DateTime       @map("expires_at") @db.Timestamptz(6)
-  createdAt    DateTime?      @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @map("created_at") @db.Timestamptz(6)
-  restaurant   Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([token])
-  @@map("invitation_tokens")
-  @@schema("public")
-}
-
 enum PreparationLevel {
   EASY
   MEDIUM
@@ -307,15 +277,6 @@ enum DiscountType {
   FIXED
 
   @@map("discount_type")
-  @@schema("public")
-}
-
-enum RestaurantRole {
-  OWNER
-  ADMIN
-  STAFF
-
-  @@map("restaurant_role")
   @@schema("public")
 }
 
