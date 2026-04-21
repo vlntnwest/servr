@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { getOrders, updateOrderStatus, refundOrder, getRestaurant, updatePreparationLevel } from "@/lib/api";
 import type { PreparationLevel } from "@/types/api";
 import { getSocket } from "@/lib/socket";
-import { createClient } from "@/lib/supabase/client";
 import type { Order, OrderProductOption } from "@/types/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -65,7 +64,7 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
   const [refunding, setRefunding] = useState(false);
   const [statusChanging, setStatusChanging] = useState<string | null>(null); // orderId being changed
   const [prepLevel, setPrepLevel] = useState<PreparationLevel>("EASY");
-  const [socketConnected, setSocketConnected] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(true);
   const fetchRef = useRef<(() => Promise<void>) | undefined>(undefined);
 
   const fetchActive = useCallback(async () => {
@@ -107,43 +106,31 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
   useEffect(() => {
     if (!restaurantId) return;
 
-    let cancelled = false;
-    const handleNewOrder = () => fetchRef.current?.();
-    const handleStatusUpdated = () => fetchRef.current?.();
+    const socket = getSocket();
+    if (!socket.connected) socket.connect();
 
+    socket.emit("join:restaurant", restaurantId);
+
+    const handleNewOrder = () => { fetchRef.current?.(); };
+    const handleStatusUpdated = () => { fetchRef.current?.(); };
     const handleDisconnect = () => setSocketConnected(false);
-
     const handleReconnect = () => {
       setSocketConnected(true);
-      const socket = getSocket();
       socket.emit("join:restaurant", restaurantId);
       // Reload orders to catch up on missed events
       fetchRef.current?.();
     };
 
-    const supabase = createClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const token = session?.access_token;
-      if (!token || cancelled) return;
-
-      const socket = getSocket(token);
-      if (!socket.connected) socket.connect();
-      socket.emit("join:restaurant", restaurantId);
-
-      setSocketConnected(socket.connected);
-      socket.on("connect", handleReconnect);
-      socket.on("disconnect", handleDisconnect);
-      socket.on("order:new", handleNewOrder);
-      socket.on("order:statusUpdated", handleStatusUpdated);
-    });
+    socket.on("order:new", handleNewOrder);
+    socket.on("order:statusUpdated", handleStatusUpdated);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("connect", handleReconnect);
 
     return () => {
-      cancelled = true;
-      const socket = getSocket();
-      socket.off("connect", handleReconnect);
-      socket.off("disconnect", handleDisconnect);
       socket.off("order:new", handleNewOrder);
       socket.off("order:statusUpdated", handleStatusUpdated);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("connect", handleReconnect);
     };
   }, [restaurantId]);
 
@@ -212,16 +199,9 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
       </div>
     )}
 
-    {/* Connection status + Preparation level toggle */}
+    {/* Preparation level toggle */}
     <div className="flex items-center gap-3 mb-4">
-      <span className="text-xs font-semibold text-[#676767] uppercase tracking-wide flex items-center gap-1.5">
-        <span
-          className={cn(
-            "inline-block w-2 h-2 rounded-full",
-            socketConnected ? "bg-green-500" : "bg-red-400 animate-pulse",
-          )}
-          title={socketConnected ? "Temps réel connecté" : "Temps réel déconnecté"}
-        />
+      <span className="text-xs font-semibold text-[#676767] uppercase tracking-wide">
         Affluence
       </span>
       <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">

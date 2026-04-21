@@ -3,36 +3,12 @@ const prisma = require("../lib/prisma");
 const logger = require("../logger");
 const { sendOrderConfirmation } = require("../lib/mailer");
 const { withOrderNumber } = require("../lib/orderNumber");
+const { isScheduledTimeValid } = require("./order.controllers");
 const { getIO } = require("../lib/socket");
-const { isRestaurantOpen, isScheduledTimeValid } = require("../lib/openingHours");
-const { isValidTransition } = require("../lib/orderStateMachine");
+const { isRestaurantOpen } = require("../lib/openingHours");
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
-
-/**
- * Refund a Stripe payment for an order and update status atomically.
- * Returns the refund object or null if no refund was needed.
- */
-async function refundStripePayment(order) {
-  if (!stripe || !order.stripePaymentIntentId || order.stripeRefundId) return null;
-
-  const restaurant = await prisma.restaurant.findUnique({ where: { id: order.restaurantId } });
-  if (!restaurant || !restaurant.stripeAccountId) return null;
-
-  const refund = await stripe.refunds.create(
-    { payment_intent: order.stripePaymentIntentId },
-    { stripeAccount: restaurant.stripeAccountId, idempotencyKey: `refund_${order.id}` },
-  );
-
-  await prisma.order.update({
-    where: { id: order.id },
-    data: { stripeRefundId: refund.id, status: "CANCELLED" },
-  });
-
-  logger.info({ orderId: order.id, refundId: refund.id }, "Stripe payment refunded and order cancelled");
-  return refund;
-}
 
 const PLATFORM_FEE_PERCENT = 0.05;
 
@@ -64,7 +40,7 @@ async function createOrderProducts(tx, orderId, items) {
 // ─── createCheckoutSession ────────────────────────────────────────────────────
 
 module.exports.createCheckoutSession = async (req, res, next) => {
-  const { restaurantId, fullName, phone, email, items, scheduledFor, promoCode } = req.body;
+  const { restaurantId, fullName, phone, email, items, scheduledFor } = req.body;
 
   try {
     const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
@@ -75,13 +51,8 @@ module.exports.createCheckoutSession = async (req, res, next) => {
       if (!isScheduledTimeValid(openingHours, scheduledFor)) {
         return res.status(400).json({ error: "Scheduled time is outside opening hours or in the past" });
       }
-    } else {
-      if (restaurant.preparationLevel === "CLOSED") {
-        return res.status(400).json({ error: "Restaurant is currently closed" });
-      }
-      if (!(await isRestaurantOpen(restaurantId, openingHours))) {
-        return res.status(400).json({ error: "Restaurant is currently closed" });
-      }
+    } else if (!(await isRestaurantOpen(restaurantId, openingHours))) {
+      return res.status(400).json({ error: "Restaurant is currently closed" });
     }
 
     const productIds = [...new Set(items.map((i) => i.productId))];
@@ -116,34 +87,6 @@ module.exports.createCheckoutSession = async (req, res, next) => {
       totalPrice += (basePrice + optionsPrice) * item.quantity;
     }
 
-    // ── Promo code validation ──────────────────────────────────────────────────
-    let appliedPromoCode = null;
-    if (promoCode) {
-      appliedPromoCode = await prisma.promoCode.findUnique({
-        where: { restaurantId_code: { restaurantId, code: promoCode.toUpperCase() } },
-      });
-      if (!appliedPromoCode || !appliedPromoCode.isActive) {
-        return res.status(400).json({ error: "Code promo invalide ou inactif" });
-      }
-      if (appliedPromoCode.expiresAt && appliedPromoCode.expiresAt < new Date()) {
-        return res.status(400).json({ error: "Code promo expiré" });
-      }
-      if (appliedPromoCode.maxUses !== null && appliedPromoCode.usedCount >= appliedPromoCode.maxUses) {
-        return res.status(400).json({ error: "Limite d'utilisation du code promo atteinte" });
-      }
-      if (appliedPromoCode.minOrderAmount !== null && totalPrice < parseFloat(appliedPromoCode.minOrderAmount)) {
-        return res.status(400).json({ error: `Montant minimum de commande : ${appliedPromoCode.minOrderAmount} €` });
-      }
-
-      const discountValue = parseFloat(appliedPromoCode.discountValue);
-      if (appliedPromoCode.discountType === "PERCENTAGE") {
-        totalPrice = totalPrice * (1 - discountValue / 100);
-      } else {
-        totalPrice = Math.max(0, totalPrice - discountValue);
-      }
-      totalPrice = Math.round(totalPrice * 100) / 100;
-    }
-
     // ── On-site payment (no Stripe account) ──────────────────────────────────
     if (!restaurant.stripeAccountId) {
       const order = await withOrderNumber(async (tx, orderNumber) => {
@@ -160,12 +103,6 @@ module.exports.createCheckoutSession = async (req, res, next) => {
           },
         });
         await createOrderProducts(tx, created.id, items);
-        if (appliedPromoCode) {
-          await tx.promoCode.update({
-            where: { id: appliedPromoCode.id },
-            data: { usedCount: { increment: 1 } },
-          });
-        }
         return tx.order.findUnique({ where: { id: created.id }, include: ORDER_INCLUDE });
       });
 
@@ -229,24 +166,7 @@ module.exports.createCheckoutSession = async (req, res, next) => {
       (sum, li) => sum + li.price_data.unit_amount * li.quantity,
       0,
     );
-
-    // Apply promo discount via Stripe coupon on the connected account
-    let discounts = [];
-    if (appliedPromoCode) {
-      const couponParams =
-        appliedPromoCode.discountType === "PERCENTAGE"
-          ? { percent_off: parseFloat(appliedPromoCode.discountValue) }
-          : { amount_off: Math.round(parseFloat(appliedPromoCode.discountValue) * 100), currency: "eur" };
-
-      const coupon = await stripe.coupons.create(
-        { ...couponParams, max_redemptions: 1, name: appliedPromoCode.code },
-        { stripeAccount: restaurant.stripeAccountId },
-      );
-      discounts = [{ coupon: coupon.id }];
-    }
-
-    const discountedCents = Math.round(totalPrice * 100);
-    const applicationFeeAmount = Math.round(discountedCents * PLATFORM_FEE_PERCENT);
+    const applicationFeeAmount = Math.round(totalAmountCents * PLATFORM_FEE_PERCENT);
 
     let session;
     try {
@@ -254,7 +174,6 @@ module.exports.createCheckoutSession = async (req, res, next) => {
         {
           payment_method_types: ["card"],
           line_items: lineItems,
-          ...(discounts.length > 0 ? { discounts } : {}),
           mode: "payment",
           success_url: `${process.env.CLIENT_URL}/store/${restaurant.slug}/order/success?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${process.env.CLIENT_URL}/store/${restaurant.slug}/order/cancel`,
@@ -264,10 +183,7 @@ module.exports.createCheckoutSession = async (req, res, next) => {
             application_fee_amount: applicationFeeAmount,
             metadata: { orderId: draftOrder.id },
           },
-          metadata: {
-            orderId: draftOrder.id,
-            ...(appliedPromoCode ? { promoCodeId: appliedPromoCode.id } : {}),
-          },
+          metadata: { orderId: draftOrder.id },
         },
         { stripeAccount: restaurant.stripeAccountId },
       );
@@ -319,7 +235,7 @@ module.exports.handleWebhook = async (req, res) => {
   try {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
-      const { orderId, promoCodeId } = session.metadata;
+      const { orderId } = session.metadata;
 
       if (!orderId) {
         logger.warn({ sessionId: session.id }, "Webhook missing orderId in metadata");
@@ -337,13 +253,6 @@ module.exports.handleWebhook = async (req, res) => {
             logger.info({ orderId, status: existing.status }, "Webhook already processed, skipping");
           }
           return null;
-        }
-
-        if (promoCodeId) {
-          await tx.promoCode.update({
-            where: { id: promoCodeId },
-            data: { usedCount: { increment: 1 } },
-          });
         }
 
         return tx.order.update({
@@ -372,14 +281,12 @@ module.exports.handleWebhook = async (req, res) => {
       const session = event.data.object;
       const { orderId } = session.metadata;
 
-      const existing = await prisma.order.findUnique({ where: { id: orderId }, select: { id: true, status: true, restaurantId: true } });
-      if (existing && isValidTransition(existing.status, "ABANDONED")) {
-        const updated = await prisma.order.update({ where: { id: orderId }, data: { status: "ABANDONED" } });
-        logger.info({ orderId, sessionId: session.id }, "Order marked as ABANDONED");
+      await prisma.order.updateMany({
+        where: { id: orderId, status: { notIn: ["PENDING", "CANCELLED"] } },
+        data: { status: "ABANDONED" },
+      });
 
-        const io = getIO();
-        if (io) io.to(`restaurant:${existing.restaurantId}`).emit("order:statusUpdated", updated);
-      }
+      logger.info({ orderId, sessionId: session.id }, "Order marked as ABANDONED");
     }
 
     if (event.type === "payment_intent.payment_failed") {
@@ -387,64 +294,11 @@ module.exports.handleWebhook = async (req, res) => {
       const { orderId } = paymentIntent.metadata || {};
 
       if (orderId) {
-        const existing = await prisma.order.findUnique({ where: { id: orderId }, select: { id: true, status: true, restaurantId: true } });
-        if (existing && isValidTransition(existing.status, "PAYMENT_FAILED")) {
-          const updated = await prisma.order.update({ where: { id: orderId }, data: { status: "PAYMENT_FAILED" } });
-          logger.info({ orderId, paymentIntentId: paymentIntent.id }, "Order marked as PAYMENT_FAILED");
-
-          const io = getIO();
-          if (io) io.to(`restaurant:${existing.restaurantId}`).emit("order:statusUpdated", updated);
-        }
-      }
-    }
-
-    if (event.type === "charge.refunded") {
-      const charge = event.data.object;
-      const paymentIntentId = charge.payment_intent;
-
-      if (paymentIntentId) {
-        const order = await prisma.order.findFirst({
-          where: { stripePaymentIntentId: paymentIntentId },
-        });
-
-        if (order && !order.stripeRefundId) {
-          await prisma.order.update({
-            where: { id: order.id },
-            data: {
-              status: "CANCELLED",
-              stripeRefundId: charge.refunds?.data?.[0]?.id || null,
-            },
-          });
-          logger.info({ orderId: order.id, paymentIntentId }, "Order cancelled via charge.refunded webhook");
-        }
-      }
-    }
-
-    if (event.type === "charge.dispute.created") {
-      const dispute = event.data.object;
-      const paymentIntentId = dispute.payment_intent;
-
-      if (paymentIntentId) {
-        const order = await prisma.order.findFirst({
-          where: { stripePaymentIntentId: paymentIntentId },
-        });
-        logger.warn(
-          { orderId: order?.id, disputeId: dispute.id, paymentIntentId, reason: dispute.reason },
-          "Stripe dispute created",
-        );
-      }
-    }
-
-    if (event.type === "payment_intent.canceled") {
-      const paymentIntent = event.data.object;
-      const { orderId } = paymentIntent.metadata || {};
-
-      if (orderId) {
         await prisma.order.updateMany({
-          where: { id: orderId, status: { in: ["DRAFT", "PENDING"] } },
-          data: { status: "CANCELLED" },
+          where: { id: orderId, status: "DRAFT" },
+          data: { status: "PAYMENT_FAILED" },
         });
-        logger.info({ orderId, paymentIntentId: paymentIntent.id }, "Order cancelled via payment_intent.canceled webhook");
+        logger.info({ orderId, paymentIntentId: paymentIntent.id }, "Order marked as PAYMENT_FAILED");
       }
     }
 
@@ -486,21 +340,30 @@ module.exports.refundOrder = async (req, res, next) => {
       return res.status(409).json({ error: "Order is already cancelled" });
     }
 
-    if (order.stripeRefundId) {
-      return res.status(409).json({ error: "Order has already been refunded" });
+    if (!stripe) {
+      return res.status(503).json({ error: "Stripe is not configured" });
     }
 
-    const refund = await refundStripePayment(order);
+    const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
+    if (!restaurant || !restaurant.stripeAccountId) {
+      return res.status(400).json({ error: "No Stripe account associated with this restaurant" });
+    }
 
-    const updated = await prisma.order.findUnique({ where: { id: orderId } });
+    const refund = await stripe.refunds.create(
+      { payment_intent: order.stripePaymentIntentId },
+      { stripeAccount: restaurant.stripeAccountId },
+    );
 
-    logger.info({ orderId, restaurantId, refundId: refund?.id }, "Order refunded and cancelled");
+    const updated = await prisma.order.update({
+      where: { id: orderId },
+      data: { status: "CANCELLED" },
+    });
+
+    logger.info({ orderId, restaurantId, refundId: refund.id }, "Order refunded and cancelled");
     return res.status(200).json({
-      data: { order: updated, refund: refund ? { id: refund.id, status: refund.status } : null },
+      data: { order: updated, refund: { id: refund.id, status: refund.status } },
     });
   } catch (error) {
     next(error);
   }
 };
-
-module.exports.refundStripePayment = refundStripePayment;

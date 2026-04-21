@@ -4,17 +4,28 @@ const { sendOrderConfirmation, sendOrderStatusUpdate } = require("../lib/mailer"
 const { withOrderNumber } = require("../lib/orderNumber");
 const { isValidTransition, getNextStatuses } = require("../lib/orderStateMachine");
 const { getIO } = require("../lib/socket");
-const { isRestaurantOpen, isScheduledTimeValid } = require("../lib/openingHours");
-const { refundStripePayment } = require("./checkout.controllers");
+const { isRestaurantOpen } = require("../lib/openingHours");
+
+function isScheduledTimeValid(openingHours, scheduledAt) {
+  const dt = new Date(scheduledAt);
+  // Must be in the future
+  if (dt <= new Date()) return false;
+  // No opening hours configured → always open
+  if (!openingHours || openingHours.length === 0) return true;
+  const dayOfWeek = dt.getDay();
+  const hours = `${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`;
+  const todayHours = openingHours.find((h) => h.dayOfWeek === dayOfWeek);
+  if (!todayHours) return false;
+  return hours >= todayHours.openTime && hours < todayHours.closeTime;
+}
+
+module.exports.isScheduledTimeValid = isScheduledTimeValid;
 
 module.exports.createOrder = async (req, res, next) => {
   const { restaurantId } = req.params;
   const { fullName, phone, email, items, promoCode, scheduledFor } = req.body;
 
   try {
-    const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
-    if (!restaurant) return res.status(404).json({ error: "Restaurant not found" });
-
     const openingHours = await prisma.openingHour.findMany({
       where: { restaurantId },
     });
@@ -22,13 +33,8 @@ module.exports.createOrder = async (req, res, next) => {
       if (!isScheduledTimeValid(openingHours, scheduledFor)) {
         return res.status(400).json({ error: "Scheduled time is outside opening hours or in the past" });
       }
-    } else {
-      if (restaurant.preparationLevel === "CLOSED") {
-        return res.status(400).json({ error: "Restaurant is currently closed" });
-      }
-      if (!(await isRestaurantOpen(restaurantId, openingHours))) {
-        return res.status(400).json({ error: "Restaurant is currently closed" });
-      }
+    } else if (!(await isRestaurantOpen(restaurantId, openingHours))) {
+      return res.status(400).json({ error: "Restaurant is currently closed" });
     }
 
     const productIds = [...new Set(items.map((i) => i.productId))];
@@ -144,12 +150,6 @@ module.exports.createOrder = async (req, res, next) => {
 
     logger.info({ orderId: data.id, restaurantId }, "Order created");
     sendOrderConfirmation({ to: data.email, order: data });
-
-    const io = getIO();
-    if (io) {
-      io.to(`restaurant:${restaurantId}`).emit("order:new", data);
-    }
-
     return res.status(201).json({ data });
   } catch (error) {
     next(error);
@@ -201,7 +201,6 @@ module.exports.getOrders = async (req, res, next) => {
       prisma.order.count({ where }),
     ]);
 
-    logger.info({ restaurantId, page, limit }, "Orders retrieved");
     return res.status(200).json({
       data,
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
@@ -231,7 +230,6 @@ module.exports.getOrder = async (req, res, next) => {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    logger.info({ orderId }, "Order retrieved");
     return res.status(200).json({ data });
   } catch (error) {
     next(error);
@@ -245,7 +243,7 @@ module.exports.updateOrderStatus = async (req, res, next) => {
   try {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      select: { id: true, status: true, email: true, restaurantId: true, stripePaymentIntentId: true, stripeRefundId: true, fullName: true, orderNumber: true },
+      select: { id: true, status: true, email: true, restaurantId: true, fullName: true, orderNumber: true },
     });
 
     if (!order) {
@@ -257,10 +255,6 @@ module.exports.updateOrderStatus = async (req, res, next) => {
         error: `Invalid transition from ${order.status} to ${status}`,
         allowedTransitions: getNextStatuses(order.status),
       });
-    }
-
-    if (status === "CANCELLED" && order.stripePaymentIntentId && !order.stripeRefundId) {
-      await refundStripePayment(order);
     }
 
     // Atomic update: only update if status hasn't changed since we read it (prevents race conditions)
@@ -318,7 +312,6 @@ module.exports.getOrderPublic = async (req, res, next) => {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    logger.info({ orderId }, "Public order lookup");
     return res.status(200).json({ data: order });
   } catch (error) {
     next(error);

@@ -13,7 +13,6 @@ import type {
   OptionGroup,
   OptionChoice,
   CheckoutItem,
-  User,
 } from "@/types/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
@@ -140,7 +139,6 @@ export async function createCheckoutSession(
     email?: string;
     items: CheckoutItem[];
     scheduledFor?: string;
-    promoCode?: string;
   },
   restaurantId?: string,
 ): Promise<
@@ -627,6 +625,16 @@ export async function getStripeStatus(): Promise<{
   }>(`/restaurants/${RESTAURANT_ID}/stripe/status`);
 }
 
-export async function getUserMe(): Promise<{ data: User } | { error: string }> {
-  return apiFetch<User>("/user/me");
+export async function cleanupDraftOrders(): Promise<{
+  data?: { deletedCount: number };
+  error?: string;
+}> {
+  const authHeaders = await getAuthHeader();
+  const res = await fetch(`${API_URL}/api/admin/cleanup/draft-orders`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json", ...authHeaders },
+  });
+  if (!res.ok) return { error: "Erreur lors du nettoyage" };
+  const json = await res.json();
+  return { data: json.data };
 }
