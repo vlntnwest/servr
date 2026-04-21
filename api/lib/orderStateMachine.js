@@ -1,13 +1,16 @@
 /**
- * Order state machine — defines valid manual transitions.
- * System transitions (e.g. DRAFT → PENDING via Stripe webhook) are NOT governed by this.
+ * Order state machine — defines valid transitions.
+ * Used by both manual actions (admin) and system transitions (webhooks).
  */
 
 const ALLOWED_TRANSITIONS = {
+  DRAFT: ["PENDING", "ABANDONED", "PAYMENT_FAILED", "CANCELLED"],
   PENDING: ["IN_PROGRESS", "CANCELLED"],
   PENDING_ON_SITE_PAYMENT: ["IN_PROGRESS", "CANCELLED"],
   IN_PROGRESS: ["COMPLETED", "CANCELLED"],
   COMPLETED: ["DELIVERED", "CANCELLED"],
+  ABANDONED: ["CANCELLED"],
+  PAYMENT_FAILED: ["CANCELLED"],
 };
 
 function getNextStatuses(currentStatus) {

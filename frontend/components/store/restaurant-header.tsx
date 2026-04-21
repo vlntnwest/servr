@@ -11,9 +11,11 @@ import OpenStatusBadge from "./open-status-badge";
 
 function getTodayHours(openingHours: OpeningHour[]): string | null {
   const dayOfWeek = new Date().getDay();
-  const todayHours = openingHours.find((h) => h.dayOfWeek === dayOfWeek);
-  if (!todayHours) return null;
-  return `${todayHours.openTime} - ${todayHours.closeTime}`;
+  const ranges = openingHours
+    .filter((h) => h.dayOfWeek === dayOfWeek)
+    .sort((a, b) => a.openTime.localeCompare(b.openTime));
+  if (ranges.length === 0) return null;
+  return ranges.map((h) => `${h.openTime} - ${h.closeTime}`).join(" / ");
 }
 
 const PREP_BADGES: Record<PreparationLevel, { label: string; color: string }> =
@@ -61,7 +63,7 @@ export default function RestaurantHeader({
 
         {/* Info */}
         <div className="flex-1 px-4 py-5 md:px-0 md:py-0">
-          <h1 className="text-2xl font-bold mb-1">{restaurant.name}</h1>
+          <h1 className="text-4xl font-bold mb-1">{restaurant.name}</h1>
 
           <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm text-[#585c5c]">
             <MapPin className="w-3.5 h-3.5 shrink-0" />

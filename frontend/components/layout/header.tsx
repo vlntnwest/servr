@@ -1,17 +1,11 @@
 "use client";
 
 import { ShoppingBag } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
 import { useCart } from "@/contexts/cart-context";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useState } from "react";
 import Cart from "@/components/cart/cart";
-import AuthButton from "@/components/auth/auth-button";
+import CustomerSheet from "@/components/store/customer-sheet";
 
 interface HeaderProps {
   showCart?: boolean;
@@ -27,23 +21,9 @@ export default function Header({
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-black/8">
-      <div className="flex items-center h-[65px] px-4 max-w-screen-xl mx-auto">
-        <div className="flex-1">
-          <Link href="/">
-            <Image
-              src="https://g10afdaataaj4tkl.public.blob.vercel-storage.com/img/1Fichier-21.svg"
-              alt="Pokey Bar"
-              width={100}
-              height={40}
-              style={{ width: 100, height: 40 }}
-              className="object-contain"
-              priority
-            />
-          </Link>
-        </div>
-
+      <div className="flex items-center justify-end h-[65px] px-4 md:px-8 xl:px-16 max-w-screen-3xl mx-auto">
         <div className="flex items-center gap-2">
-          {showAuth && <AuthButton />}
+          {showAuth && <CustomerSheet />}
           {showCart && itemCount > 0 && (
             <button
               className="relative p-2 rounded-full hover:bg-black/5 transition-colors md:hidden"
@@ -72,7 +52,6 @@ export default function Header({
           </div>
         </SheetContent>
       </Sheet>
-
     </header>
   );
 }

@@ -75,6 +75,15 @@ export function getStatusActions(status: string): StatusAction[] {
       { targetStatus: "DELIVERED", label: "Livré", variant: "default" },
       { targetStatus: "CANCELLED", label: "Annuler", variant: "destructive" },
     ],
+    DRAFT: [
+      { targetStatus: "CANCELLED", label: "Annuler", variant: "destructive" },
+    ],
+    ABANDONED: [
+      { targetStatus: "CANCELLED", label: "Annuler", variant: "destructive" },
+    ],
+    PAYMENT_FAILED: [
+      { targetStatus: "CANCELLED", label: "Annuler", variant: "destructive" },
+    ],
   };
   return actions[status] ?? [];
 }

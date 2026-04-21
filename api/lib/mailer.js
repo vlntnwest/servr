@@ -90,6 +90,7 @@ async function sendInvitationEmail({ to, restaurantName, inviteLink }) {
 }
 
 const STATUS_LABELS = {
+  PENDING: "confirmée",
   IN_PROGRESS: "en cours de préparation",
   COMPLETED: "prête",
   DELIVERED: "livrée",
@@ -136,4 +137,24 @@ async function sendOrderStatusUpdate({ to, order, newStatus }) {
   }
 }
 
-module.exports = { sendOrderConfirmation, sendInvitationEmail, sendOrderStatusUpdate };
+/**
+ * Verify SMTP configuration on startup.
+ * Logs a warning if credentials are missing or connection fails.
+ */
+async function verifySmtp() {
+  const required = ["SMTP_HOST", "SMTP_USER", "SMTP_PASS"];
+  const missing = required.filter((k) => !process.env[k]);
+  if (missing.length > 0) {
+    logger.warn({ missing }, "SMTP not configured — emails will fail");
+    return;
+  }
+
+  try {
+    await transporter.verify();
+    logger.info("SMTP connection verified");
+  } catch (err) {
+    logger.warn({ error: err.message }, "SMTP connection failed — emails may not be sent");
+  }
+}
+
+module.exports = { sendOrderConfirmation, sendInvitationEmail, sendOrderStatusUpdate, verifySmtp };

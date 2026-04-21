@@ -26,15 +26,14 @@ module.exports.updateProductCategorie = async (req, res, next) => {
   const { name, subHeading, displayOrder } = req.body;
 
   try {
+    const existing = await prisma.categorie.findUnique({ where: { id: categorieId } });
+    if (!existing || existing.restaurantId !== restaurantId) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+
     const data = await prisma.categorie.update({
-      where: {
-        id: categorieId,
-      },
-      data: {
-        name,
-        subHeading,
-        displayOrder,
-      },
+      where: { id: categorieId },
+      data: { name, subHeading, displayOrder },
     });
     logger.info({ responseId: data.id }, "Product categorie updated");
     return res.status(200).json({ data });
@@ -47,12 +46,13 @@ module.exports.deleteProductCategorie = async (req, res, next) => {
   const { restaurantId, categorieId } = req.params;
 
   try {
-    const data = await prisma.categorie.delete({
-      where: {
-        id: categorieId,
-      },
-    });
-    logger.info({ responseId: data.id }, "Product categorie deleted");
+    const existing = await prisma.categorie.findUnique({ where: { id: categorieId } });
+    if (!existing || existing.restaurantId !== restaurantId) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+
+    await prisma.categorie.delete({ where: { id: categorieId } });
+    logger.info({ responseId: categorieId }, "Product categorie deleted");
     return res.status(200).json({ message: "Product categorie deleted" });
   } catch (error) {
     next(error);
@@ -121,6 +121,11 @@ module.exports.updateProduct = async (req, res, next) => {
   } = req.body;
 
   try {
+    const existing = await prisma.product.findUnique({ where: { id: productId } });
+    if (!existing || existing.restaurantId !== restaurantId) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
     const data = await prisma.$transaction(async (tx) => {
       const product = await tx.product.update({
         where: {
@@ -174,12 +179,13 @@ module.exports.deleteProduct = async (req, res, next) => {
   const { restaurantId, productId } = req.params;
 
   try {
-    const data = await prisma.product.delete({
-      where: {
-        id: productId,
-      },
-    });
-    logger.info({ responseId: data.id }, "Product deleted");
+    const existing = await prisma.product.findUnique({ where: { id: productId } });
+    if (!existing || existing.restaurantId !== restaurantId) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    await prisma.product.delete({ where: { id: productId } });
+    logger.info({ responseId: productId }, "Product deleted");
     return res.status(200).json({ message: "Product deleted" });
   } catch (error) {
     next(error);
@@ -238,6 +244,11 @@ module.exports.updateProductOptionGroup = async (req, res, next) => {
   const { name, hasMultiple, isRequired, minQuantity, maxQuantity, displayOrder } = req.body;
 
   try {
+    const existing = await prisma.optionGroup.findUnique({ where: { id: optionGroupId } });
+    if (!existing || existing.restaurantId !== restaurantId) {
+      return res.status(404).json({ error: "Option group not found" });
+    }
+
     const data = await prisma.optionGroup.update({
       where: { id: optionGroupId },
       data: { name, hasMultiple, isRequired, minQuantity, maxQuantity, displayOrder },
@@ -254,6 +265,11 @@ module.exports.deleteProductOptionGroup = async (req, res, next) => {
   const { restaurantId, optionGroupId } = req.params;
 
   try {
+    const existing = await prisma.optionGroup.findUnique({ where: { id: optionGroupId } });
+    if (!existing || existing.restaurantId !== restaurantId) {
+      return res.status(404).json({ error: "Option group not found" });
+    }
+
     await prisma.optionGroup.delete({ where: { id: optionGroupId } });
     logger.info({ optionGroupId }, "Option group deleted");
     return res.status(200).json({ message: "Option group deleted" });
@@ -372,6 +388,14 @@ module.exports.updateProductOptionChoice = async (req, res, next) => {
   const { name, priceModifier, displayOrder } = req.body;
 
   try {
+    const existing = await prisma.optionChoice.findUnique({
+      where: { id: optionChoiceId },
+      include: { optionGroup: { select: { restaurantId: true } } },
+    });
+    if (!existing || existing.optionGroup.restaurantId !== restaurantId) {
+      return res.status(404).json({ error: "Option choice not found" });
+    }
+
     const data = await prisma.optionChoice.update({
       where: { id: optionChoiceId },
       data: { name, priceModifier, displayOrder },
@@ -387,6 +411,14 @@ module.exports.deleteProductOptionChoice = async (req, res, next) => {
   const { restaurantId, optionChoiceId } = req.params;
 
   try {
+    const existing = await prisma.optionChoice.findUnique({
+      where: { id: optionChoiceId },
+      include: { optionGroup: { select: { restaurantId: true } } },
+    });
+    if (!existing || existing.optionGroup.restaurantId !== restaurantId) {
+      return res.status(404).json({ error: "Option choice not found" });
+    }
+
     await prisma.optionChoice.delete({ where: { id: optionChoiceId } });
     logger.info({ optionChoiceId }, "Option choice deleted");
     return res.status(200).json({ message: "Option choice deleted" });

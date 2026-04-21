@@ -26,12 +26,12 @@ function isOpen(
     }
   }
 
-  // Fall back to regular opening hours
+  // Fall back to regular opening hours (multiple ranges per day)
   const dayOfWeek = now.getDay();
   const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-  const todayHours = openingHours.find((h) => h.dayOfWeek === dayOfWeek);
-  if (!todayHours) return false;
-  return currentTime >= todayHours.openTime && currentTime < todayHours.closeTime;
+  const dayRanges = openingHours.filter((h) => h.dayOfWeek === dayOfWeek);
+  if (dayRanges.length === 0) return false;
+  return dayRanges.some((h) => currentTime >= h.openTime && currentTime < h.closeTime);
 }
 
 interface OpenStatusBadgeProps {
