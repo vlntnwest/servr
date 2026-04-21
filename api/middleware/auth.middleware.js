@@ -25,9 +25,7 @@ const checkAuth = async (req, res, next) => {
   try {
     dbUser = await prisma.user.findUnique({
       where: { id: user.id },
-      include: {
-        restaurantMembers: { include: { restaurant: true } },
-      },
+      include: { restaurants: true },
     });
   } catch (error) {
     logger.warn({ error: error.message }, "Error finding user in database");

@@ -2,12 +2,12 @@
 
 ## Routes summary
 
-| Method  | Endpoint                                        | Description           | Auth  | Role   |
-| ------- | ----------------------------------------------- | --------------------- | ----- | ------ |
-| `POST`  | `/restaurants/:restaurantId/orders`             | Create order (public) | No    | —      |
-| `GET`   | `/restaurants/:restaurantId/orders`             | List orders           | Yes   | STAFF+ |
-| `GET`   | `/restaurants/:restaurantId/orders/:orderId`    | Get order             | Yes   | STAFF+ |
-| `PATCH` | `/restaurants/:restaurantId/orders/:orderId/status` | Update status     | Yes   | STAFF+ |
+| Method  | Endpoint                                        | Description           | Auth  | Role          |
+| ------- | ----------------------------------------------- | --------------------- | ----- | ------------- |
+| `POST`  | `/restaurants/:restaurantId/orders`             | Create order (public) | No    | —             |
+| `GET`   | `/restaurants/:restaurantId/orders`             | List orders           | Yes   | Admin         |
+| `GET`   | `/restaurants/:restaurantId/orders/:orderId`    | Get order             | Yes   | Admin         |
+| `PATCH` | `/restaurants/:restaurantId/orders/:orderId/status` | Update status     | Yes   | Admin         |
 
 ### Checkout (Stripe)
 
@@ -15,7 +15,7 @@
 | ------- | -------------------------------------------------------------------- | ------------------ | ----- | ----- |
 | `POST`  | `/api/checkout/create-session`                                       | Create Stripe session | No | —     |
 | `POST`  | `/api/checkout/webhook`                                              | Stripe webhook     | No    | —     |
-| `POST`  | `/api/checkout/restaurants/:restaurantId/orders/:orderId/refund`     | Refund order       | Yes   | ADMIN |
+| `POST`  | `/api/checkout/restaurants/:restaurantId/orders/:orderId/refund`     | Refund order       | Yes   | Admin |
 
 ---
 

@@ -11,7 +11,6 @@ const userRoutes = require("./routes/user.routes");
 const restaurantRoutes = require("./routes/restaurant.routes");
 const orderRoutes = require("./routes/order.routes");
 const openingHourRoutes = require("./routes/openingHour.routes");
-const memberRoutes = require("./routes/member.routes");
 const statsRoutes = require("./routes/stats.routes");
 const uploadRoutes = require("./routes/upload.routes");
 const checkoutRoutes = require("./routes/checkout.routes");
@@ -159,7 +158,6 @@ for (const prefix of V1_PREFIXES) {
   app.use(`${prefix}/menu`, globalLimiter, menuRoutes);
   app.use(prefix, globalLimiter, orderRoutes);
   app.use(prefix, globalLimiter, openingHourRoutes);
-  app.use(prefix, globalLimiter, memberRoutes);
   app.use(prefix, globalLimiter, statsRoutes);
   app.use(prefix, globalLimiter, uploadRoutes);
   app.use(`${prefix}/checkout`, paymentLimiter, checkoutRoutes);

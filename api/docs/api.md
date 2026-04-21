@@ -16,22 +16,22 @@ Authorization: Bearer <supabase_jwt_token>
 | `PUT`    | `/user/me`                                                                | Oui  | --           | Modifier son profil         |
 | `DELETE` | `/user/me`                                                                | Oui  | --           | Supprimer son compte        |
 | `POST`   | `/restaurants`                                                            | Oui  | --           | Creer un restaurant         |
-| `PUT`    | `/restaurants/:restaurantId`                                              | Oui  | OWNER, ADMIN | Modifier un restaurant      |
-| `DELETE` | `/restaurants/:restaurantId`                                              | Oui  | OWNER        | Supprimer un restaurant     |
+| `PUT`    | `/restaurants/:restaurantId`                                              | Oui  | Admin        | Modifier un restaurant      |
+| `DELETE` | `/restaurants/:restaurantId`                                              | Oui  | Admin        | Supprimer un restaurant     |
 | `GET`    | `/menu/restaurants/:restaurantId/menu`                                    | Non  | --           | Menu complet du restaurant  |
 | `GET`    | `/menu/restaurants/:restaurantId/products/:productId`                     | Non  | --           | Detail d'un produit         |
-| `POST`   | `/menu/restaurants/:restaurantId/categories`                              | Oui  | OWNER, ADMIN | Creer une categorie         |
-| `PUT`    | `/menu/restaurants/:restaurantId/categories/:categorieId`                 | Oui  | OWNER, ADMIN | Modifier une categorie      |
-| `DELETE` | `/menu/restaurants/:restaurantId/categories/:categorieId`                 | Oui  | OWNER, ADMIN | Supprimer une categorie     |
-| `POST`   | `/menu/restaurants/:restaurantId/products`                                | Oui  | OWNER, ADMIN | Creer un produit            |
-| `PUT`    | `/menu/restaurants/:restaurantId/products/:productId`                     | Oui  | OWNER, ADMIN | Modifier un produit         |
-| `DELETE` | `/menu/restaurants/:restaurantId/products/:productId`                     | Oui  | OWNER, ADMIN | Supprimer un produit        |
-| `POST`   | `/menu/restaurants/:restaurantId/products/:productId/option-groups`       | Oui  | OWNER, ADMIN | Creer un groupe d'options   |
-| `PUT`    | `/menu/restaurants/:restaurantId/option-groups/:optionGroupId`            | Oui  | OWNER, ADMIN | Modifier un groupe          |
-| `DELETE` | `/menu/restaurants/:restaurantId/option-groups/:optionGroupId`            | Oui  | OWNER, ADMIN | Supprimer un groupe         |
-| `POST`   | `/menu/restaurants/:restaurantId/option-groups/:optionGroupId/option-choices` | Oui  | OWNER, ADMIN | Creer un choix d'option |
-| `PUT`    | `/menu/restaurants/:restaurantId/option-choices/:optionChoiceId`          | Oui  | OWNER, ADMIN | Modifier un choix           |
-| `DELETE` | `/menu/restaurants/:restaurantId/option-choices/:optionChoiceId`          | Oui  | OWNER, ADMIN | Supprimer un choix          |
+| `POST`   | `/menu/restaurants/:restaurantId/categories`                              | Oui  | Admin        | Creer une categorie         |
+| `PUT`    | `/menu/restaurants/:restaurantId/categories/:categorieId`                 | Oui  | Admin        | Modifier une categorie      |
+| `DELETE` | `/menu/restaurants/:restaurantId/categories/:categorieId`                 | Oui  | Admin        | Supprimer une categorie     |
+| `POST`   | `/menu/restaurants/:restaurantId/products`                                | Oui  | Admin        | Creer un produit            |
+| `PUT`    | `/menu/restaurants/:restaurantId/products/:productId`                     | Oui  | Admin        | Modifier un produit         |
+| `DELETE` | `/menu/restaurants/:restaurantId/products/:productId`                     | Oui  | Admin        | Supprimer un produit        |
+| `POST`   | `/menu/restaurants/:restaurantId/products/:productId/option-groups`       | Oui  | Admin        | Creer un groupe d'options   |
+| `PUT`    | `/menu/restaurants/:restaurantId/option-groups/:optionGroupId`            | Oui  | Admin        | Modifier un groupe          |
+| `DELETE` | `/menu/restaurants/:restaurantId/option-groups/:optionGroupId`            | Oui  | Admin        | Supprimer un groupe         |
+| `POST`   | `/menu/restaurants/:restaurantId/option-groups/:optionGroupId/option-choices` | Oui  | Admin        | Creer un choix d'option |
+| `PUT`    | `/menu/restaurants/:restaurantId/option-choices/:optionChoiceId`          | Oui  | Admin        | Modifier un choix           |
+| `DELETE` | `/menu/restaurants/:restaurantId/option-choices/:optionChoiceId`          | Oui  | Admin        | Supprimer un choix          |
 
 ---
 
@@ -52,15 +52,7 @@ await supabase.auth.signOut();
 
 Un trigger Supabase cree automatiquement une ligne dans `public.users` a l'inscription.
 
-Le backend verifie le JWT via le middleware `checkAuth` et charge les roles via `isOwner` / `isAdmin` / `isStaff`.
-
-### Hierarchie des roles
-
-| Role    | Permissions                                |
-| ------- | ------------------------------------------ |
-| `OWNER` | Tout (y compris supprimer le restaurant)   |
-| `ADMIN` | Gestion du menu et des infos du restaurant |
-| `STAFF` | Acces aux donnees du restaurant (lecture)   |
+Le backend verifie le JWT via le middleware `checkAuth` et les acces admin via `isRestaurantAdmin`.
 
 ---
 
@@ -160,7 +152,7 @@ Supprime le compte utilisateur. La suppression dans Supabase Auth cascade vers l
 
 ### POST `/restaurants`
 
-Cree un restaurant et ajoute automatiquement l'utilisateur connecte comme `OWNER`.
+Cree un restaurant et definit automatiquement l'utilisateur connecte comme admin (`adminId`).
 
 **Auth :** Oui
 
@@ -220,7 +212,7 @@ Cree un restaurant et ajoute automatiquement l'utilisateur connecte comme `OWNER
 
 Mise a jour partielle d'un restaurant. Meme body que POST, tous les champs sont optionnels.
 
-**Auth :** Oui — **Role :** OWNER ou ADMIN
+**Auth :** Oui — **Role :** Admin du restaurant (`isRestaurantAdmin`)
 
 **Reponse `200` :**
 
@@ -237,20 +229,20 @@ Mise a jour partielle d'un restaurant. Meme body que POST, tous les champs sont 
 
 **Erreurs :**
 
-| Status | Condition                       |
-| ------ | ------------------------------- |
-| `400`  | Validation echouee / Body vide  |
-| `401`  | Token absent/invalide           |
-| `403`  | L'utilisateur n'est pas ADMIN+  |
-| `404`  | Restaurant non trouve           |
+| Status | Condition                              |
+| ------ | -------------------------------------- |
+| `400`  | Validation echouee / Body vide         |
+| `401`  | Token absent/invalide                  |
+| `403`  | L'utilisateur n'est pas admin          |
+| `404`  | Restaurant non trouve                  |
 
 ---
 
 ### DELETE `/restaurants/:restaurantId`
 
-Supprime le restaurant et toutes les donnees associees (membres, categories, produits, commandes) via cascade.
+Supprime le restaurant et toutes les donnees associees (categories, produits, commandes) via cascade.
 
-**Auth :** Oui — **Role :** OWNER uniquement
+**Auth :** Oui — **Role :** Admin du restaurant (`isRestaurantAdmin`)
 
 **Reponse `200` :**
 
@@ -262,11 +254,11 @@ Supprime le restaurant et toutes les donnees associees (membres, categories, pro
 
 **Erreurs :**
 
-| Status | Condition                       |
-| ------ | ------------------------------- |
-| `401`  | Token absent/invalide           |
-| `403`  | L'utilisateur n'est pas OWNER   |
-| `404`  | Restaurant non trouve           |
+| Status | Condition                    |
+| ------ | ---------------------------- |
+| `401`  | Token absent/invalide        |
+| `403`  | L'utilisateur n'est pas admin|
+| `404`  | Restaurant non trouve        |
 
 ---
 
@@ -398,7 +390,7 @@ Recupere le detail d'un produit avec ses categories et options.
 
 Cree une categorie dans le menu d'un restaurant.
 
-**Auth :** Oui — **Role :** OWNER ou ADMIN
+**Auth :** Oui — **Role :** Admin du restaurant (`isRestaurantAdmin`)
 
 **Body :**
 
@@ -440,7 +432,7 @@ Cree une categorie dans le menu d'un restaurant.
 
 Met a jour une categorie. Tous les champs sont optionnels.
 
-**Auth :** Oui — **Role :** OWNER ou ADMIN
+**Auth :** Oui — **Role :** Admin du restaurant (`isRestaurantAdmin`)
 
 **Body :**
 
@@ -472,7 +464,7 @@ Met a jour une categorie. Tous les champs sont optionnels.
 
 Supprime une categorie et ses associations produit-categorie.
 
-**Auth :** Oui — **Role :** OWNER ou ADMIN
+**Auth :** Oui — **Role :** Admin du restaurant (`isRestaurantAdmin`)
 
 **Reponse `201` :**
 
@@ -486,7 +478,7 @@ Supprime une categorie et ses associations produit-categorie.
 
 Cree un produit et l'associe a une categorie (via la table `products_categories`). Operation transactionnelle.
 
-**Auth :** Oui — **Role :** OWNER ou ADMIN
+**Auth :** Oui — **Role :** Admin du restaurant (`isRestaurantAdmin`)
 
 **Body :**
 
@@ -545,7 +537,7 @@ Cree un produit et l'associe a une categorie (via la table `products_categories`
 
 Met a jour un produit. Si `categorieId` est fourni et different de la categorie actuelle, une nouvelle association est creee (l'ancienne n'est pas supprimee). Operation transactionnelle.
 
-**Auth :** Oui — **Role :** OWNER ou ADMIN
+**Auth :** Oui — **Role :** Admin du restaurant (`isRestaurantAdmin`)
 
 **Body :** Meme structure que POST, tous les champs sont optionnels.
 
@@ -563,7 +555,7 @@ Met a jour un produit. Si `categorieId` est fourni et different de la categorie 
 
 Supprime un produit et toutes ses associations (categories, options) via cascade.
 
-**Auth :** Oui — **Role :** OWNER ou ADMIN
+**Auth :** Oui — **Role :** Admin du restaurant (`isRestaurantAdmin`)
 
 **Reponse `201` :**
 
@@ -577,7 +569,7 @@ Supprime un produit et toutes ses associations (categories, options) via cascade
 
 Cree un groupe d'options pour un produit (ex: "Taille", "Supplements", "Sauce").
 
-**Auth :** Oui — **Role :** OWNER ou ADMIN
+**Auth :** Oui — **Role :** Admin du restaurant (`isRestaurantAdmin`)
 
 **Body :**
 
@@ -623,7 +615,7 @@ Cree un groupe d'options pour un produit (ex: "Taille", "Supplements", "Sauce").
 
 Met a jour un groupe d'options. Tous les champs sont optionnels.
 
-**Auth :** Oui — **Role :** OWNER ou ADMIN
+**Auth :** Oui — **Role :** Admin du restaurant (`isRestaurantAdmin`)
 
 **Body :** Meme structure que POST, tous les champs optionnels.
 
@@ -641,7 +633,7 @@ Met a jour un groupe d'options. Tous les champs sont optionnels.
 
 Supprime un groupe d'options et tous ses choix via cascade.
 
-**Auth :** Oui — **Role :** OWNER ou ADMIN
+**Auth :** Oui — **Role :** Admin du restaurant (`isRestaurantAdmin`)
 
 **Reponse `200` :**
 
@@ -655,7 +647,7 @@ Supprime un groupe d'options et tous ses choix via cascade.
 
 Cree un choix dans un groupe d'options (ex: "Medium", "Large").
 
-**Auth :** Oui — **Role :** OWNER ou ADMIN
+**Auth :** Oui — **Role :** Admin du restaurant (`isRestaurantAdmin`)
 
 **Body :**
 
@@ -692,7 +684,7 @@ Cree un choix dans un groupe d'options (ex: "Medium", "Large").
 
 Met a jour un choix d'option. Tous les champs sont optionnels.
 
-**Auth :** Oui — **Role :** OWNER ou ADMIN
+**Auth :** Oui — **Role :** Admin du restaurant (`isRestaurantAdmin`)
 
 **Body :** Meme structure que POST, tous les champs optionnels.
 
@@ -710,7 +702,7 @@ Met a jour un choix d'option. Tous les champs sont optionnels.
 
 Supprime un choix d'option.
 
-**Auth :** Oui — **Role :** OWNER ou ADMIN
+**Auth :** Oui — **Role :** Admin du restaurant (`isRestaurantAdmin`)
 
 **Reponse `200` :**
 

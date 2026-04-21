@@ -5,12 +5,12 @@
 | Method   | Endpoint | Description       | Auth | Role          |
 | -------- | -------- | ----------------- | ---- | ------------- |
 | `POST`   | `/`      | Create restaurant | Yes  | --            |
-| `PUT`    | `/:id`   | Update restaurant | Yes  | OWNER / ADMIN |
-| `DELETE` | `/:id`   | Delete restaurant | Yes  | OWNER         |
+| `PUT`    | `/:id`   | Update restaurant | Yes  | Admin         |
+| `DELETE` | `/:id`   | Delete restaurant | Yes  | Admin         |
 
 ## POST `/`
 
-Creates a restaurant and adds the authenticated user as `OWNER` in the `restaurant_members` table.
+Creates a restaurant and sets the authenticated user as its admin (`adminId`).
 
 ```json
 {
@@ -30,10 +30,10 @@ Creates a restaurant and adds the authenticated user as `OWNER` in the `restaura
 
 Partial update. Same body as POST, all fields are optional.
 
-Requires the user to be `OWNER` or `ADMIN` of the restaurant.
+Requires the user to be the admin of the restaurant (`isRestaurantAdmin`).
 
 ## DELETE `/:id`
 
-Deletes the restaurant and all related data (members, opening hours, categories, products, orders) via cascade.
+Deletes the restaurant and all related data (opening hours, categories, products, orders) via cascade.
 
-Requires the user to be `OWNER` of the restaurant.
+Requires the user to be the admin of the restaurant (`isRestaurantAdmin`).

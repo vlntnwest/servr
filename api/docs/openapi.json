@@ -153,7 +153,7 @@
         "responses": { "200": { "description": "Opening hours array" } }
       },
       "put": {
-        "summary": "Replace opening hours (ADMIN+)",
+        "summary": "Replace opening hours (restaurant admin)",
         "tags": ["Opening Hours"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } }],
@@ -178,87 +178,6 @@
           }
         },
         "responses": { "200": { "description": "Updated opening hours" } }
-      }
-    },
-    "/restaurants/{restaurantId}/members": {
-      "get": {
-        "summary": "List members (ADMIN+)",
-        "tags": ["Members"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Members list" } }
-      }
-    },
-    "/restaurants/{restaurantId}/members/invite": {
-      "post": {
-        "summary": "Invite a member by email (OWNER)",
-        "tags": ["Members"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [{ "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["email"],
-                "properties": {
-                  "email": { "type": "string", "format": "email" },
-                  "role": { "type": "string", "enum": ["ADMIN", "STAFF"], "default": "STAFF" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "201": { "description": "Invitation sent" } }
-      }
-    },
-    "/restaurants/{restaurantId}/members/{memberId}/role": {
-      "patch": {
-        "summary": "Change member role (OWNER)",
-        "tags": ["Members"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [
-          { "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "memberId", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "type": "object", "required": ["role"], "properties": { "role": { "type": "string", "enum": ["ADMIN", "STAFF"] } } }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Updated member" } }
-      }
-    },
-    "/restaurants/{restaurantId}/members/{memberId}": {
-      "delete": {
-        "summary": "Remove member (OWNER)",
-        "tags": ["Members"],
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [
-          { "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } },
-          { "name": "memberId", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
-        "responses": { "200": { "description": "Removed" } }
-      }
-    },
-    "/members/accept": {
-      "post": {
-        "summary": "Accept invitation",
-        "tags": ["Members"],
-        "security": [{ "bearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "type": "object", "required": ["token"], "properties": { "token": { "type": "string" } } }
-            }
-          }
-        },
-        "responses": { "201": { "description": "Joined restaurant" } }
       }
     },
     "/restaurants/{restaurantId}/orders": {
@@ -296,7 +215,7 @@
         "responses": { "201": { "description": "Created order" }, "400": { "description": "Restaurant closed" } }
       },
       "get": {
-        "summary": "List orders (STAFF+)",
+        "summary": "List orders (restaurant admin)",
         "tags": ["Orders"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "restaurantId", "in": "path", "required": true, "schema": { "type": "string" } }],
@@ -305,7 +224,7 @@
     },
     "/restaurants/{restaurantId}/orders/{orderId}": {
       "get": {
-        "summary": "Get order (STAFF+)",
+        "summary": "Get order (restaurant admin)",
         "tags": ["Orders"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -317,7 +236,7 @@
     },
     "/restaurants/{restaurantId}/orders/{orderId}/status": {
       "patch": {
-        "summary": "Update order status (STAFF+)",
+        "summary": "Update order status (restaurant admin)",
         "tags": ["Orders"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -337,7 +256,7 @@
     },
     "/restaurants/{restaurantId}/stats": {
       "get": {
-        "summary": "Get restaurant stats (ADMIN+)",
+        "summary": "Get restaurant stats (restaurant admin)",
         "tags": ["Stats"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -381,7 +300,7 @@
     },
     "/checkout/restaurants/{restaurantId}/orders/{orderId}/refund": {
       "post": {
-        "summary": "Refund order (ADMIN+)",
+        "summary": "Refund order (restaurant admin)",
         "tags": ["Checkout"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [

@@ -44,7 +44,7 @@ pokey_webapp/
 │   └── menu.routes.js            # Routes menu (categories, products, option-groups, option-choices)
 ├── middleware/
 │   ├── auth.middleware.js        # checkAuth — verifie le JWT Supabase, charge le user depuis la DB
-│   ├── role.middleware.js        # isOwner / isAdmin / isStaff — verifie les permissions via restaurantMembers
+│   ├── role.middleware.js        # isRestaurantAdmin — verifie que req.user est l'admin du restaurant via Restaurant.adminId
 │   ├── validate.middleware.js    # validate({ body, params, query }) — middleware generique Zod
 │   └── error.middleware.js       # Error handler centralise (ZodError, Prisma, generique)
 ├── lib/
@@ -86,8 +86,8 @@ Client → Express → Rate Limiter → CORS → auth.middleware → role.middle
 
 ### Base de donnees
 
-- **12 modeles** : User, Restaurant, RestaurantMember, OpeningHour, Categorie, Product, ProductCategorie, OptionGroup, OptionChoice, Order, OrderProduct, OrderProductOption
-- **Roles** : `OWNER` > `ADMIN` > `STAFF` — la hierarchie est geree dans `role.middleware.js`
+- **11 modeles** : User, Restaurant, OpeningHour, Categorie, Product, ProductCategorie, OptionGroup, OptionChoice, Order, OrderProduct, OrderProductOption
+- **Access** : chaque Restaurant a un admin unique (User.id via Restaurant.adminId) — verification via `isRestaurantAdmin`
 - **Statuts commande** : `PENDING` → `IN_PROGRESS` → `COMPLETED` → `DELIVERED` | `CANCELLED`
 - **Cascade** : Supprimer un restaurant supprime tout ce qui lui est lie (membres, categories, produits, commandes)
 - Les IDs sont des UUID v4 generes par PostgreSQL (`gen_random_uuid()`)
@@ -97,7 +97,7 @@ Client → Express → Rate Limiter → CORS → auth.middleware → role.middle
 1. Le client s'authentifie via Supabase Auth (SDK frontend)
 2. Il envoie le JWT dans le header `Authorization: Bearer <token>`
 3. `auth.middleware.js` verifie le token via `supabase.auth.getUser(token)`
-4. Il charge le user depuis la table `users` avec ses `restaurantMembers`
+4. Il charge le user depuis la table `users` avec ses `restaurants`
 5. `req.user` est disponible dans les controllers suivants
 
 ### Tests
@@ -128,7 +128,7 @@ STRIPE_WEBHOOK_SECRET=[a_venir]
 4. **Toujours passer les erreurs a `next(error)`** — ne pas catch silencieusement
 5. **Toujours logguer les actions** avec le contexte pertinent (IDs, action)
 6. **Tester les nouvelles routes** avec des tests d'integration dans `tests/`
-7. **Verifier les permissions** : les routes modifiant des donnees restaurant doivent passer par `isAdmin` ou `isOwner`
+7. **Verifier les permissions** : les routes modifiant des donnees restaurant doivent passer par `isRestaurantAdmin`
 
 ## Problemes connus (voir ROADMAP.md pour details)
 

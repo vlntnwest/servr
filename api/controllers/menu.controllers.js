@@ -143,27 +143,20 @@ module.exports.updateProduct = async (req, res, next) => {
         },
       });
 
-      const actualCategorie = await tx.productCategorie.findMany({
-        where: {
-          productId: productId,
-        },
-      });
-
-      if (
-        !categorieId ||
-        actualCategorie.some(
-          (categorie) => categorie.categorieId === categorieId,
-        )
-      ) {
+      if (!categorieId) {
         return product;
       }
 
-      await tx.productCategorie.create({
-        data: {
-          productId: product.id,
-          categorieId: categorieId,
-        },
+      const alreadyLinked = await tx.productCategorie.findFirst({
+        where: { productId: productId, categorieId: categorieId },
       });
+
+      if (!alreadyLinked) {
+        await tx.productCategorie.deleteMany({ where: { productId: productId } });
+        await tx.productCategorie.create({
+          data: { productId: product.id, categorieId: categorieId },
+        });
+      }
 
       return product;
     });

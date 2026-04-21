@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const promoCodeControllers = require("../controllers/promoCode.controllers");
 const checkAuth = require("../middleware/auth.middleware");
-const { isAdmin } = require("../middleware/role.middleware");
+const { isRestaurantAdmin } = require("../middleware/role.middleware");
 const { validate } = require("../middleware/validate.middleware");
 const { promoCodeSchema, validatePromoCodeSchema } = require("../validators/schemas");
 
@@ -17,14 +17,14 @@ router.post(
 router.get(
   "/restaurants/:restaurantId/promo-codes",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   promoCodeControllers.getPromoCodes,
 );
 
 router.post(
   "/restaurants/:restaurantId/promo-codes",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   validate({ body: promoCodeSchema }),
   promoCodeControllers.createPromoCode,
 );
@@ -32,7 +32,7 @@ router.post(
 router.delete(
   "/restaurants/:restaurantId/promo-codes/:promoCodeId",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   promoCodeControllers.deletePromoCode,
 );
 

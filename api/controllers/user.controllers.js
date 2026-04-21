@@ -9,9 +9,7 @@ module.exports.getUserData = async (req, res, next) => {
     const data = await prisma.user.findUnique({
       where: { id },
       include: {
-        restaurantMembers: {
-          select: { restaurantId: true, role: true },
-        },
+        restaurants: { select: { id: true, name: true, slug: true } },
       },
     });
 

@@ -72,8 +72,8 @@ const updateProductSchema = z.object({
   imageUrl: z.string().url().optional(),
   price: z.number().optional(),
   tags: z.array(z.string()).optional(),
-  discount: z.number().default(0).optional(),
-  isAvailable: z.boolean().default(true).optional(),
+  discount: z.number().optional(),
+  isAvailable: z.boolean().optional(),
   displayOrder: z.number().optional(),
   categorieId: z.string().uuid().optional(),
 });
@@ -146,20 +146,6 @@ const updateOrderStatusSchema = z.object({
     "CANCELLED",
     "PENDING_ON_SITE_PAYMENT",
   ]),
-});
-
-// Member schemas
-const inviteMemberSchema = z.object({
-  email: z.string().email(),
-  role: z.enum(["ADMIN", "STAFF"]).default("STAFF"),
-});
-
-const updateMemberRoleSchema = z.object({
-  role: z.enum(["ADMIN", "STAFF"]),
-});
-
-const acceptInvitationSchema = z.object({
-  token: z.string().min(1),
 });
 
 // Opening hours schemas
@@ -236,11 +222,6 @@ module.exports = {
   // Orders
   orderSchema,
   updateOrderStatusSchema,
-
-  // Members
-  inviteMemberSchema,
-  updateMemberRoleSchema,
-  acceptInvitationSchema,
 
   // Opening hours
   openingHoursSchema,

@@ -28,7 +28,7 @@ export default function AdminRedirectPage() {
 
       if (res.ok) {
         const { data } = await res.json();
-        const firstId = data.restaurantMembers?.[0]?.restaurantId;
+        const firstId = data.restaurants?.[0]?.id;
         if (firstId) {
           router.replace(`/admin/${firstId}`);
           return;

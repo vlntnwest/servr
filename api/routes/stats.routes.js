@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const statsControllers = require("../controllers/stats.controllers");
 const checkAuth = require("../middleware/auth.middleware");
-const { isAdmin } = require("../middleware/role.middleware");
+const { isRestaurantAdmin } = require("../middleware/role.middleware");
 const { validate } = require("../middleware/validate.middleware");
 const { z } = require("zod");
 
@@ -13,7 +13,7 @@ const statsQuerySchema = z.object({
 router.get(
   "/restaurants/:restaurantId/stats",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   validate({ query: statsQuerySchema }),
   statsControllers.getStats,
 );
