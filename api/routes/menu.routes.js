@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const menuControllers = require("../controllers/menu.controllers");
 const checkAuth = require("../middleware/auth.middleware");
-const { isAdmin } = require("../middleware/role.middleware");
+const { isRestaurantAdmin } = require("../middleware/role.middleware");
 const { validate } = require("../middleware/validate.middleware");
 const {
   categorieSchema,
@@ -40,21 +40,21 @@ router.get(
 router.post(
   "/restaurants/:restaurantId/categories",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   validate({ body: categorieSchema }),
   menuControllers.createProductCategorie,
 );
 router.put(
   "/restaurants/:restaurantId/categories/:categorieId",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   validate({ body: updateCategorieSchema }),
   menuControllers.updateProductCategorie,
 );
 router.delete(
   "/restaurants/:restaurantId/categories/:categorieId",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   menuControllers.deleteProductCategorie,
 );
 
@@ -62,21 +62,21 @@ router.delete(
 router.post(
   "/restaurants/:restaurantId/products",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   validate({ body: productSchema }),
   menuControllers.createProduct,
 );
 router.put(
   "/restaurants/:restaurantId/products/:productId",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   validate({ body: updateProductSchema }),
   menuControllers.updateProduct,
 );
 router.delete(
   "/restaurants/:restaurantId/products/:productId",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   menuControllers.deleteProduct,
 );
 
@@ -84,27 +84,27 @@ router.delete(
 router.get(
   "/restaurants/:restaurantId/option-groups",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   menuControllers.listOptionGroups,
 );
 router.post(
   "/restaurants/:restaurantId/option-groups",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   validate({ body: productOptionGroupSchema }),
   menuControllers.createProductOptionGroup,
 );
 router.put(
   "/restaurants/:restaurantId/option-groups/:optionGroupId",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   validate({ body: updateProductOptionGroupSchema }),
   menuControllers.updateProductOptionGroup,
 );
 router.delete(
   "/restaurants/:restaurantId/option-groups/:optionGroupId",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   menuControllers.deleteProductOptionGroup,
 );
 
@@ -112,21 +112,21 @@ router.delete(
 router.post(
   "/restaurants/:restaurantId/products/:productId/option-groups",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   validate({ body: linkOptionGroupsSchema }),
   menuControllers.linkOptionGroups,
 );
 router.put(
   "/restaurants/:restaurantId/products/:productId/option-groups/reorder",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   validate({ body: reorderOptionGroupsSchema }),
   menuControllers.reorderProductOptionGroups,
 );
 router.delete(
   "/restaurants/:restaurantId/products/:productId/option-groups/:optionGroupId",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   menuControllers.unlinkOptionGroup,
 );
 
@@ -134,28 +134,28 @@ router.delete(
 router.post(
   "/restaurants/:restaurantId/option-groups/:optionGroupId/option-choices",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   validate({ body: productOptionChoiceSchema }),
   menuControllers.createProductOptionChoice,
 );
 router.post(
   "/restaurants/:restaurantId/option-groups/:optionGroupId/option-choices/bulk",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   validate({ body: bulkOptionChoicesSchema }),
   menuControllers.createBulkOptionChoices,
 );
 router.put(
   "/restaurants/:restaurantId/option-choices/:optionChoiceId",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   validate({ body: updateProductOptionChoiceSchema }),
   menuControllers.updateProductOptionChoice,
 );
 router.delete(
   "/restaurants/:restaurantId/option-choices/:optionChoiceId",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   menuControllers.deleteProductOptionChoice,
 );
 

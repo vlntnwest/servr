@@ -3,7 +3,7 @@ const router = express.Router();
 const restaurantControllers = require("../controllers/restaurant.controllers");
 const stripeControllers = require("../controllers/stripe.controllers");
 const checkAuth = require("../middleware/auth.middleware");
-const { isAdmin, isOwner, isStaff } = require("../middleware/role.middleware");
+const { isRestaurantAdmin } = require("../middleware/role.middleware");
 const { validate } = require("../middleware/validate.middleware");
 const { restaurantSchema, updatePreparationLevelSchema } = require("../validators/schemas");
 
@@ -22,14 +22,14 @@ router.post(
 router.put(
   "/:restaurantId",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   validate({ body: restaurantSchema.partial() }),
   restaurantControllers.updateRestaurant,
 );
 router.delete(
   "/:restaurantId",
   checkAuth,
-  isOwner,
+  isRestaurantAdmin,
   restaurantControllers.deleteRestaurant,
 );
 
@@ -37,7 +37,7 @@ router.delete(
 router.patch(
   "/:restaurantId/preparation-level",
   checkAuth,
-  isStaff,
+  isRestaurantAdmin,
   validate({ body: updatePreparationLevelSchema }),
   restaurantControllers.updatePreparationLevel,
 );
@@ -46,13 +46,13 @@ router.patch(
 router.post(
   "/:restaurantId/stripe/onboard",
   checkAuth,
-  isOwner,
+  isRestaurantAdmin,
   stripeControllers.initiateStripeOnboarding,
 );
 router.get(
   "/:restaurantId/stripe/status",
   checkAuth,
-  isOwner,
+  isRestaurantAdmin,
   stripeControllers.getStripeStatus,
 );
 

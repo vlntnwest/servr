@@ -4,7 +4,7 @@ const checkoutControllers = require("../controllers/checkout.controllers");
 const { validate } = require("../middleware/validate.middleware");
 const { checkoutSessionSchema } = require("../validators/schemas");
 const checkAuth = require("../middleware/auth.middleware");
-const { isAdmin } = require("../middleware/role.middleware");
+const { isRestaurantAdmin } = require("../middleware/role.middleware");
 
 router.post(
   "/create-session",
@@ -19,7 +19,7 @@ router.post("/webhook", checkoutControllers.handleWebhook);
 router.post(
   "/restaurants/:restaurantId/orders/:orderId/refund",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   checkoutControllers.refundOrder,
 );
 

@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require("multer");
 const uploadControllers = require("../controllers/upload.controllers");
 const checkAuth = require("../middleware/auth.middleware");
-const { isAdmin } = require("../middleware/role.middleware");
+const { isRestaurantAdmin } = require("../middleware/role.middleware");
 
 // Store file in memory (passed as buffer to Supabase)
 const upload = multer({ storage: multer.memoryStorage() });
@@ -12,7 +12,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post(
   "/restaurants/:restaurantId/upload",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   upload.single("image"),
   uploadControllers.uploadImage,
 );
@@ -21,7 +21,7 @@ router.post(
 router.delete(
   "/restaurants/:restaurantId/upload",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   uploadControllers.deleteImage,
 );
 

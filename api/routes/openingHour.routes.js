@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const openingHourControllers = require("../controllers/openingHour.controllers");
 const checkAuth = require("../middleware/auth.middleware");
-const { isAdmin } = require("../middleware/role.middleware");
+const { isRestaurantAdmin } = require("../middleware/role.middleware");
 const { validate } = require("../middleware/validate.middleware");
 const { openingHoursSchema } = require("../validators/schemas");
 
@@ -16,7 +16,7 @@ router.get(
 router.put(
   "/restaurants/:restaurantId/opening-hours",
   checkAuth,
-  isAdmin,
+  isRestaurantAdmin,
   validate({ body: openingHoursSchema }),
   openingHourControllers.updateOpeningHours,
 );

@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const orderControllers = require("../controllers/order.controllers");
 const checkAuth = require("../middleware/auth.middleware");
-const { isStaff } = require("../middleware/role.middleware");
+const { isRestaurantAdmin } = require("../middleware/role.middleware");
 const { validate } = require("../middleware/validate.middleware");
 const {
   orderSchema,
@@ -23,21 +23,21 @@ router.post(
 router.get(
   "/restaurants/:restaurantId/orders",
   checkAuth,
-  isStaff,
+  isRestaurantAdmin,
   orderControllers.getOrders,
 );
 
 router.get(
   "/restaurants/:restaurantId/orders/:orderId",
   checkAuth,
-  isStaff,
+  isRestaurantAdmin,
   orderControllers.getOrder,
 );
 
 router.patch(
   "/restaurants/:restaurantId/orders/:orderId/status",
   checkAuth,
-  isStaff,
+  isRestaurantAdmin,
   validate({ body: updateOrderStatusSchema }),
   orderControllers.updateOrderStatus,
 );
