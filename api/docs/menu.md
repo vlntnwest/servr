@@ -6,18 +6,18 @@
 | -------- | --------------------------------------------------------------------- | ------------------------ | ---- | ----- |
 | `GET`    | `/restaurants/:restaurantId/menu`                                     | Get full menu (public)   | No   | —     |
 | `GET`    | `/restaurants/:restaurantId/products/:productId`                      | Get product (public)     | No   | —     |
-| `POST`   | `/restaurants/:restaurantId/categories`                               | Create category          | Yes  | ADMIN |
-| `PUT`    | `/categories/:categorieId`                                            | Update category          | Yes  | ADMIN |
-| `DELETE` | `/categories/:categorieId`                                            | Delete category          | Yes  | ADMIN |
-| `POST`   | `/restaurants/:restaurantId/products`                                 | Create product           | Yes  | ADMIN |
-| `PUT`    | `/products/:productId`                                                | Update product           | Yes  | ADMIN |
-| `DELETE` | `/products/:productId`                                                | Delete product           | Yes  | ADMIN |
-| `POST`   | `/products/:productId/option-groups`                                  | Create option group      | Yes  | ADMIN |
-| `PUT`    | `/option-groups/:optionGroupId`                                       | Update option group      | Yes  | ADMIN |
-| `DELETE` | `/option-groups/:optionGroupId`                                       | Delete option group      | Yes  | ADMIN |
-| `POST`   | `/option-groups/:optionGroupId/option-choices`                        | Create option choice     | Yes  | ADMIN |
-| `PUT`    | `/option-choices/:optionChoiceId`                                     | Update option choice     | Yes  | ADMIN |
-| `DELETE` | `/option-choices/:optionChoiceId`                                     | Delete option choice     | Yes  | ADMIN |
+| `POST`   | `/restaurants/:restaurantId/categories`                               | Create category          | Yes  | Admin |
+| `PUT`    | `/categories/:categorieId`                                            | Update category          | Yes  | Admin |
+| `DELETE` | `/categories/:categorieId`                                            | Delete category          | Yes  | Admin |
+| `POST`   | `/restaurants/:restaurantId/products`                                 | Create product           | Yes  | Admin |
+| `PUT`    | `/products/:productId`                                                | Update product           | Yes  | Admin |
+| `DELETE` | `/products/:productId`                                                | Delete product           | Yes  | Admin |
+| `POST`   | `/products/:productId/option-groups`                                  | Create option group      | Yes  | Admin |
+| `PUT`    | `/option-groups/:optionGroupId`                                       | Update option group      | Yes  | Admin |
+| `DELETE` | `/option-groups/:optionGroupId`                                       | Delete option group      | Yes  | Admin |
+| `POST`   | `/option-groups/:optionGroupId/option-choices`                        | Create option choice     | Yes  | Admin |
+| `PUT`    | `/option-choices/:optionChoiceId`                                     | Update option choice     | Yes  | Admin |
+| `DELETE` | `/option-choices/:optionChoiceId`                                     | Delete option choice     | Yes  | Admin |
 
 ---
 

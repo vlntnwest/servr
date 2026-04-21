@@ -77,7 +77,7 @@ pokey_webapp/
 ├── middleware/
 │   ├── auth.middleware.js            # JWT verification (Supabase)
 │   ├── error.middleware.js           # Centralized error handler
-│   ├── role.middleware.js            # Role authorization (isOwner, isAdmin, isStaff)
+│   ├── role.middleware.js            # Role authorization (isRestaurantAdmin)
 │   └── validate.middleware.js        # Zod validation
 ├── lib/
 │   ├── supabase.js                   # Supabase client
@@ -119,7 +119,7 @@ await supabase.auth.signOut();
 
 A Supabase trigger automatically creates a row in `public.users` on signup.
 
-The backend verifies tokens via the `checkAuth` middleware and checks roles via `isOwner` / `isAdmin` / `isStaff`.
+The backend verifies tokens via the `checkAuth` middleware and checks restaurant admin access via `isRestaurantAdmin`.
 
 ## Middleware
 
@@ -156,22 +156,21 @@ Accepts requests from `CLIENT_URL` with headers: `sessionId`, `Content-Type`, `A
 
 ### Models
 
-| Model              | Description                        |
-| ------------------ | ---------------------------------- |
-| `User`             | Users                              |
-| `Restaurant`       | Restaurant information             |
-| `RestaurantMember` | User-restaurant role (membership)  |
-| `OpeningHour`      | Opening hours per day              |
-| `Category`         | Menu categories                    |
-| `Product`          | Menu items                         |
-| `OptionGroup`      | Option groups for customization    |
-| `OptionChoice`     | Choices within an option group     |
-| `Order`            | Customer orders                    |
-| `OrderProduct`     | Products within an order           |
+| Model          | Description                        |
+| -------------- | ---------------------------------- |
+| `User`         | Users (0..N restaurants as admin)  |
+| `Restaurant`   | Restaurant information (single `adminId` → `User.id`) |
+| `OpeningHour`  | Opening hours per day              |
+| `Category`     | Menu categories                    |
+| `Product`      | Menu items                         |
+| `OptionGroup`  | Option groups for customization    |
+| `OptionChoice` | Choices within an option group     |
+| `Order`        | Customer orders                    |
+| `OrderProduct` | Products within an order           |
 
-### Restaurant Roles
+### Restaurant Access
 
-`OWNER` · `ADMIN` · `STAFF`
+Each `Restaurant` has a single admin (`Restaurant.adminId` → `User.id`). A user can own 0..N restaurants. Admin-only endpoints are gated by the `isRestaurantAdmin` middleware.
 
 ### Order Statuses
 
