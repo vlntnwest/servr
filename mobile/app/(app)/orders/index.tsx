@@ -1,8 +1,16 @@
-import { View, Text } from "react-native";
-export default function Screen() {
+import { Stack } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+export default function Orders() {
   return (
-    <View>
-      <Text>Commandes</Text>
-    </View>
+    <SafeAreaView>
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          headerLargeTitle: true,
+          title: "Commandes",
+        }}
+      />
+    </SafeAreaView>
   );
 }

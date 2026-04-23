@@ -1,8 +1,16 @@
-import { View, Text } from "react-native";
-export default function Screen() {
+import { Stack } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+export default function Settings() {
   return (
-    <View>
-      <Text>Paramètres</Text>
-    </View>
+    <SafeAreaView>
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          headerLargeTitle: true,
+          title: "Réglages",
+        }}
+      />
+    </SafeAreaView>
   );
 }

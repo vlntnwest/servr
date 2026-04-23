@@ -1,8 +1,10 @@
-import { View, Text } from "react-native";
-export default function Screen() {
+import { Stack } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+export default function Menu() {
   return (
-    <View>
-      <Text>Menu</Text>
-    </View>
+    <SafeAreaView>
+      <Stack.Screen options={{ headerShown: true, headerLargeTitle: true }} />
+    </SafeAreaView>
   );
 }
