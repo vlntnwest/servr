@@ -20,7 +20,7 @@
 
 ---
 
-## Tâche 1 — Mise en place du projet dans le monorepo
+## Tâche 1 — Mise en place du projet dans le monorepo - ok
 
 **Objectif :** Déplacer `printer-app` dans `servr/mobile/` et vérifier que tout tourne.
 
@@ -39,7 +39,7 @@
 
 ---
 
-## Tâche 2 — Nettoyage et structure de navigation
+## Tâche 2 — Nettoyage et structure de navigation - ok
 
 **Objectif :** Supprimer le contenu demo et poser la structure de navigation finale.
 
@@ -61,7 +61,7 @@
 
 ---
 
-## Tâche 3 — Configuration Supabase
+## Tâche 3 — Configuration Supabase - ok
 
 **Objectif :** Connecter l'app mobile à Supabase (même projet que l'API).
 
