@@ -25,6 +25,7 @@
 **Objectif :** Déplacer `printer-app` dans `servr/mobile/` et vérifier que tout tourne.
 
 **Ce que tu fais :**
+
 - Copie le contenu de `printer-app/` dans `servr/mobile/` (sauf `node_modules/`)
 - Mets à jour le `name` dans `package.json` (ex. `servr-mobile`)
 - Lance `npm install` dans `mobile/`
@@ -43,6 +44,7 @@
 **Objectif :** Supprimer le contenu demo et poser la structure de navigation finale.
 
 **Ce que tu fais :**
+
 - Supprime les écrans demo (tabs, etc.) qui venaient du template Expo
 - Crée la structure de dossiers dans `app/` :
   - `(auth)/` — pour les écrans non connectés
@@ -64,6 +66,7 @@
 **Objectif :** Connecter l'app mobile à Supabase (même projet que l'API).
 
 **Ce que tu fais :**
+
 - Installe `@supabase/supabase-js` et `expo-secure-store`
 - Crée `lib/supabase.ts` — initialise le client Supabase avec les variables d'environnement
 - Configure le storage Supabase pour utiliser `expo-secure-store` (stockage sécurisé du token sur mobile)
@@ -84,6 +87,7 @@
 **Objectif :** Permettre à un restaurateur de se connecter avec son compte Supabase.
 
 **Ce que tu fais :**
+
 - Crée `app/(auth)/login.tsx`
 - Champs : email + mot de passe + bouton "Se connecter"
 - Appelle `supabase.auth.signInWithPassword()` à la soumission
@@ -105,6 +109,7 @@
 **Objectif :** Rendre la session Supabase et le restaurant actif accessibles partout dans l'app.
 
 **Ce que tu fais :**
+
 - Crée `contexts/auth.tsx` — un Context React qui expose : `session`, `user`, `restaurants`, `loading`
 - Au montage, écoute les changements de session avec `supabase.auth.onAuthStateChange()`
 - Crée `contexts/restaurant.tsx` — expose `activeRestaurant` et `setActiveRestaurant`
@@ -128,6 +133,7 @@
 **Objectif :** Rediriger automatiquement vers le login si l'utilisateur n'est pas connecté.
 
 **Ce que tu fais :**
+
 - Dans le `_layout.tsx` de `(app)/`, vérifie la session depuis le contexte auth
 - Si pas de session → `router.replace('/(auth)/login')`
 - Si session mais pas de restaurant actif → écran de sélection restaurant
@@ -146,6 +152,7 @@
 **Objectif :** Afficher les commandes en cours du restaurant.
 
 **Ce que tu fais :**
+
 - Crée `app/(app)/orders/index.tsx`
 - Au montage, récupère les commandes via `GET /orders?restaurantId=…&status=pending,accepted,ready` (API Express)
 - Affiche la liste : numéro de commande, heure, statut, nombre d'articles
@@ -166,6 +173,7 @@
 **Objectif :** Les nouvelles commandes apparaissent instantanément sans recharger.
 
 **Ce que tu fais :**
+
 - Dans `hooks/useOrders.ts`, ajoute une subscription Supabase Realtime sur la table `orders`
 - Filtre par `restaurant_id` = restaurant actif
 - À chaque événement `INSERT` → ajoute la commande à la liste
@@ -189,6 +197,7 @@
 **Objectif :** Voir le détail d'une commande et changer son statut.
 
 **Ce que tu fais :**
+
 - Crée `app/(app)/orders/[id].tsx`
 - Affiche : articles commandés (quantité, nom, options), total, heure, infos client
 - Boutons d'action selon le statut actuel :
@@ -210,6 +219,7 @@
 **Objectif :** Activer/désactiver rapidement un article du menu.
 
 **Ce que tu fais :**
+
 - Crée `app/(app)/menu/index.tsx`
 - Récupère les articles via `GET /menu-items?restaurantId=…`
 - Affiche la liste avec un toggle Switch (composant React Native natif) par article
@@ -229,6 +239,7 @@
 **Objectif :** Permettre au restaurateur d'ouvrir ou fermer son restaurant.
 
 **Ce que tu fais :**
+
 - Crée `app/(app)/settings/index.tsx`
 - Affiche le statut actuel (ouvert / fermé) et un toggle Switch
 - À chaque toggle → `PATCH /restaurants/:id` avec `{ isOpen: boolean }`
@@ -245,6 +256,7 @@
 **Objectif :** Migrer le `usePrinter` de `printer-app` et l'intégrer à l'app.
 
 **Ce que tu fais :**
+
 - Copie `hooks/usePrinter.ts` depuis `printer-app` vers `mobile/hooks/`
 - Dans les paramètres, ajoute une section "Imprimante" : bouton scan, liste des imprimantes trouvées, bouton de connexion
 - Persiste l'imprimante sélectionnée avec `@react-native-async-storage/async-storage` (se reconnecte automatiquement au démarrage)
@@ -264,6 +276,7 @@
 **Objectif :** Imprimer automatiquement chaque nouvelle commande si le toggle est activé.
 
 **Ce que tu fais :**
+
 - Dans `hooks/useOrders.ts`, quand un événement Realtime `INSERT` arrive, vérifie si l'impression automatique est activée
 - Si oui → appelle `printOrder(order)` depuis `usePrinter`
 - Gère l'erreur d'impression silencieusement (log + toast, mais ne bloque pas le flux)
@@ -281,6 +294,7 @@
 **Objectif :** Recevoir une notification même quand l'app est en arrière-plan.
 
 **Ce que tu fais :**
+
 - Installe et configure `expo-notifications`
 - Au login, demande la permission de notifications et récupère le token push Expo
 - Envoie ce token à l'API pour le stocker en base (`PATCH /users/push-token`)
@@ -303,6 +317,7 @@
 **Objectif :** Rendre l'app robuste pour une utilisation quotidienne.
 
 **Ce que tu fais :**
+
 - Ajoute un indicateur de connexion Realtime (point vert/rouge dans le header)
 - Gère la perte réseau : message informatif, retry automatique
 - Ajoute des états de chargement (skeletons ou spinners) sur chaque écran
@@ -316,11 +331,11 @@
 
 ## À chaque étape — Comment travailler avec Claude
 
-| Quand | Quoi demander |
-|-------|---------------|
-| Avant de coder | "Explique-moi le concept X avant que je commence" |
-| Pendant | "Voilà mon code, est-ce que l'architecture est bonne ?" |
-| Après | "Voilà ce que j'ai fait, qu'est-ce que tu changerais ?" |
-| Si bloqué | "Je suis bloqué sur X, voilà ce que j'ai essayé" |
+| Quand          | Quoi demander                                           |
+| -------------- | ------------------------------------------------------- |
+| Avant de coder | "Explique-moi le concept X avant que je commence"       |
+| Pendant        | "Voilà mon code, est-ce que l'architecture est bonne ?" |
+| Après          | "Voilà ce que j'ai fait, qu'est-ce que tu changerais ?" |
+| Si bloqué      | "Je suis bloqué sur X, voilà ce que j'ai essayé"        |
 
 Claude ne te donnera pas le code directement (sauf si tu le demandes explicitement) — il t'expliquera le concept, te montrera la direction, et validera ton approche.
