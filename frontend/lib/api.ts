@@ -3,6 +3,7 @@ import type {
   Category,
   Product,
   Restaurant,
+  User,
   Order,
   PaginatedResponse,
   OpeningHour,
@@ -152,6 +153,12 @@ export async function createCheckoutSession(
     body: JSON.stringify({ restaurantId: rid, ...payload }),
   });
   return res.json();
+}
+
+// ── User ─────────────────────────────────────────────────────────────────────
+
+export async function getUserMe(): Promise<{ data: User } | { error: string }> {
+  return apiFetch<User>("/user/me");
 }
 
 // ── Auth-protected (admin) ────────────────────────────────────────────────────

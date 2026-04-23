@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getRestaurantBySlug, getMenuForRestaurant, getOpeningHours, getExceptionalHours } from "@/lib/api";
 import Header from "@/components/layout/header";
 import RestaurantHeader from "@/components/store/restaurant-header";
+import CategoryNav from "@/components/menu/category-nav";
 import MenuPage from "@/components/menu/menu-page";
 import { CategorySectionSkeleton } from "@/components/menu/category-section";
 import { Suspense } from "react";
@@ -31,6 +32,7 @@ export default async function StorePage({
     <>
       <Header />
       <RestaurantHeader restaurant={restaurant} openingHours={openingHours} exceptionalHours={exceptionalHours} />
+      <CategoryNav categories={sorted} />
       <main>
         <Suspense
           fallback={

@@ -14,7 +14,7 @@ export function CategorySection({ category }: CategorySectionProps) {
   if (products.length === 0) return null;
 
   return (
-    <section className="mt-6">
+    <section id={`cat-${category.id}`} className="mt-6">
       <div className="px-3 mb-3">
         <h2 className="text-2xl font-bold">{category.name}</h2>
         {category.subHeading && (

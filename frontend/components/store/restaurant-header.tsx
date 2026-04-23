@@ -46,11 +46,11 @@ export default function RestaurantHeader({
     : null;
 
   return (
-    <div className="border-b border-black/5">
+    <div className="border-b border-black/5 bg-white">
       <div className="max-w-screen-3xl mx-auto flex flex-col md:flex-row md:items-start md:gap-6 md:p-8 xl:p-16">
         {/* Image — full bleed on mobile, rounded card on desktop */}
         {restaurant.imageUrl && (
-          <div className="relative w-full aspect-[16/9] md:w-[30%] min-h-[250px] md:shrink-0 md:rounded-xl overflow-hidden bg-gray-100">
+          <div className="relative w-full aspect-[16/9] md:w-[30%] min-h-[300px] md:shrink-0 md:rounded-sm overflow-hidden bg-gray-100">
             <Image
               src={restaurant.imageUrl}
               alt={restaurant.name}
