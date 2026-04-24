@@ -39,7 +39,7 @@
 
 ---
 
-## Tâche 2 — Nettoyage et structure de navigation - ok
+## Tâche 2 — Nettoyage et structure de navigation
 
 **Objectif :** Supprimer le contenu demo et poser la structure de navigation finale.
 
@@ -50,12 +50,17 @@
   - `(auth)/` — pour les écrans non connectés
   - `(app)/` — pour les écrans connectés (orders, menu, settings)
 - Crée des fichiers vides (`index.tsx` + `_layout.tsx`) dans chaque groupe pour commencer
+- Installe `@react-navigation/drawer` et ses deps (`react-native-gesture-handler`, `react-native-reanimated` — normalement déjà là avec Expo)
+- Dans `(app)/_layout.tsx`, pose un **Drawer navigator** (Expo Router + `@react-navigation/drawer`) : header en haut avec bouton hamburger à gauche, tiroir latéral contenant les liens vers Commandes, Menu, Paramètres
+- Pour le style du contenu du tiroir, tu utiliseras **react-native-reusables (rnr)** dans une tâche suivante — pour l'instant, laisse le rendu par défaut de React Navigation, on veut juste que ça navigue
 
 **Concept clé — Expo Router et les groupes de routes :** Les dossiers entre parenthèses `(auth)` et `(app)` sont des "groupes" — ils organisent la navigation sans apparaître dans l'URL. Demande à Claude de t'expliquer comment fonctionnent les layouts imbriqués en Expo Router si c'est flou.
 
-**Concept clé — Tab Navigator :** Le `_layout.tsx` dans `(app)/` sera ton tab navigator (barre d'onglets en bas). Claude peut t'expliquer la différence entre Stack et Tab navigator.
+**Concept clé — Drawer Navigator :** Le `_layout.tsx` dans `(app)/` sera ton drawer navigator. Il fournit un header natif avec un bouton hamburger qui ouvre un tiroir latéral avec la liste des sections. Claude peut t'expliquer la différence entre Stack, Tab et Drawer navigator, et pourquoi on choisit Drawer ici (moins d'espace pris en bas pour les actions métier, plus lisible sur petit écran).
 
-**Validation :** L'app navigue entre des écrans vides sans planter.
+**Concept clé — rnr (react-native-reusables) :** rnr n'est pas un navigator — c'est une bibliothèque de composants UI shadcn-like par-dessus NativeWind. On l'utilisera pour styliser le contenu du tiroir (avatar resto, items, séparateurs, bouton logout) dans une tâche dédiée, mais le comportement de navigation reste géré par `@react-navigation/drawer`.
+
+**Validation :** L'app navigue entre des écrans vides sans planter. Le bouton hamburger ouvre le tiroir et permet de changer de section.
 
 **Commit :** `chore: set up navigation structure`
 

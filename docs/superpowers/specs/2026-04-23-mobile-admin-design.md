@@ -36,6 +36,8 @@ servr/
 - expo-dev-client (obligatoire pour les modules natifs d'impression)
 - React Native 0.81, TypeScript
 - Supabase JS (`@supabase/supabase-js`) — auth + realtime
+- NativeWind + `react-native-reusables` (rnr) — design system shadcn-like pour les composants UI (drawer content, cards, toggles, etc.)
+- `@react-navigation/drawer` (via Expo Router) — tiroir latéral natif avec header et bouton hamburger
 - `react-native-esc-pos-printer` — impression réseau (TCP) et Bluetooth (BT)
 - Expo Notifications — push notifications en background
 
@@ -48,7 +50,7 @@ servr/
   login.tsx                  — connexion Supabase, sélection restaurant si plusieurs
 
 (app)/
-  _layout.tsx                — tab navigator, restaurant actif en contexte
+  _layout.tsx                — drawer navigator (header + menu hamburger), restaurant actif en contexte
   orders/
     index.tsx                — liste commandes en cours (temps réel)
     [id].tsx                 — détail commande + actions (accept/reject/ready/complete)
@@ -57,6 +59,8 @@ servr/
   settings/
     index.tsx                — statut restaurant (ouvert/fermé), config imprimante, impression auto
 ```
+
+**Navigation principale :** Drawer (tiroir latéral) déclenché par un bouton hamburger dans le header, basé sur `@react-navigation/drawer` via Expo Router (comportement natif : gestures, header intégré, animation). Le contenu du drawer (items, séparateurs, avatar resto, bouton logout) est stylisé avec **react-native-reusables (rnr)** par-dessus NativeWind pour rester cohérent avec le design system shadcn. Le header affiche le titre de l'écran courant et le nom du restaurant actif. Le drawer liste les sections (Commandes, Menu, Paramètres) et permet de changer de restaurant si l'utilisateur en gère plusieurs.
 
 Accès protégé : redirect vers `(auth)/login` si pas de session Supabase.
 
