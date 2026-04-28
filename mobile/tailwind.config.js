@@ -11,6 +11,7 @@ module.exports = {
       fontFamily: {
         sans: ["DMSans_400Regular"],
         display: ["ArchivoBlack_400Regular"],
+        "display-italic": ["Archivo_900Black_Italic"],
         "sans-light": ["DMSans_300Light"],
         "sans-medium": ["DMSans_500Medium"],
         "sans-semibold": ["DMSans_600SemiBold"],
@@ -23,9 +24,9 @@ module.exports = {
         "body-sm": "13px",
         body: "15px",
         heading: "22px",
-        "card-label": "32px",
-        "display-sm": "42px",
-        display: "56px",
+        "card-label": "22px",
+        "display-sm": "32px",
+        display: "40px",
       },
       letterSpacing: {
         cta: "0.02em",
