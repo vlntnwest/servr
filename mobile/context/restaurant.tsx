@@ -5,9 +5,9 @@ import {
   useEffect,
   useState,
 } from "react";
-import type { Restaurant } from "../types/api";
+import type { Restaurant, User } from "../types/api";
 import { useAuth } from "./auth";
-import { getApiUrl } from "@/lib/api";
+import { apiFetch, setRestaurantId } from "@/lib/api";
 
 type RestaurantContextType = {
   restaurants: Restaurant[]; // liste pour l'écran de sélection
@@ -26,7 +26,6 @@ const RestaurantContext = createContext<RestaurantContextType>({
   error: null,
   refresh: () => Promise.resolve(),
 });
-
 
 export function RestaurantProvider({
   children,
@@ -50,19 +49,13 @@ export function RestaurantProvider({
 
     const init = async () => {
       setIsLoading(true);
-      try {
-        const res = await fetch(`${getApiUrl()}/api/v1/user/me`, {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        });
-        const { data } = await res.json();
-        setRestaurants(data.restaurants ?? []);
-      } catch (e) {
+      const result = await apiFetch<User>("/user/me");
+      if ("error" in result) {
         setError("Failed to load restaurants");
-      } finally {
-        setIsLoading(false);
+      } else {
+        setRestaurants(result.data.restaurants ?? []);
       }
+      setIsLoading(false);
     };
 
     init();
@@ -70,7 +63,9 @@ export function RestaurantProvider({
 
   const selectRestaurant = useCallback(
     (id: string) => {
-      setSelectedRestaurant(restaurants.find((r) => r.id === id) ?? null);
+      const restaurant = restaurants.find((r) => r.id === id) ?? null;
+      setSelectedRestaurant(restaurant);
+      setRestaurantId(restaurant?.id ?? "");
     },
     [restaurants],
   );

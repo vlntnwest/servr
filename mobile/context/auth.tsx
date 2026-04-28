@@ -18,18 +18,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    supabase.auth
-      .getSession()
-      .then(({ data: { session } }) => {
-        setSession(session);
-      })
-      .finally(() => {
-        setInitialized(true);
-      });
-
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_, session) => setSession(session));
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      if (event === "INITIAL_SESSION") setInitialized(true);
+    });
 
     return () => subscription.unsubscribe();
   }, []);

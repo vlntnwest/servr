@@ -33,13 +33,16 @@ const app = express();
 const isLocalhost = (req) =>
   req.ip === "127.0.0.1" || req.ip === "::1" || req.ip === "::ffff:127.0.0.1";
 
+const skipRateLimit = (req) =>
+  process.env.NODE_ENV !== "production" || isLocalhost(req);
+
 // Rate limiting configuration
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // 100 requests per window per IP
   standardHeaders: true,
   legacyHeaders: false,
-  skip: isLocalhost,
+  skip: skipRateLimit,
   message: { error: "Too many requests, please try again later." },
 });
 
@@ -48,7 +51,7 @@ const authLimiter = rateLimit({
   max: 15, // 15 requests per window per IP
   standardHeaders: true,
   legacyHeaders: false,
-  skip: isLocalhost,
+  skip: skipRateLimit,
   message: {
     error: "Too many authentication attempts, please try again later.",
   },
@@ -60,7 +63,7 @@ const paymentLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many payment attempts, please try again later." },
-  skip: (req) => req.path === "/webhook",
+  skip: (req) => req.path === "/webhook" || skipRateLimit(req),
 });
 
 // HTTP request logging with response time (pino-http)
@@ -104,9 +107,6 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
-
-// Apply global rate limiter to all routes
-app.use(globalLimiter);
 
 // Health check — verifies Postgres and Supabase Auth connectivity
 app.get("/health", async (req, res) => {

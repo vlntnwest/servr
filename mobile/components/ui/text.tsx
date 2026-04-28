@@ -14,7 +14,7 @@ const textVariants = cva(
   {
     variants: {
       variant: {
-        default: "",
+        default: "text-body",
         display: cn(
           "font-display text-display tracking-tighter leading-none",
           Platform.select({ web: "text-balance" }),
@@ -46,6 +46,7 @@ const textVariants = cva(
         small: "font-sans-medium text-sm leading-none",
         caption: "font-sans-medium text-caption uppercase tracking-widest",
         muted: "text-muted-foreground text-sm",
+        badge: "font-sans-semibold text-caption",
       },
     },
     defaultVariants: {

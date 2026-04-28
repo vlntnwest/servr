@@ -39,7 +39,7 @@
 
 ---
 
-## Tâche 2 — Nettoyage et structure de navigation
+## Tâche 2 — Nettoyage et structure de navigation - ok => tabs
 
 **Objectif :** Supprimer le contenu demo et poser la structure de navigation finale.
 
@@ -87,7 +87,7 @@
 
 ---
 
-## Tâche 4 — Écran de connexion
+## Tâche 4 — Écran de connexion - ok
 
 **Objectif :** Permettre à un restaurateur de se connecter avec son compte Supabase.
 
@@ -109,7 +109,7 @@
 
 ---
 
-## Tâche 5 — Contexte global : session et restaurant actif
+## Tâche 5 — Contexte global : session et restaurant actif - ok
 
 **Objectif :** Rendre la session Supabase et le restaurant actif accessibles partout dans l'app.
 
@@ -133,7 +133,7 @@
 
 ---
 
-## Tâche 6 — Protection des routes
+## Tâche 6 — Protection des routes - ok
 
 **Objectif :** Rediriger automatiquement vers le login si l'utilisateur n'est pas connecté.
 
@@ -152,7 +152,7 @@
 
 ---
 
-## Tâche 7 — Écran commandes (liste)
+## Tâche 7 — Écran commandes (liste) - ok
 
 **Objectif :** Afficher les commandes en cours du restaurant.
 
