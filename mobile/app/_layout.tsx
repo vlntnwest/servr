@@ -26,6 +26,7 @@ import {
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { AuthProvider, useAuth } from "@/context/auth";
 import { NAV_THEME } from "@/lib/constants";
+import { supabase } from "@/lib/supabase";
 import { RestaurantProvider, useRestaurant } from "@/context/restaurant";
 
 SplashScreen.preventAutoHideAsync();
@@ -42,7 +43,7 @@ const DarkBrandTheme = {
 
 function InitialLayout() {
   const { session, initialized } = useAuth();
-  const { restaurants, selectedRestaurant, isLoading, selectRestaurant } =
+  const { restaurants, selectedRestaurant, isLoading, error: restaurantError, selectRestaurant } =
     useRestaurant();
   const segments = useSegments();
   const router = useRouter();
@@ -64,12 +65,16 @@ function InitialLayout() {
       selectRestaurant(restaurants[0].id);
     } else if (restaurants.length > 1) {
       if (!inSelectGroup) router.replace("/(select)/restaurant");
+    } else if (restaurantError) {
+      // fetch failed (e.g. API unreachable) — back to login so the user isn't stuck silently
+      supabase.auth.signOut();
     }
   }, [
     session,
     initialized,
     segments,
     isLoading,
+    restaurantError,
     selectedRestaurant,
     restaurants,
     selectRestaurant,

@@ -7,6 +7,7 @@ import {
 } from "react";
 import type { Restaurant } from "../types/api";
 import { useAuth } from "./auth";
+import { getApiUrl } from "@/lib/api";
 
 type RestaurantContextType = {
   restaurants: Restaurant[]; // liste pour l'écran de sélection
@@ -26,7 +27,6 @@ const RestaurantContext = createContext<RestaurantContextType>({
   refresh: () => Promise.resolve(),
 });
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export function RestaurantProvider({
   children,
@@ -51,7 +51,7 @@ export function RestaurantProvider({
     const init = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/v1/user/me`, {
+        const res = await fetch(`${getApiUrl()}/api/v1/user/me`, {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
