@@ -5,13 +5,11 @@ import { supabase } from "@/lib/supabase";
 
 type AuthContextType = {
   session: Session | null;
-  user: User | null;
   initialized: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
-  user: null,
   initialized: false,
 });
 
@@ -20,10 +18,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setInitialized(true);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setSession(session);
+      })
+      .finally(() => {
+        setInitialized(true);
+      });
 
     const {
       data: { subscription },
@@ -33,9 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider
-      value={{ session, user: session?.user ?? null, initialized }}
-    >
+    <AuthContext.Provider value={{ session, initialized }}>
       {children}
     </AuthContext.Provider>
   );

@@ -13,6 +13,7 @@ import {
   useFonts,
   ArchivoBlack_400Regular,
 } from "@expo-google-fonts/archivo-black";
+import { Archivo_900Black_Italic } from "@expo-google-fonts/archivo";
 import {
   DMSans_300Light,
   DMSans_400Regular,
@@ -25,6 +26,7 @@ import {
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { AuthProvider, useAuth } from "@/context/auth";
 import { NAV_THEME } from "@/lib/constants";
+import { RestaurantProvider, useRestaurant } from "@/context/restaurant";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -40,22 +42,38 @@ const DarkBrandTheme = {
 
 function InitialLayout() {
   const { session, initialized } = useAuth();
+  const { restaurants, selectedRestaurant, isLoading, selectRestaurant } =
+    useRestaurant();
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
-    if (!initialized) return;
+    if (!initialized || isLoading) return;
 
     SplashScreen.hideAsync();
 
     const inAuthGroup = segments[0] === "(auth)";
+    const inSelectGroup = segments[0] === "(select)";
+    const inAppGroup = segments[0] === "(app)";
 
-    if (!session && !inAuthGroup) {
-      router.replace("/(auth)/login");
-    } else if (session && inAuthGroup) {
-      router.replace("/(app)");
+    if (!session) {
+      if (!inAuthGroup) router.replace("/(auth)/login");
+    } else if (selectedRestaurant) {
+      if (!inAppGroup) router.replace("/(app)");
+    } else if (restaurants.length === 1) {
+      selectRestaurant(restaurants[0].id);
+    } else if (restaurants.length > 1) {
+      if (!inSelectGroup) router.replace("/(select)/restaurant");
     }
-  }, [session, initialized, segments]);
+  }, [
+    session,
+    initialized,
+    segments,
+    isLoading,
+    selectedRestaurant,
+    restaurants,
+    selectRestaurant,
+  ]);
 
   if (!initialized) return null;
 
@@ -66,6 +84,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [fontsLoaded] = useFonts({
     ArchivoBlack_400Regular,
+    Archivo_900Black_Italic,
     DMSans_300Light,
     DMSans_400Regular,
     DMSans_400Regular_Italic,
@@ -79,9 +98,11 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkBrandTheme : LightTheme}>
       <AuthProvider>
-        <InitialLayout />
-        <StatusBar style="auto" />
+        <RestaurantProvider>
+          <InitialLayout />
+        </RestaurantProvider>
       </AuthProvider>
+      <StatusBar style="auto" />
       <PortalHost />
     </ThemeProvider>
   );
