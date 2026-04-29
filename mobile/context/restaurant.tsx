@@ -44,6 +44,7 @@ export function RestaurantProvider({
     if (!session) {
       setRestaurants([]);
       setSelectedRestaurant(null);
+      setError(null);
       return;
     }
 
@@ -51,7 +52,7 @@ export function RestaurantProvider({
       setIsLoading(true);
       const result = await apiFetch<User>("/user/me");
       if ("error" in result) {
-        setError("Failed to load restaurants");
+        setError(result.error);
       } else {
         setRestaurants(result.data.restaurants ?? []);
       }

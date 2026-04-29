@@ -2,6 +2,7 @@ import { useRestaurant } from "@/context/restaurant";
 import { apiFetch } from "@/lib/api";
 import { Order } from "@/types/api";
 import { useCallback, useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export const useOrders = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -28,6 +29,35 @@ export const useOrders = () => {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
+
+  useEffect(() => {
+    if (!selectedRestaurant) return;
+    const realTimeOrdersSubscription = () => {
+      if (!selectedRestaurant) return;
+
+      const subscription = supabase
+        .channel(`orders-${selectedRestaurant.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "orders",
+          },
+          () => {
+            fetchOrders();
+          },
+        )
+        .subscribe();
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    };
+
+    const cleanup = realTimeOrdersSubscription();
+    return cleanup;
+  }, [selectedRestaurant]);
 
   return {
     isLoading,

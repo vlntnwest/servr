@@ -36,8 +36,9 @@ export async function apiFetch<T>(
 ): Promise<{ data: T } | { error: string }> {
   const authHeaders = await getAuthHeader();
 
+  const url = `${getApiUrl()}/api/v1${path}`;
   try {
-    const res = await fetch(`${getApiUrl()}/api/v1${path}`, {
+    const res = await fetch(url, {
       ...options,
       headers: {
         "Content-Type": "application/json",
@@ -67,7 +68,8 @@ export async function apiFetch<T>(
 
     if (!res.ok) return { error: `Erreur ${res.status}` };
     return res.json();
-  } catch {
+  } catch (e) {
+    console.log("[api] fetch error:", url, e);
     return { error: "Erreur réseau" };
   }
 }
