@@ -173,7 +173,7 @@
 
 ---
 
-## Tâche 8 — Temps réel sur les commandes
+## Tâche 8 — Temps réel sur les commandes - ok
 
 **Objectif :** Les nouvelles commandes apparaissent instantanément sans recharger.
 
@@ -197,7 +197,7 @@
 
 ---
 
-## Tâche 9 — Écran détail commande + actions
+## Tâche 9 — Écran détail commande + actions - ok
 
 **Objectif :** Voir le détail d'une commande et changer son statut.
 

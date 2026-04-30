@@ -24,12 +24,11 @@ export default function Orders() {
 
   return (
     <SafeAreaView className="flex-1" edges={["top"]}>
-      <View className="px-5 pt-12 pb-4">
-        {/* TODO: widget d'affluence ici */}
-        <Text variant="display">Commandes</Text>
-      </View>
-
       <ScrollView contentContainerClassName="pb-10">
+        <View className="px-5 pt-12 pb-4">
+          <Text variant="display">Commandes</Text>
+        </View>
+
         <View className="flex flex-row flex-wrap gap-3 px-5">
           {orders?.map((order) => (
             <OrderCard
