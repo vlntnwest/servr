@@ -4,6 +4,8 @@ module.exports = {
     "./app/**/*.{js,jsx,ts,tsx}",
     "./components/**/*.{js,jsx,ts,tsx}",
     "./context/**/*.{js,jsx,ts,tsx}",
+    "./lib/**/*.{js,jsx,ts,tsx}",
+    "./hooks/**/*.{js,jsx,ts,tsx}",
   ],
   presets: [require("nativewind/preset")],
   theme: {
@@ -93,6 +95,7 @@ module.exports = {
           cream: "#F5EFE0",
           sand: "#E8E0CE",
           bgCard: "#F0EAD8",
+          border: "#DDD5C4",
           ink: "#1A1A1A",
           stone: "#8A7F72",
           orange: "#E8521C",

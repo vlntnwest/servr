@@ -44,14 +44,7 @@ export default function OrderCard({
           scale.value = withTiming(1, { duration: 100 });
         }}
         onPress={onPress}
-        className="flex-row justify-between bg-white rounded-card px-6 py-5"
-        style={{
-          shadowColor: BRAND.ink,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.08,
-          shadowRadius: 12,
-          elevation: 3,
-        }}
+        className="flex-row justify-between bg-brand-bgCard border-brand-border border rounded-card px-6 py-5"
       >
         <View className="flex-1 gap-2">
           <Text

@@ -25,11 +25,16 @@ export function getOrderStatusLabel(status: string): string {
   return labels[status] ?? status;
 }
 
-export function getOrderItemCount(orderProducts: { quantity: number }[]): number {
+export function getOrderItemCount(
+  orderProducts: { quantity: number }[],
+): number {
   return orderProducts.reduce((sum, p) => sum + p.quantity, 0);
 }
 
-export function getOrderTime(scheduledFor: string | null, createdAt: string): string {
+export function getOrderTime(
+  scheduledFor: string | null,
+  createdAt: string,
+): string {
   return new Date(scheduledFor ?? createdAt).toLocaleTimeString("fr-FR", {
     hour: "2-digit",
     minute: "2-digit",
@@ -64,14 +69,20 @@ export function getStatusActions(status: string): StatusAction[] {
   return actions[status] ?? [];
 }
 
-export function getOrderStatusBadge(status: string): { bg: string; text: string } {
+export function getOrderStatusBadge(status: string): {
+  bg: string;
+  text: string;
+} {
   const badges: Record<string, { bg: string; text: string }> = {
-    PENDING:                 { bg: "bg-brand-yellow", text: "text-brand-ink" },
-    PENDING_ON_SITE_PAYMENT: { bg: "bg-brand-yellow", text: "text-brand-ink" },
-    IN_PROGRESS:             { bg: "bg-brand-orange", text: "text-brand-cream" },
-    COMPLETED:               { bg: "bg-brand-lime",   text: "text-brand-ink" },
-    DELIVERED:               { bg: "bg-brand-lime",   text: "text-brand-ink" },
-    CANCELLED:               { bg: "bg-brand-maroon", text: "text-brand-cream" },
+    PENDING: { bg: "bg-brand-yellow", text: "text-brand-forest" },
+    PENDING_ON_SITE_PAYMENT: {
+      bg: "bg-brand-yellow",
+      text: "text-brand-forest",
+    },
+    IN_PROGRESS: { bg: "bg-brand-orange", text: "text-brand-cream" },
+    COMPLETED: { bg: "bg-brand-lime", text: "text-brand-forest" },
+    DELIVERED: { bg: "bg-brand-lime", text: "text-brand-forest" },
+    CANCELLED: { bg: "bg-brand-maroon", text: "text-brand-pink" },
   };
   return badges[status] ?? { bg: "bg-muted", text: "text-muted-foreground" };
 }
