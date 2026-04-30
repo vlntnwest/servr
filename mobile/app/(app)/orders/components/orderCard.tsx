@@ -44,15 +44,10 @@ export default function OrderCard({
           scale.value = withTiming(1, { duration: 100 });
         }}
         onPress={onPress}
-        className="flex-row justify-between bg-brand-bgCard border-brand-border border rounded-card px-6 py-5"
+        className="flex-row justify-between bg-white border-brand-border border rounded-card px-6 py-5"
       >
         <View className="flex-1 gap-2">
-          <Text
-            className="font-display text-logo-sm leading-none text-foreground"
-            style={{ letterSpacing: -0.28 }}
-          >
-            #{order.orderNumber ?? "—"}
-          </Text>
+          <Text variant="cardLabel">#{order.orderNumber ?? "—"}</Text>
           <Text variant="default">{order.fullName ?? "Client inconnu"}</Text>
           <Text
             variant="muted"

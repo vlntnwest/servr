@@ -30,7 +30,7 @@ module.exports = {
         heading: "22px",
         principle: "18px",
         "card-name": "20px",
-        "card-label": "32px",
+        "card-label": "24px",
         "display-sm": "32px",
         "logo-sm": "28px",
         logo: "52px",

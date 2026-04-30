@@ -4,9 +4,7 @@ export default function MenuLayout() {
   return (
     <Stack
       screenOptions={{
-        title: "Menu",
         headerShown: false,
-        headerLargeTitle: true,
       }}
     />
   );

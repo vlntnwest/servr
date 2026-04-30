@@ -1,5 +1,33 @@
 import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { extendTailwindMerge } from "tailwind-merge";
+
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      "font-size": [
+        {
+          text: [
+            "nano", "micro", "caption", "action", "body-sm", "body",
+            "heading", "principle", "card-name", "card-label",
+            "display-sm", "logo-sm", "logo", "display",
+          ],
+        },
+      ],
+      "text-color": [
+        {
+          text: [
+            "foreground", "card-foreground", "popover-foreground",
+            "primary-foreground", "secondary-foreground", "muted-foreground",
+            "accent-foreground", "destructive-foreground",
+            "brand-cream", "brand-sand", "brand-bgCard", "brand-border",
+            "brand-ink", "brand-stone", "brand-orange", "brand-maroon",
+            "brand-lime", "brand-yellow", "brand-pink", "brand-forest",
+          ],
+        },
+      ],
+    },
+  },
+});
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
