@@ -28,6 +28,7 @@ import { AuthProvider, useAuth } from "@/context/auth";
 import { NAV_THEME } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import { RestaurantProvider, useRestaurant } from "@/context/restaurant";
+import { PrinterProvider } from "@/context/printer";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -104,7 +105,9 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === "dark" ? DarkBrandTheme : LightTheme}>
       <AuthProvider>
         <RestaurantProvider>
-          <InitialLayout />
+          <PrinterProvider>
+            <InitialLayout />
+          </PrinterProvider>
         </RestaurantProvider>
       </AuthProvider>
       <StatusBar style="auto" />
