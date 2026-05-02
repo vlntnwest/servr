@@ -218,6 +218,7 @@ export type UsePrinterReturn = {
   connect: (printer: PrinterTypes) => Promise<void>;
   disconnect: () => Promise<void>;
   printTest: () => Promise<void>;
+  printOrder: (order: Order) => Promise<void>;
   isDiscovering: boolean;
   status: PrinterStatus;
   printerError: Error | null;

@@ -1,8 +1,11 @@
 import { useRestaurant } from "@/context/restaurant";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, getOrder } from "@/lib/api";
 import { Order } from "@/types/api";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Alert } from "react-native";
 import { supabase } from "@/lib/supabase";
+import { usePrinter } from "@/context/printer";
+import { useAuth } from "@/context/auth";
 
 export const useOrders = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -10,6 +13,16 @@ export const useOrders = () => {
   const [orders, setOrders] = useState<Order[] | null>(null);
 
   const { selectedRestaurant } = useRestaurant();
+  const { initialized } = useAuth();
+  const { printOrder, status: printerStatus } = usePrinter();
+  const printOrderRef = useRef(printOrder);
+  const printerStatusRef = useRef(printerStatus);
+  useEffect(() => {
+    printOrderRef.current = printOrder;
+  }, [printOrder]);
+  useEffect(() => {
+    printerStatusRef.current = printerStatus;
+  }, [printerStatus]);
 
   const fetchOrders = useCallback(async () => {
     if (!selectedRestaurant) return;
@@ -31,33 +44,35 @@ export const useOrders = () => {
   }, [fetchOrders]);
 
   useEffect(() => {
-    if (!selectedRestaurant) return;
-    const realTimeOrdersSubscription = () => {
-      if (!selectedRestaurant) return;
+    if (!selectedRestaurant || !initialized) return;
 
-      const subscription = supabase
-        .channel(`orders-${selectedRestaurant.id}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "orders",
-          },
-          () => {
-            fetchOrders();
-          },
-        )
-        .subscribe();
+    const subscription = supabase
+      .channel(`orders:${selectedRestaurant.id}`, {
+        config: { private: true },
+      })
+      .on("broadcast", { event: "UPDATE" }, async (payload) => {
+        const { record, old_record } = payload.payload;
+        if (old_record?.status === "DRAFT" && record?.status === "PENDING") {
+          if (printerStatusRef.current !== "connected") {
+            Alert.alert(
+              "Imprimante déconnectée",
+              "Une nouvelle commande est arrivée mais l'imprimante n'est pas connectée.",
+            );
+          } else {
+            const result = await getOrder(record.id);
+            if (!("error" in result)) {
+              printOrderRef.current(result.data);
+            }
+          }
+        }
+        fetchOrders();
+      })
+      .subscribe();
 
-      return () => {
-        subscription.unsubscribe();
-      };
+    return () => {
+      subscription.unsubscribe();
     };
-
-    const cleanup = realTimeOrdersSubscription();
-    return cleanup;
-  }, [selectedRestaurant]);
+  }, [selectedRestaurant, initialized]);
 
   return {
     isLoading,

@@ -11,10 +11,22 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { BRAND } from "@/lib/constants";
 import { usePrinter } from "@/context/printer";
 import { Row, IconBox } from "./components/printerRow";
+import { getOrder } from "@/lib/api";
+
+const EXAMPLE_ORDER_ID = "b8141f34-31df-4bf3-8eaa-4528a4be34e0";
 
 export default function Printer() {
-  const { savedPrinter, printers, isDiscovering, scan, connect, disconnect, printTest } =
+  const { savedPrinter, printers, isDiscovering, scan, connect, disconnect, printTest, printOrder } =
     usePrinter();
+
+  const printExampleOrder = async () => {
+    const result = await getOrder(EXAMPLE_ORDER_ID);
+    if ("error" in result) {
+      console.error("Failed to fetch example order:", result.error);
+      return;
+    }
+    await printOrder(result.data);
+  };
   const { width } = useWindowDimensions();
   const isTablet = width >= 768;
 
@@ -75,7 +87,7 @@ export default function Printer() {
                   <IconSymbol name="list.bullet" size={15} color="white" />
                 </IconBox>
               }
-              onPress={() => {}}
+              onPress={printExampleOrder}
             />
             <Row
               label="Reconnecter"
