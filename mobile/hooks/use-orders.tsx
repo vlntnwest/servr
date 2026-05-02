@@ -72,7 +72,6 @@ export const useOrders = () => {
             const result = await getOrder(record.id);
             if (!("error" in result)) {
               printOrderRef.current(result.data);
-              console.log("Printed order", result.data);
             }
           }
         }

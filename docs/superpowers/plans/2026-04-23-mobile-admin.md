@@ -256,7 +256,7 @@
 
 ---
 
-## Tâche 12 — Intégration imprimante
+## Tâche 12 — Intégration imprimante - ok
 
 **Objectif :** Migrer le `usePrinter` de `printer-app` et l'intégrer à l'app.
 
@@ -276,7 +276,7 @@
 
 ---
 
-## Tâche 13 — Impression automatique à la nouvelle commande
+## Tâche 13 — Impression automatique à la nouvelle commande - ok
 
 **Objectif :** Imprimer automatiquement chaque nouvelle commande si le toggle est activé.
 
