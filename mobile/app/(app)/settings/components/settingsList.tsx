@@ -20,6 +20,22 @@ export default function SettingsList() {
       </View>
 
       <Text variant="default" className="px-5 mb-1.5 mt-4">
+        Général
+      </Text>
+      <View className={`${isTablet ? "" : "px-5"}`}>
+        <View className="rounded-[30px] overflow-hidden">
+          <Row
+            iconName="gearshape.fill"
+            iconBg={BRAND.stone}
+            label="Réglages généraux"
+            onPress={() => router.push("/settings/general")}
+            active={pathname === "/settings/general"}
+            showSeparator={false}
+          />
+        </View>
+      </View>
+
+      <Text variant="default" className="px-5 mb-1.5 mt-4">
         Matériel
       </Text>
       <View className={`${isTablet ? "" : "px-5"}`}>

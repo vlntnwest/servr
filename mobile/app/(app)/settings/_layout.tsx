@@ -45,6 +45,15 @@ export default function SettingsLayout() {
           headerShadowVisible: false,
         }}
       />
+      <Stack.Screen
+        name="general"
+        options={{
+          headerBackButtonDisplayMode: "minimal",
+          headerTitle: "",
+          headerStyle: { backgroundColor: bg },
+          headerShadowVisible: false,
+        }}
+      />
     </Stack>
   );
 }

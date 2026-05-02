@@ -7,7 +7,7 @@ export default function Settings() {
   const { width } = useWindowDimensions();
 
   if (width >= 768) {
-    return <Redirect href="/settings/printer" />;
+    return <Redirect href="/settings/general" />;
   }
 
   return (
