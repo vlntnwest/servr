@@ -1,16 +1,15 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "servr-app",
+    "slug": "servr-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobile",
+    "scheme": "servr-app",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.vlntnwest.mobile"
+      "bundleIdentifier": "com.vlntnwest.servrapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -20,7 +19,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.vlntnwest.servrapp"
     },
     "web": {
       "output": "static",
@@ -44,6 +44,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8583d569-8d35-4cd8-9f9d-b3d848d8d397"
+      }
+    },
+    "owner": "vlntnwest"
   }
 }

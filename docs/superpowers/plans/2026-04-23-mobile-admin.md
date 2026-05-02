@@ -219,7 +219,7 @@
 
 ---
 
-## Tâche 10 — Écran disponibilité articles
+## Tâche 10 — Écran disponibilité articles - ok
 
 **Objectif :** Activer/désactiver rapidement un article du menu.
 

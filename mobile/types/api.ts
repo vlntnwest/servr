@@ -197,3 +197,30 @@ export type CheckoutItem = {
   quantity: number;
   optionChoiceIds: string[];
 };
+
+export type PrinterTypes = {
+  target: string;
+  deviceName: string;
+  bdAddress?: string;
+  macAddress?: string;
+};
+
+export type PrinterStatus =
+  | "idle"
+  | "scanning"
+  | "connecting"
+  | "connected"
+  | "error";
+
+export type UsePrinterReturn = {
+  scan: () => void;
+  printers: PrinterTypes[];
+  connect: (printer: PrinterTypes) => Promise<void>;
+  disconnect: () => Promise<void>;
+  printTest: () => Promise<void>;
+  printOrder: (order: Order) => Promise<void>;
+  isDiscovering: boolean;
+  status: PrinterStatus;
+  printerError: Error | null;
+  savedPrinter: PrinterTypes | null;
+};

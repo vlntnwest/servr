@@ -1,5 +1,6 @@
 import Constants from "expo-constants";
 import { supabase } from "@/lib/supabase";
+import { Order } from "@/types/api";
 
 let _restaurantId = "";
 export function setRestaurantId(id: string) {
@@ -72,6 +73,12 @@ export async function apiFetch<T>(
     console.log("[api] fetch error:", url, e);
     return { error: "Erreur réseau" };
   }
+}
+
+export async function getOrder(
+  orderId: string,
+): Promise<{ data: Order } | { error: string }> {
+  return apiFetch<Order>(`/restaurants/${_restaurantId}/orders/${orderId}`);
 }
 
 export async function updateOrderStatus(

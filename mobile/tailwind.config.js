@@ -34,7 +34,7 @@ module.exports = {
         "display-sm": "32px",
         "logo-sm": "28px",
         logo: "52px",
-        display: "56px",
+        display: "48px",
       },
       letterSpacing: {
         cta: "0.02em",
