@@ -32,8 +32,8 @@ export default function MenuPage({ categories }: MenuPageProps) {
 
       {/* Desktop cart */}
       <div className="hidden lg:block">
-        <div className="sticky top-[65px] h-[calc(100vh-65px)] p-4 pl-0">
-          <div className="h-full border border-black/5 bg-white overflow-hidden flex flex-col rounded-lg">
+        <div className="sticky top-16 h-[calc(100vh-4rem)] p-4 pl-0">
+          <div className="h-full border border-brand-border bg-background overflow-hidden flex flex-col rounded-card shadow-sm shadow-black/5">
             <Cart />
           </div>
         </div>

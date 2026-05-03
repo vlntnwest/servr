@@ -20,47 +20,49 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <>
       <button
-        className={`w-full text-left bg-white border border-black/5 transition-colors rounded-sm overflow-hidden p-4 ${
-          isUnavailable ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
+        className={`w-full text-left bg-background border border-brand-border transition-colors rounded-card overflow-hidden p-5 shadow-sm shadow-black/5 ${
+          isUnavailable ? "opacity-50 cursor-not-allowed" : "hover:bg-card"
         }`}
         onClick={() => !isUnavailable && setOpen(true)}
         disabled={isUnavailable}
       >
-        <div className="flex items-stretch">
+        <div className="flex items-stretch gap-4">
           {/* Text content */}
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-base leading-tight">{product.name}</p>
-            <p className="text-[#676767] text-sm line-clamp-2 mt-0.5">
+            <p className="font-sans font-semibold text-card-name leading-tight text-foreground">
+              {product.name}
+            </p>
+            <p className="text-muted-foreground text-body-sm line-clamp-2 mt-1">
               {product.description}
             </p>
-            <p className="text-sm mt-1 text-[#676767]">
+            <p className="text-body-sm mt-2 font-sans-medium text-foreground">
               {formatEuros(price)}
               {isUnavailable && (
-                <span className="text-red-600"> · Indisponible</span>
+                <span className="text-destructive"> · Indisponible</span>
               )}
               {!isUnavailable && product.tags.includes("bestseller") && (
-                <span className="text-[#e67400]"> · Populaire</span>
+                <span className="text-primary"> · Populaire</span>
               )}
             </p>
           </div>
 
           {/* Product image */}
           {product.imageUrl && (
-            <div className="shrink-0 flex items-center ml-4">
+            <div className="shrink-0 flex items-center">
               <Image
                 src={product.imageUrl}
                 alt={product.name}
                 width={100}
                 height={100}
-                className={`rounded object-cover aspect-square ${isUnavailable ? "grayscale" : ""}`}
+                className={`rounded-swatch object-cover aspect-square ${isUnavailable ? "grayscale" : ""}`}
               />
             </div>
           )}
 
-          {/* Full-height add button */}
+          {/* Add button */}
           {!isUnavailable && (
-            <div className="shrink-0 w-10 border border-black/8 flex items-center justify-center text-black/25 bg-transparent hover:bg-black/4 transition-colors rounded-sm ml-4">
-              <Plus className="w-5 h-5" />
+            <div className="shrink-0 w-11 self-center flex items-center justify-center text-primary-foreground bg-primary hover:bg-primary/90 transition-colors rounded-full aspect-square shadow-sm shadow-black/5">
+              <Plus className="w-5 h-5" strokeWidth={2.5} />
             </div>
           )}
         </div>

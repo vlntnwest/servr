@@ -53,8 +53,10 @@ function RegisterForm() {
   if (success) {
     return (
       <div className="text-center">
-        <h1 className="text-xl font-bold mb-2">Vérifiez vos emails</h1>
-        <p className="text-[#676767]">
+        <h1 className="font-display text-card-label leading-none tracking-tighter mb-3 text-foreground">
+          Vérifiez vos emails<span className="text-primary">.</span>
+        </h1>
+        <p className="text-body-sm text-muted-foreground">
           Un lien de confirmation vous a été envoyé à <strong>{email}</strong>.
         </p>
       </div>
@@ -62,27 +64,41 @@ function RegisterForm() {
   }
 
   return (
-    <div className="bg-white border border-black/5 rounded-lg p-6">
-      <h1 className="text-xl font-bold mb-4">Créer un compte</h1>
+    <div>
+      <h1 className="font-display text-card-label leading-none tracking-tighter mb-6 text-foreground">
+        Créer un compte<span className="text-primary">.</span>
+      </h1>
 
-      <div className="space-y-2 mb-4">
-        <Button variant="outline" className="w-full" onClick={() => handleOAuth("google")} type="button">
+      <div className="space-y-2 mb-5">
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => handleOAuth("google")}
+          type="button"
+        >
           Continuer avec Google
         </Button>
-        <Button variant="outline" className="w-full" onClick={() => handleOAuth("apple")} type="button">
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => handleOAuth("apple")}
+          type="button"
+        >
           Continuer avec Apple
         </Button>
       </div>
 
-      <div className="flex items-center gap-2 my-4">
-        <div className="flex-1 border-t" />
-        <span className="text-xs text-[#676767]">ou</span>
-        <div className="flex-1 border-t" />
+      <div className="flex items-center gap-3 my-5">
+        <div className="flex-1 border-t border-border" />
+        <span className="font-sans font-medium text-caption uppercase tracking-eyebrow text-muted-foreground">
+          ou
+        </span>
+        <div className="flex-1 border-t border-border" />
       </div>
 
       <form onSubmit={handleRegister} className="space-y-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="email">Email</Label>
+        <div className="space-y-2">
+          <Label htmlFor="email">E-mail</Label>
           <Input
             id="email"
             type="email"
@@ -90,9 +106,10 @@ function RegisterForm() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
+            placeholder="vous@exemple.com"
           />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label htmlFor="password">Mot de passe</Label>
           <Input
             id="password"
@@ -102,21 +119,30 @@ function RegisterForm() {
             required
             autoComplete="new-password"
             minLength={6}
+            placeholder="••••••••"
           />
         </div>
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && (
+          <p className="text-body-sm text-destructive-foreground bg-destructive/90 rounded-md px-3 py-2">
+            {error}
+          </p>
+        )}
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Créer un compte"}
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            "Créer un compte"
+          )}
         </Button>
       </form>
 
-      <p className="text-center text-sm text-[#676767] mt-4">
+      <p className="text-center text-body-sm text-muted-foreground mt-5">
         Déjà un compte ?{" "}
         <Link
           href={`/login${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`}
-          className="underline"
+          className="font-sans-medium text-foreground underline underline-offset-4"
         >
           Se connecter
         </Link>
@@ -127,9 +153,19 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <Suspense fallback={<div className="bg-white border border-black/5 rounded-lg p-6 h-48" />}>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="w-full max-w-sm px-7 pt-13 pb-10">
+        <Link
+          href="/"
+          className="inline-block mb-8 font-display text-display-sm leading-none tracking-tighter text-foreground"
+        >
+          Servr<span className="text-primary">.</span>
+        </Link>
+        <Suspense
+          fallback={
+            <div className="rounded-card border border-brand-border bg-card h-48" />
+          }
+        >
           <RegisterForm />
         </Suspense>
       </div>

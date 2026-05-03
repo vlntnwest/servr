@@ -56,8 +56,8 @@ export default function OpenStatusBadge({
   return (
     <span
       className={cn(
-        "text-xs px-2.5 py-1 rounded-full font-medium",
-        open ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800",
+        "font-sans font-semibold text-caption uppercase tracking-meta px-3 py-1 rounded-pill",
+        open ? "bg-brand-lime text-brand-forest" : "bg-brand-maroon text-brand-pink",
       )}
     >
       {open ? "Ouvert" : "Fermé"}

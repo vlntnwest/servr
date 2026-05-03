@@ -11,7 +11,7 @@ import OpeningHoursTab from "@/components/admin/opening-hours-tab";
 import ProductsTab from "@/components/admin/products-tab";
 import SettingsTab from "@/components/admin/settings-tab";
 import PromoCodesTab from "@/components/admin/promo-codes-tab";
-import Image from "next/image";
+import Link from "next/link";
 import { LogOut, Loader2, ChevronDown } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
@@ -38,7 +38,7 @@ function RestaurantSelector({
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 text-sm font-medium text-[#676767] hover:text-black transition-colors px-2 py-1 rounded hover:bg-black/5"
+        className="flex items-center gap-1 font-sans-medium text-body-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-pill hover:bg-secondary"
         aria-haspopup="listbox"
         aria-expanded={open}
       >
@@ -49,7 +49,7 @@ function RestaurantSelector({
       {open && (
         <ul
           role="listbox"
-          className="absolute right-0 mt-1 min-w-[180px] bg-white border border-black/10 rounded-lg shadow-lg z-50 py-1"
+          className="absolute right-0 mt-1 min-w-[180px] bg-background border border-brand-border rounded-card shadow-lg shadow-black/10 z-50 py-1"
         >
           {restaurants.map((r) => (
             <li key={r.id}>
@@ -60,8 +60,8 @@ function RestaurantSelector({
                   setOpen(false);
                   if (r.id !== currentId) onSelect(r.id);
                 }}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-black/5 transition-colors ${
-                  r.id === currentId ? "font-semibold text-black" : "text-[#676767]"
+                className={`w-full text-left px-4 py-2 text-body-sm hover:bg-secondary transition-colors ${
+                  r.id === currentId ? "font-semibold text-foreground" : "text-muted-foreground"
                 }`}
               >
                 {r.name}
@@ -156,17 +156,14 @@ export default function AdminRestaurantPage({
   return (
     <div className="min-h-screen">
       {/* Admin header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-black/8">
-        <div className="flex items-center h-[65px] px-4 max-w-screen-xl mx-auto">
-          <div className="flex-1">
-            <Image
-              src="https://g10afdaataaj4tkl.public.blob.vercel-storage.com/img/1Fichier-21.svg"
-              alt="Pokey Bar"
-              width={80}
-              height={32}
-              className="object-contain"
-            />
-          </div>
+      <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-md border-b border-border">
+        <div className="flex items-center h-16 px-5 max-w-screen-xl mx-auto">
+          <Link
+            href="/admin"
+            className="flex-1 font-display text-logo-sm leading-none tracking-tighter text-foreground"
+          >
+            Servr<span className="text-primary">.</span>
+          </Link>
 
           {/* Restaurant selector — only shown when user has >1 restaurant */}
           {restaurants.length > 1 && (
@@ -179,23 +176,25 @@ export default function AdminRestaurantPage({
             </div>
           )}
 
-          <span className="text-sm text-[#676767] mr-3 hidden sm:block">
+          <span className="text-action text-muted-foreground mr-3 hidden sm:block">
             {user?.email}
           </span>
           <button
-            className="p-2 hover:bg-black/5 rounded-full transition-colors"
+            className="p-2 hover:bg-secondary rounded-full transition-colors"
             onClick={() =>
               supabase.auth.signOut().then(() => router.push("/login"))
             }
             aria-label="Se déconnecter"
           >
-            <LogOut className="w-5 h-5 text-[#676767]" />
+            <LogOut className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
       </header>
 
-      <main className="max-w-screen-xl mx-auto px-4 py-6">
-        <h1 className="text-2xl font-bold mb-6">Tableau de bord</h1>
+      <main className="max-w-screen-xl mx-auto px-5 py-8">
+        <h1 className="font-display text-display-sm tracking-tighter leading-none mb-8 text-foreground">
+          Tableau de bord<span className="text-primary">.</span>
+        </h1>
 
         <Tabs defaultValue="orders">
           <TabsList className="mb-0">

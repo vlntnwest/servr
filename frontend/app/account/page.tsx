@@ -87,27 +87,32 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen p-4 max-w-md mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Mon compte</h1>
-        <Link href="/account/orders" className="text-sm underline text-[#676767]">
+    <div className="min-h-screen px-5 pt-12 pb-10 max-w-md mx-auto">
+      <div className="flex items-end justify-between mb-8">
+        <h1 className="font-display text-display-sm tracking-tighter leading-none text-foreground">
+          Mon compte<span className="text-primary">.</span>
+        </h1>
+        <Link
+          href="/account/orders"
+          className="font-sans-medium text-action text-muted-foreground hover:text-foreground underline underline-offset-4"
+        >
           Mes commandes
         </Link>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="email">Email</Label>
+        <div className="space-y-2">
+          <Label htmlFor="email">E-mail</Label>
           <Input
             id="email"
             value={email ?? ""}
             readOnly
             disabled
             autoComplete="email"
-            className="text-[#676767]"
+            className="text-muted-foreground"
           />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label htmlFor="fullName">Nom complet</Label>
           <Input
             id="fullName"
@@ -116,7 +121,7 @@ export default function AccountPage() {
             autoComplete="name"
           />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label htmlFor="phone">Téléphone</Label>
           <Input
             id="phone"
@@ -126,11 +131,23 @@ export default function AccountPage() {
           />
         </div>
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
-        {success && <p className="text-sm text-green-600">Profil mis à jour.</p>}
+        {error && (
+          <p className="text-body-sm text-destructive-foreground bg-destructive/90 rounded-md px-3 py-2">
+            {error}
+          </p>
+        )}
+        {success && (
+          <p className="text-body-sm text-brand-forest bg-brand-lime/60 rounded-md px-3 py-2">
+            Profil mis à jour.
+          </p>
+        )}
 
         <Button type="submit" className="w-full" disabled={saving}>
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enregistrer"}
+          {saving ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            "Enregistrer"
+          )}
         </Button>
       </form>
     </div>

@@ -10,11 +10,15 @@ export default async function StoreOrderCancelPage({
   const { slug } = await params;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-5 bg-background">
       <div className="text-center max-w-sm">
-        <XCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold mb-2">Commande annulée</h1>
-        <p className="text-[#676767] mb-6">
+        <div className="w-20 h-20 rounded-full bg-brand-maroon mx-auto mb-6 flex items-center justify-center">
+          <XCircle className="w-10 h-10 text-brand-pink" strokeWidth={2.5} />
+        </div>
+        <h1 className="font-display text-display-sm tracking-tighter leading-none mb-3 text-foreground">
+          Commande annulée<span className="text-primary">.</span>
+        </h1>
+        <p className="text-body text-muted-foreground mb-6 leading-relaxed">
           Votre paiement a été annulé. Votre panier est conservé.
         </p>
         <Button asChild>

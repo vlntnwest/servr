@@ -51,23 +51,37 @@ export default function StripeReturnPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="max-w-sm w-full text-center space-y-6">
+    <div className="min-h-screen flex items-center justify-center px-5 bg-background">
+      <div className="max-w-sm w-full text-center space-y-5">
         {chargesEnabled ? (
           <>
-            <CheckCircle className="w-12 h-12 text-green-600 mx-auto" />
-            <h1 className="text-xl font-bold">Stripe configuré avec succès</h1>
-            <p className="text-sm text-muted-foreground">
+            <div className="w-16 h-16 rounded-full bg-brand-lime mx-auto flex items-center justify-center">
+              <CheckCircle
+                className="w-8 h-8 text-brand-forest"
+                strokeWidth={2.5}
+              />
+            </div>
+            <h1 className="font-display text-card-label leading-none tracking-tighter text-foreground">
+              Stripe configuré<span className="text-primary">.</span>
+            </h1>
+            <p className="text-body text-muted-foreground">
               Votre restaurant peut maintenant accepter les paiements par carte.
             </p>
           </>
         ) : (
           <>
-            <Clock className="w-12 h-12 text-amber-500 mx-auto" />
-            <h1 className="text-xl font-bold">Configuration en cours...</h1>
-            <p className="text-sm text-muted-foreground">
-              Stripe est en train de vérifier vos informations. Cela peut prendre
-              quelques minutes.
+            <div className="w-16 h-16 rounded-full bg-brand-yellow mx-auto flex items-center justify-center">
+              <Clock
+                className="w-8 h-8 text-brand-forest"
+                strokeWidth={2.5}
+              />
+            </div>
+            <h1 className="font-display text-card-label leading-none tracking-tighter text-foreground">
+              Configuration en cours
+            </h1>
+            <p className="text-body text-muted-foreground">
+              Stripe est en train de vérifier vos informations. Cela peut
+              prendre quelques minutes.
             </p>
           </>
         )}

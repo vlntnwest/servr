@@ -17,7 +17,7 @@ const SheetOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-brand-ink/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -51,7 +51,7 @@ const SheetContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed z-50 gap-4 bg-white shadow-xl transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
+        "fixed z-50 gap-4 bg-background text-foreground shadow-xl transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
         sheetVariants[side],
         className
       )}
@@ -60,7 +60,7 @@ const SheetContent = React.forwardRef<
     >
       {children}
       {!hideCloseButton && (
-        <DialogPrimitive.Close className="absolute right-4 top-4 z-10 flex items-center justify-center w-12 h-12 rounded-full bg-black/40 text-white hover:bg-black/60 focus:outline-none transition-colors">
+        <DialogPrimitive.Close className="absolute right-4 top-4 z-10 flex items-center justify-center w-11 h-11 rounded-full bg-brand-ink/80 text-brand-cream hover:bg-brand-ink focus:outline-none transition-colors">
           <X className="h-5 w-5" strokeWidth={2} />
         </DialogPrimitive.Close>
       )}
@@ -70,9 +70,9 @@ const SheetContent = React.forwardRef<
 SheetContent.displayName = "SheetContent";
 
 const SheetHeader = ({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex items-center justify-between p-4 border-b border-black/8", className)} {...props}>
+  <div className={cn("flex items-center justify-between p-5 border-b border-border", className)} {...props}>
     <div className="flex flex-col space-y-1.5">{children}</div>
-    <DialogPrimitive.Close className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 transition-colors focus:outline-none shrink-0">
+    <DialogPrimitive.Close className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary transition-colors focus:outline-none shrink-0">
       <X className="h-4 w-4" />
     </DialogPrimitive.Close>
   </div>
@@ -85,7 +85,7 @@ const SheetTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn("text-lg font-bold", className)}
+    className={cn("font-display text-card-name leading-none tracking-tight", className)}
     {...props}
   />
 ));
@@ -95,7 +95,7 @@ const SheetContentSimple = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => (
-  <div ref={ref} className={cn("bg-white", className)} {...props}>
+  <div ref={ref} className={cn("bg-background", className)} {...props}>
     {children}
   </div>
 ));

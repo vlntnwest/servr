@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { ShoppingBag, Clock, CreditCard, Users, BarChart3, Zap } from "lucide-react";
+import {
+  ShoppingBag,
+  Clock,
+  CreditCard,
+  Users,
+  BarChart3,
+  Zap,
+} from "lucide-react";
 
 const FEATURES = [
   {
@@ -42,21 +49,28 @@ const FEATURES = [
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen">
-      {/* Hero */}
-      <header className="border-b border-black/5">
-        <div className="max-w-screen-xl mx-auto px-4 h-16 flex items-center justify-between">
-          <span className="text-xl font-bold text-primary">Servr</span>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border">
+        <div className="max-w-screen-xl mx-auto px-5 sm:px-7 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-baseline gap-0">
+            <span className="font-display text-logo-sm leading-none tracking-tighter text-foreground">
+              Servr
+            </span>
+            <span className="font-display text-logo-sm leading-none text-primary">
+              .
+            </span>
+          </Link>
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="text-sm font-medium text-[#676767] hover:text-black transition-colors"
+              className="font-sans font-medium text-body-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Connexion
             </Link>
             <Link
               href="/register"
-              className="text-sm font-medium bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center justify-center rounded-pill bg-foreground text-background px-5 h-10 font-sans font-medium text-body-sm tracking-cta hover:opacity-90 transition-opacity shadow-sm shadow-black/5"
             >
               Commencer
             </Link>
@@ -65,25 +79,31 @@ export default function HomePage() {
       </header>
 
       <main>
-        {/* Hero section */}
-        <section className="max-w-screen-xl mx-auto px-4 py-20 sm:py-32 text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight max-w-3xl mx-auto leading-tight">
-            La commande en ligne pour votre restaurant
-          </h1>
-          <p className="mt-6 text-lg text-[#676767] max-w-xl mx-auto">
-            Créez votre page de commande en quelques minutes. Gérez vos produits,
-            commandes et paiements depuis un seul tableau de bord.
+        {/* Hero */}
+        <section className="max-w-screen-xl mx-auto px-5 sm:px-7 py-24 sm:py-32 text-center">
+          <p className="font-sans font-medium text-caption uppercase tracking-eyebrow text-muted-foreground mb-6">
+            Pour restaurants & cafés
           </p>
-          <div className="mt-10 flex items-center justify-center gap-4">
+          <h1 className="font-display text-display-sm sm:text-display lg:text-[64px] tracking-tighter leading-[0.95] max-w-3xl mx-auto text-foreground text-balance">
+            La commande en ligne
+            <span className="text-primary">.</span> pour
+            <br className="hidden sm:block" />
+            <span className="italic">votre restaurant</span>
+          </h1>
+          <p className="mt-8 text-body sm:text-principle text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            Créez votre page de commande en quelques minutes. Gérez vos
+            produits, commandes et paiements depuis un seul tableau de bord.
+          </p>
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/register"
-              className="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center justify-center rounded-pill bg-primary text-primary-foreground px-7 h-12 font-sans font-medium text-body tracking-cta hover:bg-primary/90 transition-colors shadow-sm shadow-black/5"
             >
               Créer mon restaurant
             </Link>
             <Link
               href="/login"
-              className="border border-black/15 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center justify-center rounded-pill border border-border bg-background px-7 h-12 font-sans font-medium text-body tracking-cta hover:bg-secondary transition-colors"
             >
               Se connecter
             </Link>
@@ -91,19 +111,29 @@ export default function HomePage() {
         </section>
 
         {/* Features */}
-        <section className="bg-gray-50/50 border-y border-black/5 py-20">
-          <div className="max-w-screen-xl mx-auto px-4">
-            <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">
-              Tout ce dont vous avez besoin
-            </h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <section className="border-y border-border bg-card">
+          <div className="max-w-screen-xl mx-auto px-5 sm:px-7 py-20">
+            <div className="text-center mb-14">
+              <p className="font-sans font-medium text-caption uppercase tracking-eyebrow text-muted-foreground mb-3">
+                Fonctionnalités
+              </p>
+              <h2 className="font-display text-display-sm sm:text-[40px] tracking-tighter leading-none text-foreground text-balance">
+                Tout ce dont vous avez besoin
+              </h2>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {FEATURES.map(({ icon: Icon, title, description }) => (
-                <div key={title} className="bg-white border border-black/5 rounded-lg p-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                <div
+                  key={title}
+                  className="rounded-card border border-brand-border bg-background p-6 shadow-sm shadow-black/5"
+                >
+                  <div className="w-12 h-12 rounded-icon bg-primary/10 flex items-center justify-center mb-5">
                     <Icon className="w-5 h-5 text-primary" />
                   </div>
-                  <h3 className="font-semibold mb-2">{title}</h3>
-                  <p className="text-sm text-[#676767] leading-relaxed">
+                  <h3 className="font-sans font-semibold text-card-name leading-tight mb-2 text-foreground">
+                    {title}
+                  </h3>
+                  <p className="text-body-sm text-muted-foreground leading-relaxed">
                     {description}
                   </p>
                 </div>
@@ -113,17 +143,18 @@ export default function HomePage() {
         </section>
 
         {/* CTA */}
-        <section className="max-w-screen-xl mx-auto px-4 py-20 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-            Prêt à digitaliser votre restaurant ?
+        <section className="max-w-screen-xl mx-auto px-5 sm:px-7 py-24 text-center">
+          <h2 className="font-display text-display-sm sm:text-[40px] tracking-tighter leading-none text-foreground mb-5 text-balance">
+            Prêt à digitaliser
+            <span className="text-primary">.</span>
           </h2>
-          <p className="text-[#676767] mb-8 max-w-md mx-auto">
+          <p className="text-body text-muted-foreground mb-10 max-w-md mx-auto">
             Inscription gratuite. Configurez votre menu et commencez à recevoir
             des commandes en quelques minutes.
           </p>
           <Link
             href="/register"
-            className="inline-block bg-primary text-white px-8 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center justify-center rounded-pill bg-foreground text-background px-8 h-12 font-sans font-medium text-body tracking-cta hover:opacity-90 transition-opacity shadow-sm shadow-black/5"
           >
             Commencer gratuitement
           </Link>
@@ -131,9 +162,14 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-black/5 py-8">
-        <div className="max-w-screen-xl mx-auto px-4 text-center text-sm text-[#676767]">
-          Servr — Commande en ligne pour restaurants
+      <footer className="border-t border-border py-10">
+        <div className="max-w-screen-xl mx-auto px-5 sm:px-7 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <span className="font-display text-principle leading-none tracking-tighter text-foreground">
+            Servr<span className="text-primary">.</span>
+          </span>
+          <p className="text-action text-muted-foreground">
+            Commande en ligne pour restaurants
+          </p>
         </div>
       </footer>
     </div>

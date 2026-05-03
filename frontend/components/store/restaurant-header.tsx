@@ -20,13 +20,16 @@ function getTodayHours(openingHours: OpeningHour[]): string | null {
 
 const PREP_BADGES: Record<PreparationLevel, { label: string; color: string }> =
   {
-    EASY: { label: "Peu d'attente", color: "bg-green-100 text-green-800" },
+    EASY: { label: "Peu d'attente", color: "bg-brand-lime text-brand-forest" },
     MEDIUM: {
       label: "Attente modérée",
-      color: "bg-yellow-100 text-yellow-800",
+      color: "bg-brand-yellow text-brand-forest",
     },
-    BUSY: { label: "Forte affluence", color: "bg-orange-100 text-orange-800" },
-    CLOSED: { label: "Fermé", color: "bg-red-100 text-red-800" },
+    BUSY: {
+      label: "Forte affluence",
+      color: "bg-brand-orange text-brand-cream",
+    },
+    CLOSED: { label: "Fermé", color: "bg-brand-maroon text-brand-pink" },
   };
 
 interface RestaurantHeaderProps {
@@ -46,11 +49,11 @@ export default function RestaurantHeader({
     : null;
 
   return (
-    <div className="border-b border-black/5 bg-white">
+    <div className="border-b border-border bg-background">
       <div className="max-w-screen-3xl mx-auto flex flex-col md:flex-row md:items-start md:gap-6 md:p-8 xl:p-16">
         {/* Image — full bleed on mobile, rounded card on desktop */}
         {restaurant.imageUrl && (
-          <div className="relative w-full aspect-[16/9] md:w-[30%] min-h-[300px] md:shrink-0 md:rounded-sm overflow-hidden bg-gray-100">
+          <div className="relative w-full aspect-[16/9] md:w-[30%] min-h-[300px] md:shrink-0 md:rounded-card overflow-hidden bg-card">
             <Image
               src={restaurant.imageUrl}
               alt={restaurant.name}
@@ -62,10 +65,12 @@ export default function RestaurantHeader({
         )}
 
         {/* Info */}
-        <div className="flex-1 px-4 py-5 md:px-0 md:py-0">
-          <h1 className="text-4xl font-bold mb-1">{restaurant.name}</h1>
+        <div className="flex-1 px-5 py-6 md:px-0 md:py-0">
+          <h1 className="font-display text-display-sm md:text-display tracking-tighter leading-none mb-2 text-foreground">
+            {restaurant.name}
+          </h1>
 
-          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm text-[#585c5c]">
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-body-sm text-muted-foreground mt-2">
             <MapPin className="w-3.5 h-3.5 shrink-0" />
             <span>
               {restaurant.address}, {restaurant.zipCode} {restaurant.city}
@@ -73,13 +78,13 @@ export default function RestaurantHeader({
           </div>
 
           {todayHours && (
-            <div className="flex items-center gap-1.5 text-sm text-[#585c5c] mt-1">
+            <div className="flex items-center gap-1.5 text-body-sm text-muted-foreground mt-1">
               <Clock className="w-3.5 h-3.5 shrink-0" />
               <span>Aujourd&apos;hui : {todayHours}</span>
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-2 mt-3">
+          <div className="flex flex-wrap items-center gap-2 mt-4">
             <OpenStatusBadge
               openingHours={openingHours}
               exceptionalHours={exceptionalHours}
@@ -87,7 +92,7 @@ export default function RestaurantHeader({
             {prepBadge && restaurant.preparationLevel !== "EASY" && (
               <span
                 className={cn(
-                  "text-xs px-2.5 py-1 rounded-full font-medium",
+                  "font-sans font-semibold text-caption uppercase tracking-meta px-3 py-1 rounded-pill",
                   prepBadge.color,
                 )}
               >

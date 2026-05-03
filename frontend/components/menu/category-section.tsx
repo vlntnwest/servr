@@ -14,14 +14,18 @@ export function CategorySection({ category }: CategorySectionProps) {
   if (products.length === 0) return null;
 
   return (
-    <section id={`cat-${category.id}`} className="mt-6">
-      <div className="px-3 mb-3">
-        <h2 className="text-2xl font-bold">{category.name}</h2>
+    <section id={`cat-${category.id}`} className="mt-8">
+      <div className="px-5 mb-4">
+        <h2 className="font-display text-display-sm tracking-tighter leading-none text-foreground">
+          {category.name}
+        </h2>
         {category.subHeading && (
-          <p className="text-[#676767] text-base">{category.subHeading}</p>
+          <p className="text-muted-foreground text-body mt-1">
+            {category.subHeading}
+          </p>
         )}
       </div>
-      <div className="grid md:gap-1 md:px-2 xl:grid-cols-2 3xl:grid-cols-3">
+      <div className="grid gap-3 md:px-2 xl:grid-cols-2 3xl:grid-cols-3 px-3">
         {products.map((pc) => (
           <ProductCard key={pc.id} product={pc.product} />
         ))}

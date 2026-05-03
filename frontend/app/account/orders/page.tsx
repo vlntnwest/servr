@@ -63,42 +63,51 @@ export default function OrderHistoryPage() {
   }
 
   return (
-    <div className="min-h-screen p-4 max-w-md mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Mes commandes</h1>
-        <Link href="/account" className="text-sm underline text-[#676767]">
+    <div className="min-h-screen px-5 pt-12 pb-10 max-w-md mx-auto">
+      <div className="flex items-end justify-between mb-8">
+        <h1 className="font-display text-display-sm tracking-tighter leading-none text-foreground">
+          Mes commandes<span className="text-primary">.</span>
+        </h1>
+        <Link
+          href="/account"
+          className="font-sans-medium text-action text-muted-foreground hover:text-foreground underline underline-offset-4"
+        >
           Mon compte
         </Link>
       </div>
 
       {orders.length === 0 ? (
-        <p className="text-[#676767] text-center mt-12">Aucune commande pour l&apos;instant.</p>
+        <p className="text-muted-foreground text-center mt-12 text-body">
+          Aucune commande pour l&apos;instant.
+        </p>
       ) : (
         <div className="space-y-3">
           {orders.map((order) => (
             <div
               key={order.id}
-              className="border border-black/5 rounded-lg p-4"
+              className="bg-background border border-brand-border rounded-card px-5 py-4 shadow-sm shadow-black/5"
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-mono text-sm font-medium">
-                  #{order.orderNumber ?? order.id.slice(-8)}
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-display-italic text-card-label leading-none text-foreground">
+                  #{order.orderNumber ?? order.id.slice(-6)}
                 </span>
-                <span className="text-xs text-[#676767]">
+                <span className="font-sans font-semibold text-caption uppercase tracking-meta text-muted-foreground">
                   {STATUS_LABELS[order.status] ?? order.status}
                 </span>
               </div>
-              <p className="text-sm font-medium">{order.restaurant.name}</p>
-              <p className="text-xs text-[#676767] mt-1">
+              <p className="font-sans-medium text-body text-foreground">
+                {order.restaurant.name}
+              </p>
+              <p className="text-action text-muted-foreground mt-1 line-clamp-1">
                 {order.orderProducts
                   .map((op) => `${op.quantity}× ${op.product.name}`)
                   .join(", ")}
               </p>
-              <div className="flex items-center justify-between mt-2">
-                <span className="text-sm font-semibold">
+              <div className="flex items-center justify-between mt-3">
+                <span className="font-sans font-semibold text-heading text-foreground">
                   {parseFloat(order.totalPrice).toFixed(2)} €
                 </span>
-                <span className="text-xs text-[#676767]">
+                <span className="text-action text-muted-foreground">
                   {new Date(order.createdAt).toLocaleDateString("fr-FR")}
                 </span>
               </div>
