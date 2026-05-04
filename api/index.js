@@ -1,4 +1,17 @@
 require("dotenv").config({ path: "./.env" });
+
+const REQUIRED_ENV_VARS = [
+  "DATABASE_URL",
+  "SUPABASE_URL",
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "CLIENT_URL",
+];
+const missing = REQUIRED_ENV_VARS.filter((v) => !process.env[v]);
+if (missing.length) {
+  console.error(`Missing required environment variables: ${missing.join(", ")}`);
+  process.exit(1);
+}
+
 // Sentry must be initialized before everything else
 require("./lib/sentry");
 
