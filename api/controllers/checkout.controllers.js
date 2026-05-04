@@ -223,6 +223,10 @@ module.exports.createCheckoutSession = async (req, res, next) => {
 // ─── handleWebhook ────────────────────────────────────────────────────────────
 
 module.exports.handleWebhook = async (req, res) => {
+  if (!stripe || !WEBHOOK_SECRET) {
+    return res.status(503).json({ error: "Stripe not configured" });
+  }
+
   const sig = req.headers["stripe-signature"];
   let event;
   try {
