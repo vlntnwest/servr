@@ -48,24 +48,3 @@ process.on("SIGTERM", () => {
     process.exit(1);
   }, 30000).unref();
 });
-
-// Graceful shutdown on SIGTERM (zero-downtime deploys)
-process.on("SIGTERM", () => {
-  logger.info("SIGTERM received — shutting down gracefully");
-  server.close(async () => {
-    logger.info("HTTP server closed");
-    if (io) io.close();
-    try {
-      await require("./lib/prisma").$disconnect();
-      logger.info("Prisma disconnected");
-    } catch (err) {
-      logger.error({ error: err.message }, "Error disconnecting Prisma");
-    }
-    process.exit(0);
-  });
-  // Force exit after 30s if graceful shutdown hangs
-  setTimeout(() => {
-    logger.error("Graceful shutdown timed out — forcing exit");
-    process.exit(1);
-  }, 30000).unref();
-});
