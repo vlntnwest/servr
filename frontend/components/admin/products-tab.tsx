@@ -473,7 +473,6 @@ function SortableOptionGroupItem({
   onCollapse,
   onRemove,
   onStartAddChoice,
-  onChoiceSaved,
   onCancelAddChoice,
   onError,
   onRefreshGroups,

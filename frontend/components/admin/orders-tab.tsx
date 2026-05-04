@@ -36,15 +36,6 @@ import { Eye } from "lucide-react";
 dayjs.extend(relativeTime);
 dayjs.locale("fr");
 
-const ORDER_STATUSES = [
-  "PENDING",
-  "PENDING_ON_SITE_PAYMENT",
-  "IN_PROGRESS",
-  "COMPLETED",
-  "DELIVERED",
-  "CANCELLED",
-] as const;
-
 const ACTIVE_STATUSES = "PENDING,PENDING_ON_SITE_PAYMENT,IN_PROGRESS,COMPLETED";
 const FINISHED_STATUSES = "DELIVERED,CANCELLED";
 
