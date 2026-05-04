@@ -30,6 +30,9 @@ const pinoHttp = require("pino-http");
 
 const app = express();
 
+// Hostinger sits behind a reverse proxy/LB — trust one hop so req.ip reflects the real client IP
+app.set("trust proxy", 1);
+
 const isLocalhost = (req) =>
   req.ip === "127.0.0.1" || req.ip === "::1" || req.ip === "::ffff:127.0.0.1";
 

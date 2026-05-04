@@ -1,4 +1,17 @@
 require("dotenv").config({ path: "./.env" });
+
+const REQUIRED_ENV_VARS = [
+  "DATABASE_URL",
+  "SUPABASE_URL",
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "CLIENT_URL",
+];
+const missing = REQUIRED_ENV_VARS.filter((v) => !process.env[v]);
+if (missing.length) {
+  console.error(`Missing required environment variables: ${missing.join(", ")}`);
+  process.exit(1);
+}
+
 // Sentry must be initialized before everything else
 require("./lib/sentry");
 
@@ -26,27 +39,6 @@ const io = initSocket(server);
 server.listen(PORT, () => {
   logger.info(`Listening on port ${PORT}`);
   verifySmtp();
-});
-
-// Graceful shutdown on SIGTERM (zero-downtime deploys)
-process.on("SIGTERM", () => {
-  logger.info("SIGTERM received — shutting down gracefully");
-  server.close(async () => {
-    logger.info("HTTP server closed");
-    if (io) io.close();
-    try {
-      await require("./lib/prisma").$disconnect();
-      logger.info("Prisma disconnected");
-    } catch (err) {
-      logger.error({ error: err.message }, "Error disconnecting Prisma");
-    }
-    process.exit(0);
-  });
-  // Force exit after 30s if graceful shutdown hangs
-  setTimeout(() => {
-    logger.error("Graceful shutdown timed out — forcing exit");
-    process.exit(1);
-  }, 30000).unref();
 });
 
 // Graceful shutdown on SIGTERM (zero-downtime deploys)

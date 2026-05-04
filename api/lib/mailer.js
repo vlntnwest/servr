@@ -3,6 +3,10 @@ const fs = require("fs");
 const path = require("path");
 const logger = require("../logger");
 
+const smtpConfigured = ["SMTP_HOST", "SMTP_USER", "SMTP_PASS"].every(
+  (k) => !!process.env[k]
+);
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: parseInt(process.env.SMTP_PORT || "587", 10),
@@ -32,6 +36,10 @@ function renderTemplate(data) {
  */
 async function sendOrderConfirmation({ to, order }) {
   if (!to) return;
+  if (!smtpConfigured) {
+    logger.warn({ orderId: order.id }, "Order confirmation email skipped — SMTP not configured");
+    return;
+  }
 
   try {
     const createdAt = order.createdAt ? new Date(order.createdAt) : new Date();
@@ -67,6 +75,11 @@ async function sendOrderConfirmation({ to, order }) {
  * Fire-and-forget: errors are logged but do not throw.
  */
 async function sendInvitationEmail({ to, restaurantName, inviteLink }) {
+  if (!smtpConfigured) {
+    logger.warn({ to, restaurantName }, "Invitation email skipped — SMTP not configured");
+    return;
+  }
+
   const html = `
     <div style="font-family:Helvetica,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
       <h2>Vous avez été invité à rejoindre ${restaurantName}</h2>
@@ -106,6 +119,10 @@ const NOTIFIABLE_STATUSES = Object.keys(STATUS_LABELS);
 async function sendOrderStatusUpdate({ to, order, newStatus }) {
   if (!to) return;
   if (!NOTIFIABLE_STATUSES.includes(newStatus)) return;
+  if (!smtpConfigured) {
+    logger.warn({ orderId: order.id, newStatus }, "Order status email skipped — SMTP not configured");
+    return;
+  }
 
   try {
     const label = STATUS_LABELS[newStatus];
