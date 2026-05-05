@@ -24,6 +24,7 @@ import {
 } from "@expo-google-fonts/dm-sans";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { AuthProvider, useAuth } from "@/context/auth";
 import { NAV_THEME } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
@@ -44,6 +45,7 @@ const DarkBrandTheme = {
 
 function InitialLayout() {
   const { session, initialized } = useAuth();
+  usePushNotifications(!!session);
   const { restaurants, selectedRestaurant, isLoading, error: restaurantError, selectRestaurant } =
     useRestaurant();
   const segments = useSegments();
