@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
+import { DM_Sans, Archivo_Black } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/contexts/cart-context";
 import { UserProvider } from "@/contexts/user-context";
@@ -7,6 +7,13 @@ import { UserProvider } from "@/contexts/user-context";
 const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
+  display: "swap",
+});
+
+const archivoBlack = Archivo_Black({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-archivo-black",
   display: "swap",
 });
 
@@ -21,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={dmSans.variable}>
+    <html lang="fr" className={`${dmSans.variable} ${archivoBlack.variable}`}>
       <body>
         <UserProvider>
           <CartProvider>{children}</CartProvider>
