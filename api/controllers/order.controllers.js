@@ -1,10 +1,28 @@
 const prisma = require("../lib/prisma");
 const logger = require("../logger");
-const { sendOrderConfirmation, sendOrderStatusUpdate } = require("../lib/mailer");
+
+const {
+  sendOrderConfirmation,
+  sendOrderStatusUpdate,
+} = require("../lib/mailer");
 const { withOrderNumber } = require("../lib/orderNumber");
-const { isValidTransition, getNextStatuses } = require("../lib/orderStateMachine");
+const {
+  isValidTransition,
+  getNextStatuses,
+} = require("../lib/orderStateMachine");
 const { getIO } = require("../lib/socket");
 const { isRestaurantOpen } = require("../lib/openingHours");
+
+async function sendPushNotification(token, { title, body }) {
+  const response = await fetch("https://exp.host/--/api/v2/push/send", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ to: token, title, body }),
+  });
+  if (!response.ok) {
+    throw new Error(`Expo push API error: ${response.status}`);
+  }
+}
 
 function isScheduledTimeValid(openingHours, scheduledAt) {
   const dt = new Date(scheduledAt);
@@ -31,7 +49,11 @@ module.exports.createOrder = async (req, res, next) => {
     });
     if (scheduledFor) {
       if (!isScheduledTimeValid(openingHours, scheduledFor)) {
-        return res.status(400).json({ error: "Scheduled time is outside opening hours or in the past" });
+        return res
+          .status(400)
+          .json({
+            error: "Scheduled time is outside opening hours or in the past",
+          });
       }
     } else if (!(await isRestaurantOpen(restaurantId, openingHours))) {
       return res.status(400).json({ error: "Restaurant is currently closed" });
@@ -80,19 +102,38 @@ module.exports.createOrder = async (req, res, next) => {
     let appliedPromoCode = null;
     if (promoCode) {
       appliedPromoCode = await prisma.promoCode.findUnique({
-        where: { restaurantId_code: { restaurantId, code: promoCode.toUpperCase() } },
+        where: {
+          restaurantId_code: { restaurantId, code: promoCode.toUpperCase() },
+        },
       });
       if (!appliedPromoCode || !appliedPromoCode.isActive) {
-        return res.status(400).json({ error: "Invalid or inactive promo code" });
+        return res
+          .status(400)
+          .json({ error: "Invalid or inactive promo code" });
       }
-      if (appliedPromoCode.expiresAt && appliedPromoCode.expiresAt < new Date()) {
+      if (
+        appliedPromoCode.expiresAt &&
+        appliedPromoCode.expiresAt < new Date()
+      ) {
         return res.status(400).json({ error: "Promo code has expired" });
       }
-      if (appliedPromoCode.maxUses !== null && appliedPromoCode.usedCount >= appliedPromoCode.maxUses) {
-        return res.status(400).json({ error: "Promo code usage limit reached" });
+      if (
+        appliedPromoCode.maxUses !== null &&
+        appliedPromoCode.usedCount >= appliedPromoCode.maxUses
+      ) {
+        return res
+          .status(400)
+          .json({ error: "Promo code usage limit reached" });
       }
-      if (appliedPromoCode.minOrderAmount !== null && totalPrice < parseFloat(appliedPromoCode.minOrderAmount)) {
-        return res.status(400).json({ error: `Minimum order amount of ${appliedPromoCode.minOrderAmount} required` });
+      if (
+        appliedPromoCode.minOrderAmount !== null &&
+        totalPrice < parseFloat(appliedPromoCode.minOrderAmount)
+      ) {
+        return res
+          .status(400)
+          .json({
+            error: `Minimum order amount of ${appliedPromoCode.minOrderAmount} required`,
+          });
       }
 
       const discountValue = parseFloat(appliedPromoCode.discountValue);
@@ -106,7 +147,15 @@ module.exports.createOrder = async (req, res, next) => {
 
     const data = await withOrderNumber(async (tx, orderNumber) => {
       const order = await tx.order.create({
-        data: { restaurantId, fullName, phone, email, totalPrice, orderNumber, scheduledFor: scheduledFor ? new Date(scheduledFor) : null },
+        data: {
+          restaurantId,
+          fullName,
+          phone,
+          email,
+          totalPrice,
+          orderNumber,
+          scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
+        },
       });
 
       if (appliedPromoCode) {
@@ -150,6 +199,18 @@ module.exports.createOrder = async (req, res, next) => {
 
     logger.info({ orderId: data.id, restaurantId }, "Order created");
     sendOrderConfirmation({ to: data.email, order: data });
+
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { id: restaurantId },
+      include: { admin: { select: { pushToken: true } } },
+    });
+    if (restaurant?.admin?.pushToken) {
+      sendPushNotification(restaurant.admin.pushToken, {
+        title: "Nouvelle commande !",
+        body: `Commande #${data.orderNumber} — ${data.fullName}`,
+      }).catch((err) => logger.warn({ err }, "Push notification failed"));
+    }
+
     return res.status(201).json({ data });
   } catch (error) {
     next(error);
@@ -243,7 +304,14 @@ module.exports.updateOrderStatus = async (req, res, next) => {
   try {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      select: { id: true, status: true, email: true, restaurantId: true, fullName: true, orderNumber: true },
+      select: {
+        id: true,
+        status: true,
+        email: true,
+        restaurantId: true,
+        fullName: true,
+        orderNumber: true,
+      },
     });
 
     if (!order) {
@@ -279,13 +347,26 @@ module.exports.updateOrderStatus = async (req, res, next) => {
 
     const io = getIO();
     if (io) {
-      io.to(`restaurant:${order.restaurantId}`).emit("order:statusUpdated", data);
+      io.to(`restaurant:${order.restaurantId}`).emit(
+        "order:statusUpdated",
+        data,
+      );
     }
 
     sendOrderStatusUpdate({ to: order.email, order: data, newStatus: status });
 
-    logger.info({ orderId, restaurantId: order.restaurantId, from: order.status, to: status }, "Order status updated");
-    return res.status(200).json({ data, allowedTransitions: getNextStatuses(status) });
+    logger.info(
+      {
+        orderId,
+        restaurantId: order.restaurantId,
+        from: order.status,
+        to: status,
+      },
+      "Order status updated",
+    );
+    return res
+      .status(200)
+      .json({ data, allowedTransitions: getNextStatuses(status) });
   } catch (error) {
     next(error);
   }

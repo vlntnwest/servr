@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "830543163210",
+    "project_id": "my-spots-946ca",
+    "storage_bucket": "my-spots-946ca.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:830543163210:android:ae45e51a3e0e96138bdbb3",
+        "android_client_info": {
+          "package_name": "com.vlntnwest.servrapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSJBluC43XG8gW-6-NUHxut5TkrxwoosA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

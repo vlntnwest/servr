@@ -19,6 +19,7 @@ model User {
   address           String?            @map("address") @db.VarChar(200)
   city              String?            @map("city") @db.VarChar(50)
   zipCode           String?            @map("zip_code") @db.VarChar(5)
+  pushToken         String?            @map("push_token")
   restaurants       Restaurant[]
 
   @@map("users")
