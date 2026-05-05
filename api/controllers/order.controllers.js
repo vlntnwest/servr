@@ -20,7 +20,13 @@ async function sendPushNotification(token, { title, body }) {
     body: JSON.stringify({ to: token, title, body }),
   });
   if (!response.ok) {
-    throw new Error(`Expo push API error: ${response.status}`);
+    throw new Error(`Expo push HTTP error: ${response.status}`);
+  }
+  const json = await response.json();
+  const ticket = json.data?.[0];
+  logger.info({ ticket, token }, "Expo push ticket");
+  if (ticket?.status === "error") {
+    throw new Error(`Expo push error: ${ticket.message} — ${JSON.stringify(ticket.details)}`);
   }
 }
 
