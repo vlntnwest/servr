@@ -38,10 +38,12 @@ async function registerAndSendToken() {
     Constants?.expoConfig?.extra?.eas?.projectId ??
     Constants?.easConfig?.projectId;
 
-  const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
+  const { data: token } = await Notifications.getExpoPushTokenAsync({
+    projectId,
+  });
   Alert.alert("Push token", token);
 
-  const result = await apiFetch("/users/me/push-token", {
+  const result = await apiFetch("/user/me/push-token", {
     method: "PATCH",
     body: JSON.stringify({ token }),
   });
