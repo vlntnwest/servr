@@ -40,6 +40,14 @@
   /* Typography */
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-archivo-black), sans-serif;
+  --font-display-italic: var(--font-archivo-italic), sans-serif;
+
+  /* Font weights */
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-black: 900;
 
   /* Font sizes */
   --text-nano: 9px;
@@ -72,6 +80,7 @@
   --text-logo--line-height: 1;
 
   /* Letter spacing */
+  --tracking-tight: -0.04em;
   --tracking-cta: 0.02em;
   --tracking-pill: 0.04em;
   --tracking-meta: 0.06em;
@@ -133,5 +142,83 @@
 @layer utilities {
   .font-display {
     font-family: var(--font-display);
+  }
+
+  .t-display {
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+
+  .t-logo {
+    font-family: var(--font-display);
+    font-size: var(--text-logo);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -2px;
+  }
+
+  .t-card-label {
+    font-family: var(--font-display-italic);
+    font-style: italic;
+    font-size: var(--text-card-label);
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .t-heading {
+    font-family: var(--font-sans);
+    font-size: var(--text-heading);
+    font-weight: var(--fw-semibold);
+    line-height: 1.2;
+  }
+
+  .t-body {
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    font-weight: var(--fw-regular);
+    line-height: 1.6;
+  }
+
+  .t-body-muted {
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    font-weight: var(--fw-regular);
+    line-height: 1.6;
+    color: var(--color-muted-foreground);
+  }
+
+  .t-caption {
+    font-family: var(--font-sans);
+    font-size: var(--text-caption);
+    font-weight: var(--fw-medium);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--color-muted-foreground);
+  }
+
+  .t-label {
+    font-family: var(--font-display);
+    font-size: var(--text-caption);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-section);
+    color: var(--color-muted-foreground);
+  }
+
+  .t-price {
+    font-family: var(--font-sans);
+    font-size: var(--text-heading);
+    font-weight: var(--fw-semibold);
+    letter-spacing: -0.22px;
+  }
+
+  .t-badge {
+    font-family: var(--font-sans);
+    font-size: var(--text-caption);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-pill);
   }
 }

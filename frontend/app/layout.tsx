@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Archivo_Black } from "next/font/google";
+import { DM_Sans, Archivo_Black, Archivo } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/contexts/cart-context";
 import { UserProvider } from "@/contexts/user-context";
@@ -17,6 +17,14 @@ const archivoBlack = Archivo_Black({
   display: "swap",
 });
 
+const archivoItalic = Archivo({
+  subsets: ["latin"],
+  style: ["italic"],
+  weight: ["900"],
+  variable: "--font-archivo-italic",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Servr - Commander en ligne",
   description: "Commander en ligne",
@@ -28,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${dmSans.variable} ${archivoBlack.variable}`}>
+    <html lang="fr" className={`${dmSans.variable} ${archivoBlack.variable} ${archivoItalic.variable}`}>
       <body>
         <UserProvider>
           <CartProvider>{children}</CartProvider>
