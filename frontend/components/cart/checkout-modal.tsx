@@ -130,10 +130,10 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
           </div>
 
           {error && (
-            <p className="text-sm text-red-500 bg-red-50 rounded p-2">{error}</p>
+            <p className="text-sm text-destructive bg-destructive/10 rounded p-2">{error}</p>
           )}
 
-          <p className="text-xs text-[#676767]">
+          <p className="text-xs text-muted-foreground">
             En passant commande, vous acceptez nos conditions générales de vente.
           </p>
 

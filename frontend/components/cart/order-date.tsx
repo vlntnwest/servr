@@ -113,7 +113,7 @@ export default function OrderDate() {
   };
 
   return (
-    <div className="mx-4 border border-black/8 rounded-lg overflow-hidden px-4 py-3">
+    <div className="mx-4 border border-border rounded-lg overflow-hidden px-4 py-3">
       <p className="font-semibold text-sm mb-2">Heure de commande</p>
       <RadioGroup value={orderType} onValueChange={handleTypeChange} className="gap-0">
         <div onClick={() => asapAvailable && handleTypeChange("asap")} className={`flex items-center py-2 -mx-4 px-4 transition-colors ${asapAvailable ? "cursor-pointer hover:bg-black/[0.02]" : "opacity-40 cursor-not-allowed"}`}>
@@ -135,7 +135,7 @@ export default function OrderDate() {
               setSelectedDay(e.target.value);
               setScheduledFor(day?.slots[0] ?? "");
             }}
-            className="flex-1 text-sm border border-black/15 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+            className="flex-1 text-sm border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
           >
             {availableDays.map((d) => (
               <option key={d.dateKey} value={d.dateKey}>
@@ -146,7 +146,7 @@ export default function OrderDate() {
           <select
             value={scheduledFor}
             onChange={(e) => setScheduledFor(e.target.value)}
-            className="flex-1 text-sm border border-black/15 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+            className="flex-1 text-sm border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
           >
             {(currentDayEntry?.slots ?? []).map((iso) => (
               <option key={iso} value={iso}>

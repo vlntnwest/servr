@@ -28,7 +28,7 @@ export default function Cart({ onClose }: CartProps) {
   if (items.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="text-center text-[#676767]">
+        <div className="text-center text-muted-foreground">
           <ShoppingBag className="w-10 h-10 mx-auto mb-2 opacity-30" />
           <p className="text-lg font-bold">Votre panier est vide</p>
         </div>
@@ -39,11 +39,11 @@ export default function Cart({ onClose }: CartProps) {
   return (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between px-2 py-1.5 border-b border-black/8 shrink-0">
+      <div className="flex items-center justify-between px-2 py-1.5 border-b border-border shrink-0">
         {onClose ? (
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-black/5 transition-colors"
+            className="p-2 rounded-full hover:bg-foreground/5 transition-colors"
             aria-label="Fermer le panier"
           >
             <X className="w-5 h-5" />
@@ -53,7 +53,7 @@ export default function Cart({ onClose }: CartProps) {
         )}
         <button
           onClick={() => setConfirmClearOpen(true)}
-          className="p-2 rounded-full hover:bg-black/5 transition-colors"
+          className="p-2 rounded-full hover:bg-foreground/5 transition-colors"
           aria-label="Vider le panier"
         >
           <Trash2 className="w-5 h-5" />
@@ -63,7 +63,7 @@ export default function Cart({ onClose }: CartProps) {
       <div className="flex-1 overflow-y-auto">
         <p className="text-2xl font-bold px-4 py-3">Panier</p>
         <div className="px-4 pb-2">
-          <div className="border border-black/8 rounded-sm overflow-hidden">
+          <div className="border border-border rounded-sm overflow-hidden">
             {items.map((item, idx) => (
               <div key={item.id}>
                 <CartItem item={item} />
@@ -78,7 +78,7 @@ export default function Cart({ onClose }: CartProps) {
         </div>
       </div>
 
-      <div className="p-4 bg-white shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
+      <div className="p-4 bg-card border-t border-border shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
         <div className="flex justify-between items-center mb-3">
           <span className="text-sm font-bold">Total de la commande</span>
           <span className="text-sm font-bold">{formatEuros(total)}</span>
@@ -121,7 +121,7 @@ export default function Cart({ onClose }: CartProps) {
                 setConfirmClearOpen(false);
                 onClose?.();
               }}
-              className="w-full h-11 rounded-md bg-red-600 text-white font-semibold text-sm hover:opacity-90 transition-opacity"
+              className="w-full h-11 rounded-md bg-destructive text-white font-semibold text-sm hover:opacity-90 transition-opacity"
             >
               Vider le panier
             </button>

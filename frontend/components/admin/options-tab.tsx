@@ -116,8 +116,8 @@ export default function OptionsTab() {
           className={cn(
             "mb-4 flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium",
             notification.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200",
+              ? "bg-brand-forest/10 text-brand-forest border border-brand-forest/20"
+              : "bg-destructive/10 text-destructive border border-destructive/20",
           )}
         >
           {notification.type === "success" ? (
@@ -130,7 +130,7 @@ export default function OptionsTab() {
       )}
 
       <div className="flex items-center justify-between mb-6">
-        <p className="text-sm text-[#676767]">
+        <p className="text-sm text-muted-foreground">
           {groups.length} groupe{groups.length !== 1 ? "s" : ""} d&apos;options
         </p>
         <Button
@@ -152,11 +152,11 @@ export default function OptionsTab() {
         </div>
       ) : groups.length === 0 ? (
         <div className="text-center py-16 border-2 border-dashed border-black/10 rounded-xl">
-          <Settings2 className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-[#676767]">
+          <Settings2 className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+          <p className="text-sm font-medium text-muted-foreground">
             Aucun groupe d&apos;options
           </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Créez des groupes pour personnaliser vos produits (taille, cuisson,
             suppléments…)
           </p>
@@ -214,7 +214,7 @@ export default function OptionsTab() {
             <DialogTitle>Supprimer ce groupe ?</DialogTitle>
           </DialogHeader>
           <div className="p-4 space-y-4">
-            <p className="text-sm text-[#676767]">
+            <p className="text-sm text-muted-foreground">
               &ldquo;{deleteTarget?.name}&rdquo; sera supprimé. Les produits
               liés à ce groupe perdront ces options.
             </p>
@@ -288,30 +288,30 @@ function GroupCard({
   };
 
   return (
-    <div className="border border-black/8 rounded-lg overflow-hidden">
+    <div className="border border-border rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-white hover:bg-gray-50 transition-colors">
+      <div className="flex items-center gap-2 px-4 py-3 bg-white hover:bg-muted transition-colors">
         <button
           onClick={onToggle}
           className="flex-1 flex items-center gap-3 text-left min-w-0"
         >
           {expanded ? (
-            <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+            <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
           ) : (
-            <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
           )}
           <div className="min-w-0">
             <p className="text-sm font-semibold truncate">{group.name}</p>
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-              <span className="text-xs text-[#676767]">
+              <span className="text-xs text-muted-foreground">
                 {group.hasMultiple ? "Choix multiple" : "Choix unique"}
               </span>
-              <span className="text-gray-300 text-xs">·</span>
-              <span className="text-xs text-[#676767]">
+              <span className="text-muted-foreground/40 text-xs">·</span>
+              <span className="text-xs text-muted-foreground">
                 {group.isRequired ? "Requis" : "Optionnel"}
               </span>
-              <span className="text-gray-300 text-xs">·</span>
-              <span className="text-xs text-[#676767]">
+              <span className="text-muted-foreground/40 text-xs">·</span>
+              <span className="text-xs text-muted-foreground">
                 {group.optionChoices.length} option
                 {group.optionChoices.length !== 1 ? "s" : ""}
               </span>
@@ -324,23 +324,23 @@ function GroupCard({
             className="p-1.5 hover:bg-black/5 rounded-md transition-colors"
             aria-label="Modifier"
           >
-            <Pencil className="w-3.5 h-3.5 text-[#676767]" />
+            <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
           <button
             onClick={onDelete}
-            className="p-1.5 hover:bg-red-50 rounded-md transition-colors"
+            className="p-1.5 hover:bg-destructive/10 rounded-md transition-colors"
             aria-label="Supprimer"
           >
-            <Trash2 className="w-3.5 h-3.5 text-red-500" />
+            <Trash2 className="w-3.5 h-3.5 text-destructive" />
           </button>
         </div>
       </div>
 
       {/* Choices */}
       {expanded && (
-        <div className="border-t border-black/5 bg-gray-50/50">
+        <div className="border-t border-border bg-muted/50">
           {sorted.length === 0 && !addingChoice && (
-            <p className="text-xs text-[#676767] px-10 py-3 italic">
+            <p className="text-xs text-muted-foreground px-10 py-3 italic">
               Aucun choix — ajoutez des options ci-dessous
             </p>
           )}
@@ -363,15 +363,15 @@ function GroupCard({
             ) : (
               <div
                 key={choice.id}
-                className="flex items-center gap-3 px-10 py-2.5 hover:bg-gray-100 transition-colors border-b border-black/5 last:border-0"
+                className="flex items-center gap-3 px-10 py-2.5 hover:bg-muted transition-colors border-b border-border last:border-0"
               >
                 <span className="flex-1 text-sm">{choice.name}</span>
                 <span
                   className={cn(
                     "text-xs font-medium shrink-0",
                     parseFloat(choice.priceModifier) > 0
-                      ? "text-[#e67400]"
-                      : "text-gray-400",
+                      ? "text-primary"
+                      : "text-muted-foreground",
                   )}
                 >
                   {parseFloat(choice.priceModifier) > 0
@@ -384,14 +384,14 @@ function GroupCard({
                     className="p-1 hover:bg-black/5 rounded transition-colors"
                     aria-label="Modifier"
                   >
-                    <Pencil className="w-3 h-3 text-[#676767]" />
+                    <Pencil className="w-3 h-3 text-muted-foreground" />
                   </button>
                   <button
                     onClick={() => setDeleteChoiceTarget(choice)}
-                    className="p-1 hover:bg-red-50 rounded transition-colors"
+                    className="p-1 hover:bg-destructive/10 rounded transition-colors"
                     aria-label="Supprimer"
                   >
-                    <Trash2 className="w-3 h-3 text-red-500" />
+                    <Trash2 className="w-3 h-3 text-destructive" />
                   </button>
                 </div>
               </div>
@@ -431,7 +431,7 @@ function GroupCard({
             <DialogTitle>Supprimer cette option ?</DialogTitle>
           </DialogHeader>
           <div className="p-4 space-y-4">
-            <p className="text-sm text-[#676767]">
+            <p className="text-sm text-muted-foreground">
               &ldquo;{deleteChoiceTarget?.name}&rdquo; sera supprimé
               définitivement.
             </p>
@@ -494,7 +494,7 @@ function ChoiceAddRow({
   };
 
   return (
-    <div className="flex items-center gap-2 px-10 py-2 bg-white border-t border-black/5">
+    <div className="flex items-center gap-2 px-10 py-2 bg-white border-t border-border">
       <input
         type="text"
         autoFocus
@@ -505,7 +505,7 @@ function ChoiceAddRow({
           if (e.key === "Enter") handleSave();
           if (e.key === "Escape") onCancel();
         }}
-        className="flex-1 h-8 px-2 text-sm border border-black/20 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        className="flex-1 h-8 px-2 text-sm border border-border rounded-sm focus:outline-none focus:ring-2 focus:ring-primary"
       />
       <input
         type="number"
@@ -514,9 +514,9 @@ function ChoiceAddRow({
         placeholder="0.00"
         value={price}
         onChange={(e) => setPrice(e.target.value)}
-        className="w-20 h-8 px-2 text-sm border border-black/20 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        className="w-20 h-8 px-2 text-sm border border-border rounded-sm focus:outline-none focus:ring-2 focus:ring-primary"
       />
-      <span className="text-xs text-[#676767]">€</span>
+      <span className="text-xs text-muted-foreground">€</span>
       <button
         onClick={handleSave}
         disabled={!name.trim() || saving}
@@ -532,7 +532,7 @@ function ChoiceAddRow({
         onClick={onCancel}
         className="p-1.5 hover:bg-black/5 rounded-md transition-colors"
       >
-        <X className="w-3.5 h-3.5 text-[#676767]" />
+        <X className="w-3.5 h-3.5 text-muted-foreground" />
       </button>
     </div>
   );
@@ -561,7 +561,7 @@ function ChoiceEditRow({
   };
 
   return (
-    <div className="flex items-center gap-2 px-10 py-2 bg-white border-b border-black/5">
+    <div className="flex items-center gap-2 px-10 py-2 bg-white border-b border-border">
       <input
         type="text"
         autoFocus
@@ -571,7 +571,7 @@ function ChoiceEditRow({
           if (e.key === "Enter") handleSave();
           if (e.key === "Escape") onCancel();
         }}
-        className="flex-1 h-8 px-2 text-sm border border-black/20 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        className="flex-1 h-8 px-2 text-sm border border-border rounded-sm focus:outline-none focus:ring-2 focus:ring-primary"
       />
       <input
         type="number"
@@ -579,9 +579,9 @@ function ChoiceEditRow({
         min="0"
         value={price}
         onChange={(e) => setPrice(e.target.value)}
-        className="w-20 h-8 px-2 text-sm border border-black/20 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        className="w-20 h-8 px-2 text-sm border border-border rounded-sm focus:outline-none focus:ring-2 focus:ring-primary"
       />
-      <span className="text-xs text-[#676767]">€</span>
+      <span className="text-xs text-muted-foreground">€</span>
       <button
         onClick={handleSave}
         disabled={!name.trim() || saving}
@@ -597,7 +597,7 @@ function ChoiceEditRow({
         onClick={onCancel}
         className="p-1.5 hover:bg-black/5 rounded-md transition-colors"
       >
-        <X className="w-3.5 h-3.5 text-[#676767]" />
+        <X className="w-3.5 h-3.5 text-muted-foreground" />
       </button>
     </div>
   );
@@ -692,8 +692,8 @@ export function GroupDialog({
         <div className="p-4 space-y-4">
           {/* Name */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
-              Nom <span className="text-red-500">*</span>
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
+              Nom <span className="text-destructive">*</span>
             </label>
             <Input
               value={form.name}
@@ -708,18 +708,18 @@ export function GroupDialog({
           {/* hasMultiple + isRequired */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground/70 mb-1.5">
                 Type de sélection
               </label>
-              <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+              <div className="flex gap-1 p-1 bg-muted rounded-lg">
                 <button
                   type="button"
                   onClick={() => setField("hasMultiple", false)}
                   className={cn(
                     "flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-all",
                     !form.hasMultiple
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900",
+                      ? "bg-white text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   Unique
@@ -730,8 +730,8 @@ export function GroupDialog({
                   className={cn(
                     "flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-all",
                     form.hasMultiple
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900",
+                      ? "bg-white text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   Multiple
@@ -739,18 +739,18 @@ export function GroupDialog({
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground/70 mb-1.5">
                 Obligatoire
               </label>
-              <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+              <div className="flex gap-1 p-1 bg-muted rounded-lg">
                 <button
                   type="button"
                   onClick={() => setField("isRequired", true)}
                   className={cn(
                     "flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-all",
                     form.isRequired
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900",
+                      ? "bg-white text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   Oui
@@ -761,8 +761,8 @@ export function GroupDialog({
                   className={cn(
                     "flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-all",
                     !form.isRequired
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900",
+                      ? "bg-white text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   Non
@@ -774,7 +774,7 @@ export function GroupDialog({
           {/* Quantities */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground/70 mb-1.5">
                 Qté min
               </label>
               <Input
@@ -787,7 +787,7 @@ export function GroupDialog({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground/70 mb-1.5">
                 Qté max
               </label>
               <Input
@@ -803,7 +803,7 @@ export function GroupDialog({
 
           {/* Display order */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
               Ordre d&apos;affichage
             </label>
             <Input

@@ -29,7 +29,7 @@ export default function CustomerSheet() {
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="right" className="w-full sm:max-w-sm p-0">
-          <SheetHeader className="px-5 py-4 border-b border-black/5">
+          <SheetHeader className="px-5 py-4 border-b border-border">
             <SheetTitle>{user ? "Mon compte" : "Menu"}</SheetTitle>
           </SheetHeader>
 
@@ -45,7 +45,7 @@ export default function CustomerSheet() {
                   Historique des commandes
                 </SheetLink>
 
-                <div className="border-t border-black/5 my-2" />
+                <div className="border-t border-border my-2" />
 
                 <SheetLink href="/contact" onClick={() => setOpen(false)}>
                   <Mail className="w-4 h-4" />
@@ -56,7 +56,7 @@ export default function CustomerSheet() {
                   Mentions légales
                 </SheetLink>
 
-                <div className="border-t border-black/5 my-2" />
+                <div className="border-t border-border my-2" />
 
                 <div className="px-4">
                   <Button
@@ -83,7 +83,7 @@ export default function CustomerSheet() {
                   Créer un compte
                 </SheetLink>
 
-                <div className="border-t border-black/5 my-2" />
+                <div className="border-t border-border my-2" />
 
                 <SheetLink href="/contact" onClick={() => setOpen(false)}>
                   <Mail className="w-4 h-4" />

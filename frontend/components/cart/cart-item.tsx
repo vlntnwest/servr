@@ -66,16 +66,16 @@ export default function CartItem({ item }: CartItemProps) {
         )}
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-sm line-clamp-1">
-            <span className="text-[#676767] font-normal mr-1">{item.quantity}x</span>
+            <span className="text-muted-foreground font-normal mr-1">{item.quantity}x</span>
             {item.name}
           </p>
           {optionsSummary && (
-            <p className="text-xs text-[#676767] mt-0.5 line-clamp-1">{optionsSummary}</p>
+            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{optionsSummary}</p>
           )}
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
           <span className="text-sm font-semibold">{formatEuros(linePrice)}</span>
-          <ChevronRight className="w-4 h-4 text-[#676767]" />
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </div>
       </button>
 
@@ -86,16 +86,16 @@ export default function CartItem({ item }: CartItemProps) {
           desktopClassName="max-w-sm"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-3 py-2 border-b border-black/8">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-border">
             <button
               onClick={handleDelete}
-              className="p-2 rounded-full hover:bg-black/5 transition-colors cursor-pointer"
+              className="p-2 rounded-full hover:bg-foreground/5 transition-colors cursor-pointer"
               aria-label="Supprimer"
             >
               <Trash2 className="w-5 h-5" />
             </button>
             <ResponsiveModalTitle className="font-bold text-base truncate px-2 flex-1 text-center">{item.name}</ResponsiveModalTitle>
-            <ResponsiveModalClose className="p-2 rounded-full hover:bg-black/5 transition-colors cursor-pointer">
+            <ResponsiveModalClose className="p-2 rounded-full hover:bg-foreground/5 transition-colors cursor-pointer">
               <Plus className="w-5 h-5 rotate-45" />
             </ResponsiveModalClose>
           </div>

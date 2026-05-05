@@ -157,7 +157,7 @@ export default function ProductDetailSheet({
               <ResponsiveModalTitle className="text-3xl font-bold">{product.name}</ResponsiveModalTitle>
               <button
                 onClick={onClose}
-                className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 transition-colors shrink-0"
+                className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-foreground/5 transition-colors shrink-0"
                 aria-label="Fermer"
               >
                 <X className="h-4 w-4" />
@@ -167,7 +167,7 @@ export default function ProductDetailSheet({
           <div className="p-4">
             {product.imageUrl && <ResponsiveModalTitle className="text-3xl font-bold">{product.name}</ResponsiveModalTitle>}
             {product.description && (
-              <p className="text-[#676767] text-sm mt-1">{product.description}</p>
+              <p className="text-muted-foreground text-sm mt-1">{product.description}</p>
             )}
           </div>
 
@@ -177,9 +177,9 @@ export default function ProductDetailSheet({
               <div className="mb-3">
                 <h4 className="font-bold text-xl">{group.name}</h4>
                 {group.isRequired ? (
-                  <p className="text-xs text-[#676767]">Obligatoire</p>
+                  <p className="text-xs text-muted-foreground">Obligatoire</p>
                 ) : (
-                  <p className="text-xs text-[#676767]">
+                  <p className="text-xs text-muted-foreground">
                     Optionnel
                     {group.maxQuantity > 1 ? ` · Max ${group.maxQuantity}` : ""}
                   </p>
@@ -198,7 +198,7 @@ export default function ProductDetailSheet({
                         {choice.name}
                       </Label> 
                       {parseFloat(choice.priceModifier) > 0 && (
-                        <span className="text-sm text-[#676767]">
+                        <span className="text-sm text-muted-foreground">
                           +{formatEuros(parseFloat(choice.priceModifier))}
                         </span>
                       )}
@@ -223,7 +223,7 @@ export default function ProductDetailSheet({
                           {choice.name}
                         </Label>  
                         {parseFloat(choice.priceModifier) > 0 && (
-                          <span className="text-sm text-[#676767]">
+                          <span className="text-sm text-muted-foreground">
                             +{formatEuros(parseFloat(choice.priceModifier))}
                           </span>
                         )}
@@ -248,11 +248,11 @@ export default function ProductDetailSheet({
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-white">
+        <div className="p-4 bg-card">
           <div className="flex flex-col items-center gap-4 mb-3 w-full">
             <div className="flex items-center justify-evenly gap-3 w-full">
               <button
-                className="p-0 hover:bg-black/5 transition-colors disabled:opacity-40 border border-primary border-2 rounded-full cursor-pointer disabled:cursor-not-allowed"
+                className="p-0 hover:bg-foreground/5 transition-colors disabled:opacity-40 border border-primary border-2 rounded-full cursor-pointer disabled:cursor-not-allowed"
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                 disabled={quantity <= 1}
               >
@@ -260,7 +260,7 @@ export default function ProductDetailSheet({
               </button>
               <span className="w-8 text-center">{quantity}</span>
               <button
-                className="p-0 hover:bg-black/5 transition-colors border border-primary border-2 rounded-full cursor-pointer"
+                className="p-0 hover:bg-foreground/5 transition-colors border border-primary border-2 rounded-full cursor-pointer"
                 onClick={() => setQuantity((q) => q + 1)}
               >
                 <Plus className="w-4 h-4 text-primary" strokeWidth={3} />

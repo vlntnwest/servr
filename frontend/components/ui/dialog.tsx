@@ -34,7 +34,7 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] bg-white shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-lg",
+        "fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] bg-card border border-brand-border shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-lg",
         className
       )}
       {...props}
@@ -46,7 +46,7 @@ const DialogContent = React.forwardRef<
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 const DialogHeader = ({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex items-center justify-between p-4 border-b border-black/8", className)} {...props}>
+  <div className={cn("flex items-center justify-between p-4 border-b border-border", className)} {...props}>
     <div>{children}</div>
     <DialogClose className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 transition-colors focus:outline-none shrink-0">
       <X className="h-4 w-4" />

@@ -14,7 +14,7 @@ function PopularCard({ product }: { product: Product }) {
   return (
     <>
       <button
-        className="flex flex-col min-w-[152px] max-w-[152px] bg-white border border-black/5 rounded-md overflow-hidden text-left hover:bg-gray-50 transition-colors flex-shrink-0"
+        className="flex flex-col min-w-[152px] max-w-[152px] bg-white border border-brand-border rounded-md overflow-hidden text-left hover:bg-muted transition-colors flex-shrink-0"
         onClick={() => setOpen(true)}
       >
         {product.imageUrl && (
@@ -31,7 +31,7 @@ function PopularCard({ product }: { product: Product }) {
           <p className="font-bold text-sm leading-tight flex-1">
             {product.name}
           </p>
-          <p className="text-sm text-[#676767]">{formatEuros(price)}</p>
+          <p className="text-sm text-muted-foreground">{formatEuros(price)}</p>
           <div className="border border-black/10 rounded text-black/25 flex items-center justify-center mt-1 min-h-[34px]">
             <Plus className="w-4 h-4" />
           </div>

@@ -123,7 +123,7 @@ function RestaurantImageSection() {
         </div>
       )}
       {success && (
-        <div className="flex items-center gap-2 text-green-700 text-sm mb-3">
+        <div className="flex items-center gap-2 text-brand-forest text-sm mb-3">
           <CheckCircle className="w-4 h-4 shrink-0" />
           Image mise à jour.
         </div>
@@ -159,19 +159,19 @@ function RestaurantImageSection() {
             "flex flex-col items-center justify-center w-full aspect-[16/9] rounded-lg border-2 border-dashed cursor-pointer transition-colors",
             dragOver
               ? "border-primary bg-primary/5"
-              : "border-black/20 hover:border-primary/50 hover:bg-gray-50",
+              : "border-border hover:border-primary/50 hover:bg-muted",
           )}
         >
           {uploading ? (
-            <Loader2 className="w-6 h-6 animate-spin text-[#676767]" />
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
           ) : (
             <>
-              <Upload className="w-6 h-6 text-[#676767] mb-1" />
-              <p className="text-xs text-[#676767]">
+              <Upload className="w-6 h-6 text-muted-foreground mb-1" />
+              <p className="text-xs text-muted-foreground">
                 Glissez une image ou{" "}
                 <span className="text-primary font-medium">cliquez</span>
               </p>
-              <p className="text-[10px] text-gray-400 mt-0.5">
+              <p className="text-[10px] text-muted-foreground mt-0.5">
                 JPEG, PNG, WebP · max 5 MB · ratio 16:9 recommandé
               </p>
             </>
@@ -257,7 +257,7 @@ function MaintenanceSection() {
           </DialogHeader>
 
           {result && (
-            <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-sm">
+            <div className="flex items-center gap-2 text-brand-forest bg-brand-forest/10 border border-brand-forest/20 rounded-lg px-4 py-3 text-sm">
               <CheckCircle className="w-4 h-4 shrink-0" />
               {result.deletedCount === 0
                 ? "Aucune commande abandonnée à supprimer."
@@ -363,7 +363,7 @@ export default function SettingsTab() {
         )}
 
         {!loading && status?.connected && status.chargesEnabled && (
-          <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-3">
+          <div className="flex items-center gap-2 text-brand-forest bg-brand-forest/10 border border-brand-forest/20 rounded-lg px-4 py-3">
             <CheckCircle className="w-5 h-5 shrink-0" />
             <span className="text-sm font-medium">
               Paiements par carte activés
@@ -373,7 +373,7 @@ export default function SettingsTab() {
 
         {!loading && status?.connected && !status.chargesEnabled && (
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+            <div className="flex items-center gap-2 text-brand-yellow bg-brand-yellow/20 border border-brand-yellow/40 rounded-lg px-4 py-3">
               <Clock className="w-5 h-5 shrink-0" />
               <span className="text-sm font-medium">
                 En attente de validation Stripe

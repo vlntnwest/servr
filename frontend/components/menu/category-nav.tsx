@@ -73,7 +73,7 @@ export default function CategoryNav({ categories }: CategoryNavProps) {
   return (
     <div
       ref={stickyRef}
-      className="sticky top-[65px] z-30 bg-white border-b border-black/5"
+      className="sticky top-[65px] z-30 bg-background border-b border-border"
     >
       <div className="relative">
         <div
@@ -91,7 +91,7 @@ export default function CategoryNav({ categories }: CategoryNavProps) {
                 "whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium transition-colors shrink-0",
                 activeId === cat.id
                   ? "bg-black text-white"
-                  : "text-gray-600 hover:bg-black/5",
+                  : "text-muted-foreground hover:bg-foreground/5",
               )}
             >
               {cat.name}
@@ -99,7 +99,7 @@ export default function CategoryNav({ categories }: CategoryNavProps) {
           ))}
         </div>
         {/* Right fade indicator */}
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none" />
       </div>
     </div>
   );

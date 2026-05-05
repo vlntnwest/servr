@@ -2,22 +2,84 @@
 @plugin "tailwindcss-animate";
 
 @theme {
-  --color-primary: #1f4493;
-  --color-primary-foreground: #ffffff;
-  --color-accent: #e67400;
-  --color-muted: rgba(208, 208, 208, 0.12);
-  --color-muted-foreground: #676767;
-  --color-border: rgba(0, 0, 0, 0.08);
-  --color-background: rgba(208, 208, 208, 0.12);
-  --color-foreground: #1a1a1a;
+  /* Semantic colors — light mode */
+  --color-background: #F5EFE0;
+  --color-foreground: #1A1A1A;
+  --color-card: #F0EAD8;
+  --color-card-foreground: #1A1A1A;
+  --color-popover: #F5EFE0;
+  --color-popover-foreground: #1A1A1A;
+  --color-primary: #E8521C;
+  --color-primary-foreground: #F5EFE0;
+  --color-secondary: #E8E0CE;
+  --color-secondary-foreground: #1A1A1A;
+  --color-muted: #E8E0CE;
+  --color-muted-foreground: #8A7F72;
+  --color-accent: #E8521C;
+  --color-accent-foreground: #F5EFE0;
+  --color-destructive: #6B1A1A;
+  --color-destructive-foreground: #F5EFE0;
+  --color-border: #DDD5C4;
+  --color-input: #DDD5C4;
+  --color-ring: #E8521C;
 
-  --font-dm-sans: var(--font-dm-sans), "DM Sans", sans-serif;
+  /* Brand palette */
+  --color-brand-cream: #F5EFE0;
+  --color-brand-sand: #E8E0CE;
+  --color-brand-bg-card: #F0EAD8;
+  --color-brand-border: #DDD5C4;
+  --color-brand-ink: #1A1A1A;
+  --color-brand-stone: #8A7F72;
+  --color-brand-orange: #E8521C;
+  --color-brand-maroon: #6B1A1A;
+  --color-brand-lime: #A8D040;
+  --color-brand-yellow: #F0C030;
+  --color-brand-pink: #E840B0;
+  --color-brand-forest: #1A4A20;
 
-  --breakpoint-3xl: 1920px;
+  /* Typography */
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Archivo Black", sans-serif;
 
-  --radius-lg: 8px;
-  --radius-md: 6px;
+  /* Font sizes */
+  --text-nano: 9px;
+  --text-micro: 10px;
+  --text-caption: 11px;
+  --text-action: 12px;
+  --text-body-sm: 13px;
+  --text-body: 15px;
+  --text-principle: 18px;
+  --text-card-name: 20px;
+  --text-heading: 22px;
+  --text-card-label: 24px;
+  --text-logo-sm: 28px;
+  --text-display-sm: 32px;
+  --text-display: 48px;
+  --text-logo: 52px;
+
+  /* Letter spacing */
+  --tracking-cta: 0.02em;
+  --tracking-pill: 0.04em;
+  --tracking-meta: 0.06em;
+  --tracking-label: 0.08em;
+  --tracking-eyebrow: 0.1em;
+  --tracking-section: 0.14em;
+
+  /* Border radius */
   --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-note: 10px;
+  --radius-swatch: 14px;
+  --radius-card: 16px;
+  --radius-icon: 20px;
+  --radius-pill: 100px;
+
+  /* Border width */
+  --border-width-hairline: 1.5px;
+
+  /* Spacing */
+  --spacing-13: 52px;
 
   --breakpoint-3xl: 120rem;
 }
@@ -39,7 +101,7 @@
   }
 
   body {
-    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-sans);
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
@@ -50,6 +112,6 @@
   h4,
   h5,
   h6 {
-    font-family: var(--font-dm-sans), "DM Sans", sans-serif;
+    font-family: var(--font-display);
   }
 }

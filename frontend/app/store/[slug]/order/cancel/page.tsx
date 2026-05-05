@@ -12,9 +12,9 @@ export default async function StoreOrderCancelPage({
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="text-center max-w-sm">
-        <XCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+        <XCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
         <h1 className="text-2xl font-bold mb-2">Commande annulée</h1>
-        <p className="text-[#676767] mb-6">
+        <p className="text-muted-foreground mb-6">
           Votre paiement a été annulé. Votre panier est conservé.
         </p>
         <Button asChild>

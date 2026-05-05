@@ -84,8 +84,8 @@ export default function CategoriesTab() {
           className={cn(
             "mb-4 flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium",
             notification.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200",
+              ? "bg-brand-forest/10 text-brand-forest border border-brand-forest/20"
+              : "bg-destructive/10 text-destructive border border-destructive/20",
           )}
         >
           {notification.type === "success" ? (
@@ -98,7 +98,7 @@ export default function CategoriesTab() {
       )}
 
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-[#676767]">
+        <p className="text-sm text-muted-foreground">
           {sorted.length} catégorie{sorted.length !== 1 ? "s" : ""}
         </p>
         <Button
@@ -119,15 +119,15 @@ export default function CategoriesTab() {
           ))}
         </div>
       ) : sorted.length === 0 ? (
-        <p className="text-center text-[#676767] py-12">Aucune catégorie</p>
+        <p className="text-center text-muted-foreground py-12">Aucune catégorie</p>
       ) : (
-        <div className="border border-black/8 rounded-lg overflow-hidden">
+        <div className="border border-border rounded-lg overflow-hidden">
           {sorted.map((cat, i) => (
             <div
               key={cat.id}
               className={cn(
-                "flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors",
-                i !== sorted.length - 1 && "border-b border-black/5",
+                "flex items-center gap-3 px-4 py-3.5 hover:bg-muted transition-colors",
+                i !== sorted.length - 1 && "border-b border-border",
               )}
             >
               <div className="flex-none w-6 h-6 rounded bg-primary/10 flex items-center justify-center">
@@ -138,7 +138,7 @@ export default function CategoriesTab() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">{cat.name}</p>
                 {cat.subHeading && (
-                  <p className="text-xs text-[#676767] truncate">
+                  <p className="text-xs text-muted-foreground truncate">
                     {cat.subHeading}
                   </p>
                 )}
@@ -156,14 +156,14 @@ export default function CategoriesTab() {
                   className="p-1.5 hover:bg-black/5 rounded-md transition-colors"
                   aria-label="Modifier"
                 >
-                  <Pencil className="w-3.5 h-3.5 text-[#676767]" />
+                  <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
                 <button
                   onClick={() => setDeleteTarget(cat)}
-                  className="p-1.5 hover:bg-red-50 rounded-md transition-colors"
+                  className="p-1.5 hover:bg-destructive/10 rounded-md transition-colors"
                   aria-label="Supprimer"
                 >
-                  <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
                 </button>
               </div>
             </div>
@@ -193,7 +193,7 @@ export default function CategoriesTab() {
             <DialogTitle>Supprimer cette catégorie ?</DialogTitle>
           </DialogHeader>
           <div className="p-4 space-y-4">
-            <p className="text-sm text-[#676767]">
+            <p className="text-sm text-muted-foreground">
               &ldquo;{deleteTarget?.name}&rdquo; et tous ses produits associés
               seront supprimés définitivement.
             </p>
@@ -301,8 +301,8 @@ function CategoryDialog({
         </DialogHeader>
         <div className="p-4 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
-              Nom <span className="text-red-500">*</span>
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
+              Nom <span className="text-destructive">*</span>
             </label>
             <Input
               value={form.name}
@@ -314,7 +314,7 @@ function CategoryDialog({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
               Sous-titre
             </label>
             <Input
@@ -327,7 +327,7 @@ function CategoryDialog({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
               Ordre d&apos;affichage
             </label>
             <Input
