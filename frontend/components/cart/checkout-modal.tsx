@@ -1,7 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -9,6 +14,7 @@ import { Loader2 } from "lucide-react";
 import { createCheckoutSession } from "@/lib/api";
 import { useCart } from "@/contexts/cart-context";
 import { useOptionalRestaurant } from "@/contexts/restaurant-context";
+import { useUserContext } from "@/contexts/user-context";
 import { useRouter } from "next/navigation";
 
 interface CheckoutModalProps {
@@ -17,9 +23,14 @@ interface CheckoutModalProps {
   initialScheduledFor?: string;
 }
 
-export default function CheckoutModal({ open, onClose, initialScheduledFor = "" }: CheckoutModalProps) {
+export default function CheckoutModal({
+  open,
+  onClose,
+  initialScheduledFor = "",
+}: CheckoutModalProps) {
   const { toCheckoutItems, clearCart, total } = useCart();
   const restaurantCtx = useOptionalRestaurant();
+  const { user } = useUserContext();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,18 +40,33 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
     email: "",
   });
 
+  useEffect(() => {
+    if (open) {
+      setForm({
+        fullName: user?.fullName ?? "",
+        phone: user?.phone ?? "",
+        email: user?.email ?? "",
+      });
+    }
+  }, [open, user]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   function translateApiError(raw: string): string {
-    if (raw.includes("currently closed") || raw.includes("fermé")) return "Le restaurant est actuellement fermé.";
-    if (raw.includes("Scheduled time")) return "Le créneau sélectionné est en dehors des horaires d'ouverture.";
+    if (raw.includes("currently closed") || raw.includes("fermé"))
+      return "Le restaurant est actuellement fermé.";
+    if (raw.includes("Scheduled time"))
+      return "Le créneau sélectionné est en dehors des horaires d'ouverture.";
     if (raw.includes("Unavailable products")) {
       const match = raw.match(/Unavailable products: (.+)/);
-      return match ? `Ce produit n'est plus disponible : ${match[1]}.` : "Un article de votre panier n'est plus disponible.";
+      return match
+        ? `Ce produit n'est plus disponible : ${match[1]}.`
+        : "Un article de votre panier n'est plus disponible.";
     }
-    if (raw.includes("not found")) return "Un article de votre panier est introuvable. Veuillez le retirer et réessayer.";
+    if (raw.includes("not found"))
+      return "Un article de votre panier est introuvable. Veuillez le retirer et réessayer.";
     if (raw.includes("paiement") || raw.includes("indisponible")) return raw;
     if (raw.includes("configuré")) return raw;
     return "Une erreur est survenue. Veuillez réessayer.";
@@ -130,14 +156,21 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
           </div>
 
           {error && (
-            <p className="text-sm text-destructive bg-destructive/10 rounded p-2">{error}</p>
+            <p className="text-sm text-destructive bg-destructive/10 rounded p-2">
+              {error}
+            </p>
           )}
 
           <p className="text-xs text-muted-foreground">
-            En passant commande, vous acceptez nos conditions générales de vente.
+            En passant commande, vous acceptez nos conditions générales de
+            vente.
           </p>
 
-          <Button type="submit" className="w-full h-11" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full rounded-full h-12"
+            disabled={loading}
+          >
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />

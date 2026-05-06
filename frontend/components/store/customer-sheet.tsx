@@ -28,7 +28,7 @@ export default function CustomerSheet() {
       </button>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-sm p-0">
+        <SheetContent side="right" className="w-full sm:max-w-sm p-0" hideCloseButton>
           <SheetHeader className="px-5 py-4 border-b border-border">
             <SheetTitle>{user ? "Mon compte" : "Menu"}</SheetTitle>
           </SheetHeader>
