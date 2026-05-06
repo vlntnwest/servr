@@ -198,10 +198,15 @@ const checkoutSessionSchema = z.object({
   scheduledFor: z.string().datetime({ offset: true }).optional(),
 });
 
+const pushTokenSchema = z.object({
+  token: z.string().min(1),
+});
+
 module.exports = {
   // User
   updateUserSchema,
   getUserOrdersQuerySchema,
+  pushTokenSchema,
 
   // Restaurant
   restaurantSchema,

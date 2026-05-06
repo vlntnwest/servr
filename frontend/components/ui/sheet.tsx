@@ -51,7 +51,7 @@ const SheetContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed z-50 gap-4 bg-white shadow-xl transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
+        "fixed z-50 gap-4 bg-card shadow-xl transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
         sheetVariants[side],
         className
       )}
@@ -70,7 +70,7 @@ const SheetContent = React.forwardRef<
 SheetContent.displayName = "SheetContent";
 
 const SheetHeader = ({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex items-center justify-between p-4 border-b border-black/8", className)} {...props}>
+  <div className={cn("flex items-center justify-between p-4 border-b border-border", className)} {...props}>
     <div className="flex flex-col space-y-1.5">{children}</div>
     <DialogPrimitive.Close className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 transition-colors focus:outline-none shrink-0">
       <X className="h-4 w-4" />
@@ -95,7 +95,7 @@ const SheetContentSimple = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => (
-  <div ref={ref} className={cn("bg-white", className)} {...props}>
+  <div ref={ref} className={cn("bg-card", className)} {...props}>
     {children}
   </div>
 ));

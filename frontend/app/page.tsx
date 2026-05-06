@@ -44,13 +44,13 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <header className="border-b border-black/5">
+      <header className="border-b border-border">
         <div className="max-w-screen-xl mx-auto px-4 h-16 flex items-center justify-between">
           <span className="text-xl font-bold text-primary">Servr</span>
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="text-sm font-medium text-[#676767] hover:text-black transition-colors"
+              className="text-sm font-medium text-muted-foreground hover:text-black transition-colors"
             >
               Connexion
             </Link>
@@ -70,7 +70,7 @@ export default function HomePage() {
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight max-w-3xl mx-auto leading-tight">
             La commande en ligne pour votre restaurant
           </h1>
-          <p className="mt-6 text-lg text-[#676767] max-w-xl mx-auto">
+          <p className="mt-6 text-lg text-muted-foreground max-w-xl mx-auto">
             Créez votre page de commande en quelques minutes. Gérez vos produits,
             commandes et paiements depuis un seul tableau de bord.
           </p>
@@ -83,7 +83,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/login"
-              className="border border-black/15 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              className="border border-border px-6 py-3 rounded-lg font-medium hover:bg-muted transition-colors"
             >
               Se connecter
             </Link>
@@ -91,19 +91,19 @@ export default function HomePage() {
         </section>
 
         {/* Features */}
-        <section className="bg-gray-50/50 border-y border-black/5 py-20">
+        <section className="bg-muted/50 border-y border-border py-20">
           <div className="max-w-screen-xl mx-auto px-4">
             <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">
               Tout ce dont vous avez besoin
             </h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {FEATURES.map(({ icon: Icon, title, description }) => (
-                <div key={title} className="bg-white border border-black/5 rounded-lg p-6">
+                <div key={title} className="bg-white border border-brand-border rounded-lg p-6">
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                     <Icon className="w-5 h-5 text-primary" />
                   </div>
                   <h3 className="font-semibold mb-2">{title}</h3>
-                  <p className="text-sm text-[#676767] leading-relaxed">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     {description}
                   </p>
                 </div>
@@ -117,7 +117,7 @@ export default function HomePage() {
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">
             Prêt à digitaliser votre restaurant ?
           </h2>
-          <p className="text-[#676767] mb-8 max-w-md mx-auto">
+          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
             Inscription gratuite. Configurez votre menu et commencez à recevoir
             des commandes en quelques minutes.
           </p>
@@ -131,8 +131,8 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-black/5 py-8">
-        <div className="max-w-screen-xl mx-auto px-4 text-center text-sm text-[#676767]">
+      <footer className="border-t border-border py-8">
+        <div className="max-w-screen-xl mx-auto px-4 text-center text-sm text-muted-foreground">
           Servr — Commande en ligne pour restaurants
         </div>
       </footer>

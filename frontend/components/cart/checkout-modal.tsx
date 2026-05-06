@@ -1,7 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -9,6 +14,7 @@ import { Loader2 } from "lucide-react";
 import { createCheckoutSession } from "@/lib/api";
 import { useCart } from "@/contexts/cart-context";
 import { useOptionalRestaurant } from "@/contexts/restaurant-context";
+import { useUserContext } from "@/contexts/user-context";
 import { useRouter } from "next/navigation";
 
 interface CheckoutModalProps {
@@ -17,9 +23,14 @@ interface CheckoutModalProps {
   initialScheduledFor?: string;
 }
 
-export default function CheckoutModal({ open, onClose, initialScheduledFor = "" }: CheckoutModalProps) {
+export default function CheckoutModal({
+  open,
+  onClose,
+  initialScheduledFor = "",
+}: CheckoutModalProps) {
   const { toCheckoutItems, clearCart, total } = useCart();
   const restaurantCtx = useOptionalRestaurant();
+  const { user } = useUserContext();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,18 +40,33 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
     email: "",
   });
 
+  useEffect(() => {
+    if (open) {
+      setForm({
+        fullName: user?.fullName ?? "",
+        phone: user?.phone ?? "",
+        email: user?.email ?? "",
+      });
+    }
+  }, [open, user]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   function translateApiError(raw: string): string {
-    if (raw.includes("currently closed") || raw.includes("fermé")) return "Le restaurant est actuellement fermé.";
-    if (raw.includes("Scheduled time")) return "Le créneau sélectionné est en dehors des horaires d'ouverture.";
+    if (raw.includes("currently closed") || raw.includes("fermé"))
+      return "Le restaurant est actuellement fermé.";
+    if (raw.includes("Scheduled time"))
+      return "Le créneau sélectionné est en dehors des horaires d'ouverture.";
     if (raw.includes("Unavailable products")) {
       const match = raw.match(/Unavailable products: (.+)/);
-      return match ? `Ce produit n'est plus disponible : ${match[1]}.` : "Un article de votre panier n'est plus disponible.";
+      return match
+        ? `Ce produit n'est plus disponible : ${match[1]}.`
+        : "Un article de votre panier n'est plus disponible.";
     }
-    if (raw.includes("not found")) return "Un article de votre panier est introuvable. Veuillez le retirer et réessayer.";
+    if (raw.includes("not found"))
+      return "Un article de votre panier est introuvable. Veuillez le retirer et réessayer.";
     if (raw.includes("paiement") || raw.includes("indisponible")) return raw;
     if (raw.includes("configuré")) return raw;
     return "Une erreur est survenue. Veuillez réessayer.";
@@ -89,25 +115,41 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
     }
   };
 
+  const inputClass =
+    "h-12 rounded-note border-brand-border bg-brand-cream text-body focus-visible:ring-0 focus-visible:border-brand-ink";
+
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md rounded-2xl">
         <DialogHeader>
-          <DialogTitle>Finaliser la commande</DialogTitle>
+          <DialogTitle className="font-display-italic italic font-black text-[24px] leading-none text-brand-ink">
+            Finaliser la commande
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          <div className="space-y-1">
-            <Label htmlFor="fullName">Prénom et nom</Label>
+          <div className="space-y-1.5">
+            <Label
+              htmlFor="fullName"
+              className="text-caption uppercase tracking-label font-semibold text-brand-stone"
+            >
+              Prénom et nom
+            </Label>
             <Input
               id="fullName"
               name="fullName"
               value={form.fullName}
               onChange={handleChange}
               placeholder="Jean Dupont"
+              className={inputClass}
             />
           </div>
-          <div className="space-y-1">
-            <Label htmlFor="email">Email</Label>
+          <div className="space-y-1.5">
+            <Label
+              htmlFor="email"
+              className="text-caption uppercase tracking-label font-semibold text-brand-stone"
+            >
+              Email
+            </Label>
             <Input
               id="email"
               name="email"
@@ -115,10 +157,16 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
               value={form.email}
               onChange={handleChange}
               placeholder="jean@example.com"
+              className={inputClass}
             />
           </div>
-          <div className="space-y-1">
-            <Label htmlFor="phone">Téléphone</Label>
+          <div className="space-y-1.5">
+            <Label
+              htmlFor="phone"
+              className="text-caption uppercase tracking-label font-semibold text-brand-stone"
+            >
+              Téléphone
+            </Label>
             <Input
               id="phone"
               name="phone"
@@ -126,18 +174,26 @@ export default function CheckoutModal({ open, onClose, initialScheduledFor = "" 
               value={form.phone}
               onChange={handleChange}
               placeholder="0612345678"
+              className={inputClass}
             />
           </div>
 
           {error && (
-            <p className="text-sm text-red-500 bg-red-50 rounded p-2">{error}</p>
+            <p className="text-body-sm text-destructive bg-destructive/10 rounded-note px-3 py-2">
+              {error}
+            </p>
           )}
 
-          <p className="text-xs text-[#676767]">
-            En passant commande, vous acceptez nos conditions générales de vente.
+          <p className="text-caption text-brand-stone leading-relaxed">
+            En passant commande, vous acceptez nos conditions générales de
+            vente.
           </p>
 
-          <Button type="submit" className="w-full h-11" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full rounded-full h-12 bg-brand-orange hover:bg-brand-orange/90 text-body font-semibold tracking-cta text-brand-cream"
+            disabled={loading}
+          >
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />

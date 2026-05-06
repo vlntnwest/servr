@@ -27,18 +27,26 @@ export default async function StoreOrderConfirmationPage({
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="text-center max-w-sm">
-        <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold mb-2">Commande confirmée !</h1>
-        <p className="text-[#676767] mb-2">
+        <CheckCircle
+          className="w-14 h-14 text-brand-forest mx-auto mb-5"
+          strokeWidth={1.5}
+        />
+        <h1 className="font-display-italic italic font-black text-[28px] leading-none text-brand-ink mb-3">
+          Commande confirmée
+        </h1>
+        <p className="text-body text-brand-stone mb-1">
           Votre commande a bien été enregistrée.
         </p>
-        <p className="text-[#676767] mb-6">
+        <p className="text-body text-brand-stone mb-6">
           Paiement à régler sur place lors du retrait.
         </p>
-        <p className="text-xs text-[#676767] mb-4 font-mono">
-          Commande #{order?.orderNumber ?? orderId.slice(-8)}
+        <p className="text-caption uppercase tracking-label text-brand-stone mb-7">
+          Commande · #{order?.orderNumber ?? orderId.slice(-8)}
         </p>
-        <Button asChild>
+        <Button
+          asChild
+          className="rounded-full h-12 px-6 bg-brand-orange text-brand-cream hover:bg-brand-orange/90 text-body font-semibold tracking-cta"
+        >
           <Link href={`/store/${slug}`}>Retour au menu</Link>
         </Button>
       </div>

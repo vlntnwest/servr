@@ -48,7 +48,7 @@ export default function ExceptionalHoursSection() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-sm font-semibold">Horaires exceptionnels</h3>
-          <p className="text-xs text-[#676767]">
+          <p className="text-xs text-muted-foreground">
             Fermetures et horaires spéciaux (jours fériés, etc.)
           </p>
         </div>
@@ -59,22 +59,22 @@ export default function ExceptionalHoursSection() {
       </div>
 
       {loading ? (
-        <div className="text-sm text-[#676767]">Chargement...</div>
+        <div className="text-sm text-muted-foreground">Chargement...</div>
       ) : hours.length === 0 ? (
         <div className="text-center py-8 border-2 border-dashed border-black/10 rounded-xl">
-          <CalendarOff className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-          <p className="text-xs text-[#676767]">
+          <CalendarOff className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
+          <p className="text-xs text-muted-foreground">
             Aucun horaire exceptionnel configuré
           </p>
         </div>
       ) : (
-        <div className="border border-black/8 rounded-lg overflow-hidden">
+        <div className="border border-border rounded-lg overflow-hidden">
           {hours.map((h, i) => (
             <div
               key={h.id}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors",
-                i !== hours.length - 1 && "border-b border-black/5",
+                "flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors",
+                i !== hours.length - 1 && "border-b border-border",
               )}
             >
               <div className="flex-1 min-w-0">
@@ -86,8 +86,8 @@ export default function ExceptionalHoursSection() {
                     className={cn(
                       "text-xs px-2 py-0.5 rounded-full font-medium",
                       h.isClosed
-                        ? "bg-red-100 text-red-800"
-                        : "bg-blue-100 text-blue-800",
+                        ? "bg-destructive/15 text-destructive"
+                        : "bg-primary/15 text-primary",
                     )}
                   >
                     {h.isClosed
@@ -96,11 +96,11 @@ export default function ExceptionalHoursSection() {
                   </span>
                 </div>
                 {h.label && (
-                  <p className="text-xs text-[#676767] mt-0.5">{h.label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{h.label}</p>
                 )}
               </div>
               <button
-                className="p-2 text-[#676767] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                 onClick={() => handleDelete(h.id)}
               >
                 <Trash2 className="w-4 h-4" />
@@ -182,14 +182,14 @@ function CreateExceptionalHourDialog({
         </DialogHeader>
         <div className="p-4 space-y-4">
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
+            <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-3 py-2 rounded-lg">
               {error}
             </p>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
-              Date <span className="text-red-500">*</span>
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
+              Date <span className="text-destructive">*</span>
             </label>
             <Input
               type="date"
@@ -199,10 +199,10 @@ function CreateExceptionalHourDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
               Type
             </label>
-            <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+            <div className="flex gap-1 p-1 bg-muted rounded-lg">
               {[
                 { value: true, label: "Fermé" },
                 { value: false, label: "Horaires modifiés" },
@@ -214,8 +214,8 @@ function CreateExceptionalHourDialog({
                   className={cn(
                     "flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                     isClosed === opt.value
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900",
+                      ? "bg-white text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {opt.label}
@@ -227,7 +227,7 @@ function CreateExceptionalHourDialog({
           {!isClosed && (
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                <label className="block text-xs font-medium text-foreground/70 mb-1.5">
                   Ouverture
                 </label>
                 <Input
@@ -237,7 +237,7 @@ function CreateExceptionalHourDialog({
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                <label className="block text-xs font-medium text-foreground/70 mb-1.5">
                   Fermeture
                 </label>
                 <Input
@@ -250,7 +250,7 @@ function CreateExceptionalHourDialog({
           )}
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
               Motif (optionnel)
             </label>
             <Input

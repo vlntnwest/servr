@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useMemo, useState, use } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -61,7 +61,9 @@ function RestaurantSelector({
                   if (r.id !== currentId) onSelect(r.id);
                 }}
                 className={`w-full text-left px-4 py-2 text-sm hover:bg-black/5 transition-colors ${
-                  r.id === currentId ? "font-semibold text-black" : "text-[#676767]"
+                  r.id === currentId
+                    ? "font-semibold text-black"
+                    : "text-[#676767]"
                 }`}
               >
                 {r.name}
@@ -83,7 +85,7 @@ export default function AdminRestaurantPage({
 }) {
   const { restaurantId } = use(params);
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const [user, setUser] = useState<User | null>(null);
   const [restaurants, setRestaurants] = useState<RestaurantInfo[]>([]);
