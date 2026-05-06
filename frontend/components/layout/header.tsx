@@ -20,7 +20,7 @@ export default function Header({
   const [cartOpen, setCartOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-background border-b border-border">
+    <header className="sticky top-0 z-40 bg-background">
       <div className="flex items-center justify-end h-[65px] px-4 md:px-8 xl:px-16 max-w-screen-3xl mx-auto">
         <div className="flex items-center gap-2">
           {showAuth && <CustomerSheet />}

@@ -16,7 +16,7 @@ export default function OrderMessage() {
   };
 
   return (
-    <div className="mx-4 border border-border rounded-lg overflow-hidden">
+    <div className="mx-4 border border-border rounded-xl overflow-hidden">
       <button
         type="button"
         onClick={() => {
@@ -28,7 +28,9 @@ export default function OrderMessage() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2.5">
             <MessageSquare className="w-4 h-4 text-muted-foreground shrink-0" />
-            <span className="text-sm font-medium flex-1">Indications pour le restaurant</span>
+            <span className="text-sm font-medium flex-1">
+              Indications pour le restaurant
+            </span>
             {!open && !message && (
               <span className="text-xs font-medium text-primary">Ajouter</span>
             )}
@@ -53,7 +55,10 @@ export default function OrderMessage() {
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
           />
-          <Button className="w-full mt-2 h-10" onClick={handleSave}>
+          <Button
+            className="w-full mt-2 h-12 rounded-full"
+            onClick={handleSave}
+          >
             Enregistrer
           </Button>
         </div>

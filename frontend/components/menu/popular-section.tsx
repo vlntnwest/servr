@@ -14,7 +14,7 @@ function PopularCard({ product }: { product: Product }) {
   return (
     <>
       <button
-        className="flex flex-col min-w-[152px] max-w-[152px] bg-white border border-brand-border rounded-md overflow-hidden text-left hover:bg-muted transition-colors flex-shrink-0"
+        className="flex flex-col w-[250px] p-3 bg-white text-brand-ink rounded-2xl overflow-hidden text-left flex-shrink-0 hover:shadow-lg transition-shadow hover:cursor-pointer"
         onClick={() => setOpen(true)}
       >
         {product.imageUrl && (
@@ -23,17 +23,15 @@ function PopularCard({ product }: { product: Product }) {
             alt={product.name}
             width={152}
             height={152}
-            className="w-full aspect-square object-cover"
-            style={{ height: "auto" }}
+            className="w-full aspect-[4/3] object-cover rounded-xl"
           />
         )}
-        <div className="flex flex-col flex-1 p-2 gap-1">
-          <p className="font-bold text-sm leading-tight flex-1">
-            {product.name}
-          </p>
-          <p className="text-sm text-muted-foreground">{formatEuros(price)}</p>
-          <div className="border border-black/10 rounded text-black/25 flex items-center justify-center mt-1 min-h-[34px]">
-            <Plus className="w-4 h-4" />
+        <div className="flex flex-row justify-between flex-1 pt-2 gap-1">
+          <div>
+            <p className="font-display text-md leading-tight flex-1">
+              {product.name}
+            </p>
+            <p className="text-sm">{formatEuros(price)}</p>
           </div>
         </div>
       </button>
@@ -57,7 +55,7 @@ export default function PopularSection({ products }: PopularSectionProps) {
   return (
     <div className="pt-4 pl-4">
       <h2 className="font-bold text-2xl mb-3">Populaire</h2>
-      <div className="flex gap-2  overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth snap-x snap-mandatory">
+      <div className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth snap-x snap-mandatory overflow-y-visible">
         {products.map((product) => (
           <div key={product.id} className="snap-center">
             <PopularCard product={product} />

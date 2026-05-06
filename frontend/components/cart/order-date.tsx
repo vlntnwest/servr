@@ -9,7 +9,11 @@ import type { OpeningHour } from "@/types/api";
 
 const DAYS_AHEAD = 7;
 
-function generateSlotsForDate(date: Date, openTime: string, closeTime: string): string[] {
+function generateSlotsForDate(
+  date: Date,
+  openTime: string,
+  closeTime: string,
+): string[] {
   const [openH, openM] = openTime.split(":").map(Number);
   const [closeH, closeM] = closeTime.split(":").map(Number);
   const start = new Date(date);
@@ -35,7 +39,11 @@ function formatDayLabel(date: Date): string {
   tomorrow.setDate(today.getDate() + 1);
   if (date.toDateString() === today.toDateString()) return "Aujourd'hui";
   if (date.toDateString() === tomorrow.toDateString()) return "Demain";
-  return date.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  return date.toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
 }
 
 function formatSlotLabel(iso: string): string {
@@ -50,7 +58,9 @@ function isCurrentlyOpen(openingHours: OpeningHour[]): boolean {
   const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   const dayRanges = openingHours.filter((h) => h.dayOfWeek === dayOfWeek);
   if (dayRanges.length === 0) return false;
-  return dayRanges.some((h) => currentTime >= h.openTime && currentTime < h.closeTime);
+  return dayRanges.some(
+    (h) => currentTime >= h.openTime && currentTime < h.closeTime,
+  );
 }
 
 export default function OrderDate() {
@@ -61,7 +71,9 @@ export default function OrderDate() {
   const [selectedDay, setSelectedDay] = useState("");
 
   useEffect(() => {
-    getOpeningHours(restaurantCtx?.restaurant.id).then(setOpeningHours).catch(() => {});
+    getOpeningHours(restaurantCtx?.restaurant.id)
+      .then(setOpeningHours)
+      .catch(() => {});
   }, [restaurantCtx?.restaurant.id]);
 
   const asapAvailable = useMemo(() => {
@@ -81,7 +93,11 @@ export default function OrderDate() {
         .sort((a, b) => a.openTime.localeCompare(b.openTime))
         .flatMap((h) => generateSlotsForDate(date, h.openTime, h.closeTime));
       if (slots.length === 0) continue;
-      days.push({ dateKey: date.toDateString(), label: formatDayLabel(date), slots });
+      days.push({
+        dateKey: date.toDateString(),
+        label: formatDayLabel(date),
+        slots,
+      });
     }
     return days;
   }, [openingHours]);
@@ -98,7 +114,8 @@ export default function OrderDate() {
     }
   }, [asapAvailable, availableDays]);
 
-  const currentDayEntry = availableDays.find((d) => d.dateKey === selectedDay) ?? availableDays[0];
+  const currentDayEntry =
+    availableDays.find((d) => d.dateKey === selectedDay) ?? availableDays[0];
 
   const handleTypeChange = (value: string) => {
     if (value === "asap" && asapAvailable) {
@@ -113,16 +130,38 @@ export default function OrderDate() {
   };
 
   return (
-    <div className="mx-4 border border-border rounded-lg overflow-hidden px-4 py-3">
+    <div className="mx-4 border border-border rounded-xl overflow-hidden px-4 py-3">
       <p className="font-semibold text-sm mb-2">Heure de commande</p>
-      <RadioGroup value={orderType} onValueChange={handleTypeChange} className="gap-0">
-        <div onClick={() => asapAvailable && handleTypeChange("asap")} className={`flex items-center py-2 -mx-4 px-4 transition-colors ${asapAvailable ? "cursor-pointer hover:bg-black/[0.02]" : "opacity-40 cursor-not-allowed"}`}>
+      <RadioGroup
+        value={orderType}
+        onValueChange={handleTypeChange}
+        className="gap-0"
+      >
+        <div
+          onClick={() => asapAvailable && handleTypeChange("asap")}
+          className={`flex items-center py-2 -mx-4 px-4 transition-colors ${asapAvailable ? "cursor-pointer hover:bg-black/[0.02]" : "opacity-40 cursor-not-allowed"}`}
+        >
           <span className="flex-1 text-sm">Au plus vite</span>
-          <RadioGroupItem value="asap" id="asap" className="border-2 pointer-events-none" disabled={!asapAvailable} />
+          <RadioGroupItem
+            value="asap"
+            id="asap"
+            className="border-2 pointer-events-none"
+            disabled={!asapAvailable}
+          />
         </div>
-        <div onClick={() => availableDays.length > 0 && handleTypeChange("scheduled")} className={`flex items-center py-2 -mx-4 px-4 transition-colors ${availableDays.length === 0 ? "opacity-40 cursor-not-allowed" : "cursor-pointer hover:bg-black/[0.02]"}`}>
+        <div
+          onClick={() =>
+            availableDays.length > 0 && handleTypeChange("scheduled")
+          }
+          className={`flex items-center py-2 -mx-4 px-4 transition-colors ${availableDays.length === 0 ? "opacity-40 cursor-not-allowed" : "cursor-pointer hover:bg-black/[0.02]"}`}
+        >
           <span className="flex-1 text-sm">Prévu pour…</span>
-          <RadioGroupItem value="scheduled" id="scheduled" className="border-2 pointer-events-none" disabled={availableDays.length === 0} />
+          <RadioGroupItem
+            value="scheduled"
+            id="scheduled"
+            className="border-2 pointer-events-none"
+            disabled={availableDays.length === 0}
+          />
         </div>
       </RadioGroup>
 
@@ -131,11 +170,13 @@ export default function OrderDate() {
           <select
             value={currentDayEntry?.dateKey ?? ""}
             onChange={(e) => {
-              const day = availableDays.find((d) => d.dateKey === e.target.value);
+              const day = availableDays.find(
+                (d) => d.dateKey === e.target.value,
+              );
               setSelectedDay(e.target.value);
               setScheduledFor(day?.slots[0] ?? "");
             }}
-            className="flex-1 text-sm border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+            className="flex-1 text-sm border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-background md:bg-white"
           >
             {availableDays.map((d) => (
               <option key={d.dateKey} value={d.dateKey}>
@@ -146,7 +187,7 @@ export default function OrderDate() {
           <select
             value={scheduledFor}
             onChange={(e) => setScheduledFor(e.target.value)}
-            className="flex-1 text-sm border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+            className="flex-1 text-sm border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-background md:bg-white"
           >
             {(currentDayEntry?.slots ?? []).map((iso) => (
               <option key={iso} value={iso}>

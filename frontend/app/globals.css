@@ -3,39 +3,37 @@
 
 @theme {
   /* Semantic colors — light mode */
-  --color-background: #F5EFE0;
-  --color-foreground: #1A1A1A;
-  --color-card: #F0EAD8;
-  --color-card-foreground: #1A1A1A;
-  --color-popover: #F5EFE0;
-  --color-popover-foreground: #1A1A1A;
-  --color-primary: #E8521C;
-  --color-primary-foreground: #F5EFE0;
-  --color-secondary: #E8E0CE;
-  --color-secondary-foreground: #1A1A1A;
-  --color-muted: #E8E0CE;
-  --color-muted-foreground: #8A7F72;
-  --color-accent: #E8521C;
-  --color-accent-foreground: #F5EFE0;
-  --color-destructive: #6B1A1A;
-  --color-destructive-foreground: #F5EFE0;
-  --color-border: #DDD5C4;
-  --color-input: #DDD5C4;
-  --color-ring: #E8521C;
+  --color-background: #fcf3ec;
+  --color-foreground: #1a1a1a;
+  --color-card: #fcf3ec;
+  --color-card-foreground: #1a1a1a;
+  --color-popover: #fcf3ec;
+  --color-popover-foreground: #1a1a1a;
+  --color-primary: #e8521c;
+  --color-primary-foreground: #fcf3ec;
+  --color-secondary: #e8e0ce;
+  --color-secondary-foreground: #1a1a1a;
+  --color-muted: #e8e0ce;
+  --color-muted-foreground: #8a7f72;
+  --color-accent: #e8521c;
+  --color-accent-foreground: #fcf3ec;
+  --color-destructive: #6b1a1a;
+  --color-destructive-foreground: #fcf3ec;
+  --color-border: #ddd5c4;
+  --color-input: #ddd5c4;
+  --color-ring: #e8521c;
 
   /* Brand palette */
-  --color-brand-cream: #F5EFE0;
-  --color-brand-sand: #E8E0CE;
-  --color-brand-bg-card: #F0EAD8;
-  --color-brand-border: #DDD5C4;
-  --color-brand-ink: #1A1A1A;
-  --color-brand-stone: #8A7F72;
-  --color-brand-orange: #E8521C;
-  --color-brand-maroon: #6B1A1A;
-  --color-brand-lime: #A8D040;
-  --color-brand-yellow: #F0C030;
-  --color-brand-pink: #E840B0;
-  --color-brand-forest: #1A4A20;
+  --color-brand-cream: #fcf3ec;
+  --color-brand-border: #ddd5c4;
+  --color-brand-ink: #1a1a1a;
+  --color-brand-stone: #8a7f72;
+  --color-brand-orange: #e8521c;
+  --color-brand-maroon: #6b1a1a;
+  --color-brand-lime: #a8d040;
+  --color-brand-yellow: #f0c030;
+  --color-brand-pink: #e840b0;
+  --color-brand-forest: #1a4a20;
 
   /* Typography */
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;

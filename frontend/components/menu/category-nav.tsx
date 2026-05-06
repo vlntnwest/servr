@@ -71,10 +71,7 @@ export default function CategoryNav({ categories }: CategoryNavProps) {
   if (visibleCategories.length === 0) return null;
 
   return (
-    <div
-      ref={stickyRef}
-      className="sticky top-[65px] z-30 bg-background border-b border-border"
-    >
+    <div ref={stickyRef} className="sticky top-[65px] z-30 bg-background">
       <div className="relative">
         <div
           ref={navRef}
@@ -90,8 +87,8 @@ export default function CategoryNav({ categories }: CategoryNavProps) {
               className={cn(
                 "whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium transition-colors shrink-0",
                 activeId === cat.id
-                  ? "bg-black text-white"
-                  : "text-muted-foreground hover:bg-foreground/5",
+                  ? "bg-brand-orange text-brand-cream"
+                  : "text-brand-ink border border-border",
               )}
             >
               {cat.name}

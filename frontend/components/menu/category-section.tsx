@@ -18,10 +18,12 @@ export function CategorySection({ category }: CategorySectionProps) {
       <div className="px-3 mb-3">
         <h2 className="text-2xl font-bold">{category.name}</h2>
         {category.subHeading && (
-          <p className="text-muted-foreground text-base">{category.subHeading}</p>
+          <p className="text-muted-foreground text-base">
+            {category.subHeading}
+          </p>
         )}
       </div>
-      <div className="grid md:gap-1 md:px-2 xl:grid-cols-2 3xl:grid-cols-3">
+      <div className="grid gap-2 px-3 xl:grid-cols-2 3xl:grid-cols-3">
         {products.map((pc) => (
           <ProductCard key={pc.id} product={pc.product} />
         ))}

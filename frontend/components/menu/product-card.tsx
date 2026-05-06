@@ -20,13 +20,24 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <>
       <button
-        className={`w-full text-left bg-white border border-brand-border transition-colors rounded-sm overflow-hidden p-4 ${
-          isUnavailable ? "opacity-50 cursor-not-allowed" : "hover:bg-muted"
-        }`}
+        className="w-full text-left bg-white transition-shadow rounded-2xl overflow-hidden p-3 hover:shadow-lg hover:cursor-pointer"
         onClick={() => !isUnavailable && setOpen(true)}
         disabled={isUnavailable}
       >
         <div className="flex items-stretch">
+          {/* Product image */}
+          {product.imageUrl && (
+            <div className="shrink-0 flex items-center mr-4">
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                width={100}
+                height={100}
+                className={`rounded-xl object-cover aspect-square ${isUnavailable ? "grayscale" : ""}`}
+              />
+            </div>
+          )}
+
           {/* Text content */}
           <div className="flex-1 min-w-0">
             <p className="font-bold text-base leading-tight">{product.name}</p>
@@ -44,22 +55,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             </p>
           </div>
 
-          {/* Product image */}
-          {product.imageUrl && (
-            <div className="shrink-0 flex items-center ml-4">
-              <Image
-                src={product.imageUrl}
-                alt={product.name}
-                width={100}
-                height={100}
-                className={`rounded object-cover aspect-square ${isUnavailable ? "grayscale" : ""}`}
-              />
-            </div>
-          )}
-
           {/* Full-height add button */}
           {!isUnavailable && (
-            <div className="shrink-0 w-10 border border-border flex items-center justify-center text-black/25 bg-transparent hover:bg-black/4 transition-colors rounded-sm ml-4">
+            <div className="shrink-0 w-10 border border-border flex items-center justify-center text-black/25 bg-transparent hover:bg-black/4 transition-colors rounded-xl ml-4">
               <Plus className="w-5 h-5" />
             </div>
           )}

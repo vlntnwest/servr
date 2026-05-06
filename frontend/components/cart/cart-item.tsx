@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRight, CircleMinus, CirclePlus, Plus, Trash2 } from "lucide-react";
+import {
+  ChevronRight,
+  CircleMinus,
+  CirclePlus,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import Image from "next/image";
 import type { CartItem as CartItemType } from "@/types/api";
 import { formatEuros, cartItemTotalPrice } from "@/lib/utils";
@@ -60,21 +66,27 @@ export default function CartItem({ item }: CartItemProps) {
               alt={item.name}
               width={56}
               height={56}
-              className="rounded object-cover aspect-square"
+              className="rounded-lg object-cover aspect-square"
             />
           </div>
         )}
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-sm line-clamp-1">
-            <span className="text-muted-foreground font-normal mr-1">{item.quantity}x</span>
+            <span className="text-muted-foreground font-normal mr-1">
+              {item.quantity}x
+            </span>
             {item.name}
           </p>
           {optionsSummary && (
-            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{optionsSummary}</p>
+            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+              {optionsSummary}
+            </p>
           )}
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
-          <span className="text-sm font-semibold">{formatEuros(linePrice)}</span>
+          <span className="text-sm font-semibold">
+            {formatEuros(linePrice)}
+          </span>
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </div>
       </button>
@@ -94,7 +106,9 @@ export default function CartItem({ item }: CartItemProps) {
             >
               <Trash2 className="w-5 h-5" />
             </button>
-            <ResponsiveModalTitle className="font-bold text-base truncate px-2 flex-1 text-center">{item.name}</ResponsiveModalTitle>
+            <ResponsiveModalTitle className="font-bold text-base truncate px-2 flex-1 text-center">
+              {item.name}
+            </ResponsiveModalTitle>
             <ResponsiveModalClose className="p-2 rounded-full hover:bg-foreground/5 transition-colors cursor-pointer">
               <Plus className="w-5 h-5 rotate-45" />
             </ResponsiveModalClose>
@@ -122,7 +136,7 @@ export default function CartItem({ item }: CartItemProps) {
           <div className="px-4 pb-6">
             <button
               onClick={handleUpdate}
-              className="w-full h-11 rounded-md bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-colors cursor-pointer"
+              className="w-full h-11 rounded-full bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-colors cursor-pointer"
             >
               Mettre à jour
             </button>

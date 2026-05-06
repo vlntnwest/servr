@@ -63,11 +63,11 @@ export default function Cart({ onClose }: CartProps) {
       <div className="flex-1 overflow-y-auto">
         <p className="text-2xl font-bold px-4 py-3">Panier</p>
         <div className="px-4 pb-2">
-          <div className="border border-border rounded-sm overflow-hidden">
+          <div className="border border-border rounded-xl overflow-hidden">
             {items.map((item, idx) => (
               <div key={item.id}>
                 <CartItem item={item} />
-                {idx < items.length - 1 && <Separator className="mx-4"/>}
+                {idx < items.length - 1 && <Separator className="mx-4" />}
               </div>
             ))}
           </div>
@@ -78,13 +78,13 @@ export default function Cart({ onClose }: CartProps) {
         </div>
       </div>
 
-      <div className="p-4 bg-card border-t border-border shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
+      <div className="p-4 border-t border-border">
         <div className="flex justify-between items-center mb-3">
           <span className="text-sm font-bold">Total de la commande</span>
           <span className="text-sm font-bold">{formatEuros(total)}</span>
         </div>
         <Button
-          className="w-full h-11"
+          className="w-full h-12 rounded-full"
           onClick={() => setCheckoutOpen(true)}
           disabled={total < 1}
         >
@@ -101,7 +101,10 @@ export default function Cart({ onClose }: CartProps) {
         }}
       />
 
-      <ResponsiveModal open={confirmClearOpen} onOpenChange={setConfirmClearOpen}>
+      <ResponsiveModal
+        open={confirmClearOpen}
+        onOpenChange={setConfirmClearOpen}
+      >
         <ResponsiveModalContent
           hideCloseButton
           mobileClassName="rounded-t-2xl p-6"

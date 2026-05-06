@@ -20,12 +20,18 @@ function getTodayHours(openingHours: OpeningHour[]): string | null {
 
 const PREP_BADGES: Record<PreparationLevel, { label: string; color: string }> =
   {
-    EASY: { label: "Peu d'attente", color: "bg-brand-forest/10 text-brand-forest" },
+    EASY: {
+      label: "Peu d'attente",
+      color: "bg-brand-forest/10 text-brand-forest",
+    },
     MEDIUM: {
       label: "Attente modérée",
       color: "bg-brand-yellow/20 text-brand-yellow",
     },
-    BUSY: { label: "Forte affluence", color: "bg-brand-orange/15 text-brand-orange" },
+    BUSY: {
+      label: "Forte affluence",
+      color: "bg-brand-orange/15 text-brand-orange",
+    },
     CLOSED: { label: "Fermé", color: "bg-destructive/10 text-destructive" },
   };
 
@@ -46,7 +52,7 @@ export default function RestaurantHeader({
     : null;
 
   return (
-    <div className="border-b border-border bg-background">
+    <div className="bg-background">
       <div className="max-w-screen-3xl mx-auto flex flex-col md:flex-row md:items-start md:gap-6 md:p-8 xl:p-16">
         {/* Image — full bleed on mobile, rounded card on desktop */}
         {restaurant.imageUrl && (
