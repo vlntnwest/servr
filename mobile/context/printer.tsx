@@ -5,7 +5,12 @@ import {
   PrinterConstants,
   usePrintersDiscovery,
 } from "react-native-esc-pos-printer";
-import { Order, PrinterTypes, PrinterStatus, UsePrinterReturn } from "@/types/api";
+import {
+  Order,
+  PrinterTypes,
+  PrinterStatus,
+  UsePrinterReturn,
+} from "@/types/api";
 
 const PrinterContext = createContext<UsePrinterReturn | null>(null);
 
@@ -111,10 +116,15 @@ export function PrinterProvider({ children }: { children: React.ReactNode }) {
 
         await printerInstance.addTextAlign(PrinterConstants.ALIGN_CENTER);
         await printerInstance.addTextSize(2, 2);
-        await printerInstance.addText(`#${order.orderNumber ?? order.id.slice(0, 6)}\n`);
+        await printerInstance.addText(
+          `#${order.orderNumber ?? order.id.slice(0, 6)}\n`,
+        );
         await printerInstance.addTextSize(1, 1);
-        if (order.fullName) await printerInstance.addText(`${order.fullName}\n`);
-        await printerInstance.addText(`${new Date(order.createdAt).toLocaleString("fr-FR")}\n`);
+        if (order.fullName)
+          await printerInstance.addText(`${order.fullName}\n`);
+        await printerInstance.addText(
+          `${new Date(order.createdAt).toLocaleString("fr-FR")}\n`,
+        );
         await printerInstance.addTextAlign(PrinterConstants.ALIGN_LEFT);
         await printerInstance.addText("--------------------------------\n");
 
@@ -128,7 +138,9 @@ export function PrinterProvider({ children }: { children: React.ReactNode }) {
         await printerInstance.addText("--------------------------------\n");
         await printerInstance.addTextAlign(PrinterConstants.ALIGN_RIGHT);
         await printerInstance.addTextSize(1, 2);
-        await printerInstance.addText(`TOTAL: ${parseFloat(order.totalPrice).toFixed(2)} EUR\n`);
+        await printerInstance.addText(
+          `TOTAL: ${parseFloat(order.totalPrice).toFixed(2)} EUR\n`,
+        );
         await printerInstance.addTextSize(1, 1);
         await printerInstance.addFeedLine(3);
         await printerInstance.addCut();

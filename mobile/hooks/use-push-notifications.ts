@@ -41,13 +41,11 @@ async function registerAndSendToken() {
   const { data: token } = await Notifications.getExpoPushTokenAsync({
     projectId,
   });
-  Alert.alert("Push token", token);
 
-  const result = await apiFetch("/user/me/push-token", {
+  await apiFetch("/user/me/push-token", {
     method: "PATCH",
     body: JSON.stringify({ token }),
   });
-  Alert.alert("API result", JSON.stringify(result));
 }
 
 export function usePushNotifications(enabled: boolean) {

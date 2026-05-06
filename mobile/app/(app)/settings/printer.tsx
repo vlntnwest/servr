@@ -12,12 +12,21 @@ import { BRAND } from "@/lib/constants";
 import { usePrinter } from "@/context/printer";
 import { Row, IconBox } from "@/components/ui/printerRow";
 import { getOrder } from "@/lib/api";
+import { useEffect } from "react";
 
 const EXAMPLE_ORDER_ID = "b8141f34-31df-4bf3-8eaa-4528a4be34e0";
 
 export default function Printer() {
-  const { savedPrinter, printers, isDiscovering, scan, connect, disconnect, printTest, printOrder } =
-    usePrinter();
+  const {
+    savedPrinter,
+    printers,
+    isDiscovering,
+    scan,
+    connect,
+    disconnect,
+    printTest,
+    printOrder,
+  } = usePrinter();
 
   const printExampleOrder = async () => {
     const result = await getOrder(EXAMPLE_ORDER_ID);
