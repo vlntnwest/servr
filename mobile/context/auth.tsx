@@ -23,7 +23,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       supabase.realtime.setAuth(session?.access_token ?? null);
-      if (event === "INITIAL_SESSION") setInitialized(true);
+      if (event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED" || event === "SIGNED_OUT") {
+        setInitialized(true);
+      }
     });
 
     return () => subscription.unsubscribe();
