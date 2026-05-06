@@ -46,6 +46,21 @@ export function PrinterProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const checkConnection = async (printer: PrinterTypes): Promise<boolean> => {
+    try {
+      const instance = new Printer({
+        target: printer.target,
+        deviceName: printer.deviceName,
+      });
+      await instance.connect(3000);
+      const s = await instance.getStatus();
+      await instance.disconnect();
+      return s?.online?.statusCode === PrinterConstants.TRUE;
+    } catch {
+      return false;
+    }
+  };
+
   const scan = () => {
     start();
   };
@@ -156,10 +171,12 @@ export function PrinterProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    getData("printer").then((printer) => {
+    getData("printer").then(async (printer) => {
       if (printer) {
         setSavedPrinter(printer);
-        setStatus("connected");
+        setStatus("connecting");
+        const online = await checkConnection(printer);
+        setStatus(online ? "connected" : "error");
       }
     });
   }, []);

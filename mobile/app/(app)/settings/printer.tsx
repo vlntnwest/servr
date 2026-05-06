@@ -117,25 +117,7 @@ export default function Printer() {
               </Text>
               <View className="rounded-[30px] overflow-hidden">
                 <Row label="Appareil" value={savedPrinter.deviceName} />
-                <Row label="Adresse" value={savedPrinter.target} />
-                <Row label="Protocole" value="Wi-Fi (TCP/IP)" />
-                <Row
-                  label="État"
-                  right={
-                    <View
-                      className="px-2.5 py-1 rounded-full"
-                      style={{ backgroundColor: "#34c75920" }}
-                    >
-                      <Text
-                        className="text-xs font-sans-semibold"
-                        style={{ color: "#1a7a3a" }}
-                      >
-                        ● En ligne
-                      </Text>
-                    </View>
-                  }
-                  showSeparator={false}
-                />
+                <Row label="Adresse" value={savedPrinter.target} showSeparator={false} />
               </View>
             </>
           )}
