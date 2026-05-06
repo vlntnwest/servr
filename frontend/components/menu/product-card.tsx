@@ -20,45 +20,55 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <>
       <button
-        className="w-full text-left bg-white transition-shadow rounded-2xl overflow-hidden p-3 hover:shadow-lg hover:cursor-pointer"
+        className="group w-full text-left bg-white border border-brand-border rounded-card overflow-hidden p-4 transition-colors hover:border-brand-ink/40 hover:cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-brand-border"
         onClick={() => !isUnavailable && setOpen(true)}
         disabled={isUnavailable}
       >
-        <div className="flex items-stretch">
+        <div className="flex items-stretch gap-4">
           {/* Product image */}
           {product.imageUrl && (
-            <div className="shrink-0 flex items-center mr-4">
+            <div className="shrink-0 flex items-center">
               <Image
                 src={product.imageUrl}
                 alt={product.name}
-                width={100}
-                height={100}
-                className={`rounded-xl object-cover aspect-square ${isUnavailable ? "grayscale" : ""}`}
+                width={104}
+                height={104}
+                className={`rounded-card object-cover aspect-square ${isUnavailable ? "grayscale" : ""}`}
               />
             </div>
           )}
 
           {/* Text content */}
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-base leading-tight">{product.name}</p>
-            <p className="text-muted-foreground text-sm line-clamp-2 mt-0.5">
-              {product.description}
+          <div className="flex-1 min-w-0 flex flex-col">
+            <p className="font-display-italic italic font-black text-card-name leading-none text-brand-ink">
+              {product.name}
             </p>
-            <p className="text-sm mt-1 text-muted-foreground">
-              {formatEuros(price)}
+            {product.description && (
+              <p className="text-body-sm text-brand-stone line-clamp-2 mt-2">
+                {product.description}
+              </p>
+            )}
+            <div className="mt-auto pt-2 flex items-center gap-2 text-body-sm">
+              <span className="font-semibold text-brand-ink tracking-tight">
+                {formatEuros(price)}
+              </span>
               {isUnavailable && (
-                <span className="text-destructive"> · Indisponible</span>
+                <span className="text-brand-stone uppercase tracking-pill text-caption">
+                  · Indisponible
+                </span>
               )}
               {!isUnavailable && product.tags.includes("bestseller") && (
-                <span className="text-[#e67400]"> · Populaire</span>
+                <span className="text-brand-orange uppercase tracking-pill text-caption font-semibold">
+                  · Populaire
+                </span>
               )}
-            </p>
+            </div>
           </div>
 
-          {/* Full-height add button */}
+          {/* Add button — pill, ink on cream */}
           {!isUnavailable && (
-            <div className="shrink-0 w-10 border border-border flex items-center justify-center text-black/25 bg-transparent hover:bg-black/4 transition-colors rounded-xl ml-4">
-              <Plus className="w-5 h-5" />
+            <div className="self-center shrink-0 w-9 h-9 border border-brand-border bg-brand-cream/0 group-hover:bg-brand-ink group-hover:border-brand-ink group-hover:text-brand-cream flex items-center justify-center text-brand-ink transition-colors rounded-full">
+              <Plus className="w-4 h-4" strokeWidth={2.25} />
             </div>
           )}
         </div>

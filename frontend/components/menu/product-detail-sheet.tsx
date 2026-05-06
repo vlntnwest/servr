@@ -137,8 +137,8 @@ export default function ProductDetailSheet({
     <ResponsiveModal open={open} onOpenChange={(v) => !v && onClose()}>
       <ResponsiveModalContent
         hideCloseButton
-        mobileClassName="h-[90dvh] rounded-t-4xl overflow-hidden flex flex-col"
-        desktopClassName="max-w-xl max-h-[90vh] overflow-hidden flex flex-col p-0 rounded-3xl"
+        mobileClassName="h-[90dvh] rounded-t-2xl overflow-hidden flex flex-col"
+        desktopClassName="max-w-xl max-h-[90vh] overflow-hidden flex flex-col p-0 rounded-2xl"
         className="p-0"
       >
         <div className="flex-1 overflow-y-auto">
@@ -153,52 +153,53 @@ export default function ProductDetailSheet({
               />
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors hover:cursor-pointer"
+                className="absolute top-4 right-4 z-10 flex items-center justify-center w-9 h-9 rounded-full bg-brand-ink/70 backdrop-blur-sm text-brand-cream hover:bg-brand-ink transition-colors hover:cursor-pointer"
                 aria-label="Fermer"
               >
-                <X className="h-5 w-5" strokeWidth={2} />
+                <X className="h-4 w-4" strokeWidth={2.25} />
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between px-4 pt-4">
-              <ResponsiveModalTitle className="text-3xl font-bold">
+            <div className="flex items-start justify-between px-5 pt-5 gap-4">
+              <ResponsiveModalTitle className="font-display-italic italic font-black text-[28px] leading-none text-brand-ink">
                 {product.name}
               </ResponsiveModalTitle>
               <button
                 onClick={onClose}
-                className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-foreground/5 transition-colors shrink-0 hover:cursor-pointe"
+                className="flex items-center justify-center w-9 h-9 rounded-full border border-brand-border hover:bg-brand-ink/5 transition-colors shrink-0 hover:cursor-pointer"
                 aria-label="Fermer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
           )}
-          <div className="p-4">
+          <div className="px-5 pt-5 pb-4">
             {product.imageUrl && (
-              <ResponsiveModalTitle className="text-3xl font-bold">
+              <ResponsiveModalTitle className="font-display-italic italic font-black text-[32px] leading-none text-brand-ink">
                 {product.name}
               </ResponsiveModalTitle>
             )}
             {product.description && (
-              <p className="text-muted-foreground text-sm mt-1">
+              <p className="text-body text-brand-stone mt-3 leading-relaxed">
                 {product.description}
               </p>
             )}
           </div>
 
           {product.optionGroups.map((group) => (
-            <div key={group.id} className="px-4 pb-4">
-              <Separator className="mb-4" />
+            <div key={group.id} className="px-5 pb-4">
+              <Separator className="mb-5 bg-brand-border" />
               <div className="mb-3">
-                <h4 className="font-bold text-xl">{group.name}</h4>
-                {group.isRequired ? (
-                  <p className="text-xs text-muted-foreground">Obligatoire</p>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Optionnel
-                    {group.maxQuantity > 1 ? ` · Max ${group.maxQuantity}` : ""}
-                  </p>
-                )}
+                <h4 className="font-display text-principle tracking-tight text-brand-ink">
+                  {group.name}
+                </h4>
+                <p className="text-caption uppercase tracking-label text-brand-stone font-medium mt-1">
+                  {group.isRequired
+                    ? "Obligatoire"
+                    : group.maxQuantity > 1
+                      ? `Optionnel · Max ${group.maxQuantity}`
+                      : "Optionnel"}
+                </p>
               </div>
 
               {!group.hasMultiple ? (
@@ -210,16 +211,16 @@ export default function ProductDetailSheet({
                   {group.optionChoices.map((choice) => (
                     <div
                       key={choice.id}
-                      className="flex items-center py-1 px-2 hover:cursor-pointe hover:bg-foreground/5 transition-colors rounded-lg"
+                      className="flex items-center py-1.5 px-2 hover:cursor-pointer hover:bg-brand-ink/[0.03] transition-colors rounded-full cursor-pointer"
                     >
                       <Label
                         htmlFor={choice.id}
-                        className="flex-1 cursor-pointer font-normal text-base py-1"
+                        className="flex-1 cursor-pointer font-semibold text-body py-1"
                       >
                         {choice.name}
                       </Label>
                       {parseFloat(choice.priceModifier) > 0 && (
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-body-sm text-brand-stone">
                           +{formatEuros(parseFloat(choice.priceModifier))}
                         </span>
                       )}
@@ -244,16 +245,16 @@ export default function ProductDetailSheet({
                     return (
                       <div
                         key={choice.id}
-                        className="flex items-center py-1 px-2 hover:cursor-pointe hover:bg-foreground/5 transition-colors rounded-lg"
+                        className="flex items-center py-1.5 px-2 hover:cursor-pointer hover:bg-brand-ink/[0.03] transition-colors rounded-full cursor-pointer"
                       >
                         <Label
                           htmlFor={choice.id}
-                          className="flex-1 cursor-pointer font-normal text-base py-1"
+                          className="flex-1 cursor-pointer font-semibold text-body py-1"
                         >
                           {choice.name}
                         </Label>
                         {parseFloat(choice.priceModifier) > 0 && (
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-body-sm text-brand-stone">
                             +{formatEuros(parseFloat(choice.priceModifier))}
                           </span>
                         )}
@@ -280,22 +281,24 @@ export default function ProductDetailSheet({
           <div className="flex flex-col items-center gap-4 mb-3 w-full">
             <div className="flex items-center justify-evenly gap-3 w-full">
               <button
-                className="p-0 hover:bg-foreground/5 transition-colors disabled:opacity-40 border border-primary border-2 rounded-full cursor-pointer disabled:cursor-not-allowed"
+                className="p-0 hover:bg-foreground/5 transition-colors disabled:opacity-40 border-2 border-primary rounded-full cursor-pointer disabled:cursor-not-allowed"
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                 disabled={quantity <= 1}
+                aria-label="Diminuer la quantité"
               >
                 <Minus className="w-4 h-4 text-primary" strokeWidth={3} />
               </button>
               <span className="w-8 text-center">{quantity}</span>
               <button
-                className="p-0 hover:bg-foreground/5 transition-colors border border-primary border-2 rounded-full cursor-pointer"
+                className="p-0 hover:bg-foreground/5 transition-colors border-2 border-primary rounded-full cursor-pointer"
                 onClick={() => setQuantity((q) => q + 1)}
+                aria-label="Augmenter la quantité"
               >
                 <Plus className="w-4 h-4 text-primary" strokeWidth={3} />
               </button>
             </div>
             <Button
-              className="flex-1 h-12 w-full uppercase rounded-full hover:cursor-pointer active:scale-95 transition-transform"
+              className="h-12 w-full uppercase rounded-full hover:cursor-pointer active:scale-95 transition-transform"
               disabled={!isValid}
               onClick={handleAddToCart}
             >

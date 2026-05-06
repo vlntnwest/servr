@@ -130,8 +130,10 @@ export default function OrderDate() {
   };
 
   return (
-    <div className="mx-4 border border-border rounded-xl overflow-hidden px-4 py-3">
-      <p className="font-semibold text-sm mb-2">Heure de commande</p>
+    <div className="mx-4 border bg-white border-brand-border rounded-card overflow-hidden px-4 py-4">
+      <p className="text-caption uppercase tracking-label font-semibold text-brand-stone mb-3">
+        Heure de commande
+      </p>
       <RadioGroup
         value={orderType}
         onValueChange={handleTypeChange}
@@ -139,9 +141,9 @@ export default function OrderDate() {
       >
         <div
           onClick={() => asapAvailable && handleTypeChange("asap")}
-          className={`flex items-center py-2 -mx-4 px-4 transition-colors ${asapAvailable ? "cursor-pointer hover:bg-black/[0.02]" : "opacity-40 cursor-not-allowed"}`}
+          className={`flex items-center py-2 -mx-4 px-4 transition-colors ${asapAvailable ? "cursor-pointer hover:bg-brand-ink/[0.02]" : "opacity-40 cursor-not-allowed"}`}
         >
-          <span className="flex-1 text-sm">Au plus vite</span>
+          <span className="flex-1 text-body">Au plus vite</span>
           <RadioGroupItem
             value="asap"
             id="asap"
@@ -153,9 +155,9 @@ export default function OrderDate() {
           onClick={() =>
             availableDays.length > 0 && handleTypeChange("scheduled")
           }
-          className={`flex items-center py-2 -mx-4 px-4 transition-colors ${availableDays.length === 0 ? "opacity-40 cursor-not-allowed" : "cursor-pointer hover:bg-black/[0.02]"}`}
+          className={`flex items-center py-2 -mx-4 px-4 transition-colors ${availableDays.length === 0 ? "opacity-40 cursor-not-allowed" : "cursor-pointer hover:bg-brand-ink/[0.02]"}`}
         >
-          <span className="flex-1 text-sm">Prévu pour…</span>
+          <span className="flex-1 text-body">Prévu pour…</span>
           <RadioGroupItem
             value="scheduled"
             id="scheduled"
@@ -166,7 +168,7 @@ export default function OrderDate() {
       </RadioGroup>
 
       {orderType === "scheduled" && availableDays.length > 0 && (
-        <div className="flex gap-2 mt-2">
+        <div className="flex gap-2 mt-3">
           <select
             value={currentDayEntry?.dateKey ?? ""}
             onChange={(e) => {
@@ -176,7 +178,7 @@ export default function OrderDate() {
               setSelectedDay(e.target.value);
               setScheduledFor(day?.slots[0] ?? "");
             }}
-            className="flex-1 text-sm border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-background md:bg-white"
+            className="flex-1 text-body-sm border border-brand-border rounded-note px-3 py-2.5 focus:outline-none focus:border-brand-ink bg-transparent transition-colors"
           >
             {availableDays.map((d) => (
               <option key={d.dateKey} value={d.dateKey}>
@@ -187,7 +189,7 @@ export default function OrderDate() {
           <select
             value={scheduledFor}
             onChange={(e) => setScheduledFor(e.target.value)}
-            className="flex-1 text-sm border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-background md:bg-white"
+            className="flex-1 text-body-sm border border-brand-border rounded-note px-3 py-2.5 focus:outline-none focus:border-brand-ink bg-transparent transition-colors"
           >
             {(currentDayEntry?.slots ?? []).map((iso) => (
               <option key={iso} value={iso}>

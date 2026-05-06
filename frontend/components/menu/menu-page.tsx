@@ -33,7 +33,7 @@ export default function MenuPage({ categories }: MenuPageProps) {
       {/* Desktop cart */}
       <div className="hidden lg:block">
         <div className="sticky top-[146px] h-[calc(100vh-146px)] p-4 pl-0">
-          <div className="h-full border border-brand-border bg-white overflow-hidden flex flex-col rounded-2xl">
+          <div className="h-full border border-brand-border bg-card overflow-hidden flex flex-col rounded-card">
             <Cart />
           </div>
         </div>

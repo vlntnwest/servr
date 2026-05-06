@@ -26,12 +26,12 @@ export default function Header({
           {showAuth && <CustomerSheet />}
           {showCart && itemCount > 0 && (
             <button
-              className="relative p-2 rounded-full hover:bg-black/5 transition-colors md:hidden"
+              className="relative p-2 rounded-full hover:bg-brand-ink/5 transition-colors md:hidden"
               onClick={() => setCartOpen(true)}
               aria-label="Ouvrir le panier"
             >
               <ShoppingBag className="w-5 h-5" />
-              <span className="absolute -top-0.5 -right-0.5 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
+              <span className="absolute -top-0.5 -right-0.5 bg-brand-orange text-brand-cream text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-semibold">
                 {itemCount}
               </span>
             </button>

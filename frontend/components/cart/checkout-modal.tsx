@@ -115,25 +115,41 @@ export default function CheckoutModal({
     }
   };
 
+  const inputClass =
+    "h-12 rounded-note border-brand-border bg-brand-cream text-body focus-visible:ring-0 focus-visible:border-brand-ink";
+
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md rounded-2xl">
         <DialogHeader>
-          <DialogTitle>Finaliser la commande</DialogTitle>
+          <DialogTitle className="font-display-italic italic font-black text-[24px] leading-none text-brand-ink">
+            Finaliser la commande
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          <div className="space-y-1">
-            <Label htmlFor="fullName">Prénom et nom</Label>
+          <div className="space-y-1.5">
+            <Label
+              htmlFor="fullName"
+              className="text-caption uppercase tracking-label font-semibold text-brand-stone"
+            >
+              Prénom et nom
+            </Label>
             <Input
               id="fullName"
               name="fullName"
               value={form.fullName}
               onChange={handleChange}
               placeholder="Jean Dupont"
+              className={inputClass}
             />
           </div>
-          <div className="space-y-1">
-            <Label htmlFor="email">Email</Label>
+          <div className="space-y-1.5">
+            <Label
+              htmlFor="email"
+              className="text-caption uppercase tracking-label font-semibold text-brand-stone"
+            >
+              Email
+            </Label>
             <Input
               id="email"
               name="email"
@@ -141,10 +157,16 @@ export default function CheckoutModal({
               value={form.email}
               onChange={handleChange}
               placeholder="jean@example.com"
+              className={inputClass}
             />
           </div>
-          <div className="space-y-1">
-            <Label htmlFor="phone">Téléphone</Label>
+          <div className="space-y-1.5">
+            <Label
+              htmlFor="phone"
+              className="text-caption uppercase tracking-label font-semibold text-brand-stone"
+            >
+              Téléphone
+            </Label>
             <Input
               id="phone"
               name="phone"
@@ -152,23 +174,24 @@ export default function CheckoutModal({
               value={form.phone}
               onChange={handleChange}
               placeholder="0612345678"
+              className={inputClass}
             />
           </div>
 
           {error && (
-            <p className="text-sm text-destructive bg-destructive/10 rounded p-2">
+            <p className="text-body-sm text-destructive bg-destructive/10 rounded-note px-3 py-2">
               {error}
             </p>
           )}
 
-          <p className="text-xs text-muted-foreground">
+          <p className="text-caption text-brand-stone leading-relaxed">
             En passant commande, vous acceptez nos conditions générales de
             vente.
           </p>
 
           <Button
             type="submit"
-            className="w-full rounded-full h-12"
+            className="w-full rounded-full h-12 bg-brand-orange hover:bg-brand-orange/90 text-body font-semibold tracking-cta text-brand-cream"
             disabled={loading}
           >
             {loading ? (
