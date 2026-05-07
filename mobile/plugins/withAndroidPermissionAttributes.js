@@ -28,7 +28,11 @@ const ATTRS = {
 
 module.exports = function withAndroidPermissionAttributes(config) {
   return withAndroidManifest(config, (cfg) => {
-    const perms = cfg.modResults.manifest["uses-permission"] ?? [];
+    const manifest = cfg.modResults.manifest;
+    manifest.$ = manifest.$ ?? {};
+    manifest.$["xmlns:tools"] = "http://schemas.android.com/tools";
+
+    const perms = manifest["uses-permission"] ?? [];
     for (const p of perms) {
       const name = p.$?.["android:name"];
       if (ATTRS[name]) Object.assign(p.$, ATTRS[name]);

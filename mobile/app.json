@@ -66,7 +66,8 @@
           }
         }
       ],
-      "./plugins/withAndroidPermissionAttributes"
+      "./plugins/withAndroidPermissionAttributes",
+      "./plugins/withTabDrawables"
     ],
     "experiments": {
       "typedRoutes": true,
