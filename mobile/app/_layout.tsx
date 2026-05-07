@@ -8,8 +8,6 @@ import { PortalHost } from "@rn-primitives/portal";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { useRouter, useSegments, Stack } from "expo-router";
-import * as ScreenOrientation from "expo-screen-orientation";
-import * as Device from "expo-device";
 import * as SplashScreen from "expo-splash-screen";
 import {
   useFonts,

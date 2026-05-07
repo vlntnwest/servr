@@ -28,35 +28,36 @@ export default function General() {
 
   return (
     <SafeAreaView
-      className="flex-1 bg-background"
+      style={{ flex: 1 }}
+      className="bg-background"
       edges={isTablet ? ["top"] : []}
     >
-      <View className="pt-4 pb-1">
-        <Text variant="h2">Général</Text>
-      </View>
-
-      <ScrollView contentContainerClassName="pb-10">
-        <View className="px-5">
-          <Text variant="caption" className="mb-1.5 mt-5">
-            Impression
-          </Text>
-          <View className="rounded-[30px] overflow-hidden">
-            <Row
-              label="Validation automatique"
-              sub="Imprimer le ticket lors du passage en préparation"
-              left={
-                <IconBox bg={BRAND.orange}>
-                  <IconSymbol name="printer.fill" size={15} color="white" />
-                </IconBox>
-              }
-              right={
-                <Switch checked={autoPrint} onCheckedChange={toggle} />
-              }
-              showSeparator={false}
-            />
-          </View>
+      <View style={{ flex: 1 }}>
+        <View className="pt-4 pb-1">
+          <Text variant="h2">Général</Text>
         </View>
-      </ScrollView>
+
+        <ScrollView style={{ flex: 1 }}>
+          <View className="px-5">
+            <Text variant="caption" className="mb-1.5 mt-5">
+              Impression
+            </Text>
+            <View className="rounded-[30px] overflow-hidden">
+              <Row
+                label="Validation automatique"
+                sub="Imprimer le ticket lors du passage en préparation"
+                left={
+                  <IconBox bg={BRAND.orange}>
+                    <IconSymbol name="printer.fill" size={15} color="white" />
+                  </IconBox>
+                }
+                right={<Switch checked={autoPrint} onCheckedChange={toggle} />}
+                showSeparator={false}
+              />
+            </View>
+          </View>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

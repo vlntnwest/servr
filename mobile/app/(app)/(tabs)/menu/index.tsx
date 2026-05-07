@@ -13,19 +13,21 @@ export default function Menu() {
 
   return (
     <SafeAreaView className="flex-1" edges={["top"]}>
-      <ScrollView contentContainerClassName="pb-10">
-        <View className="px-5 pt-12 pb-4">
-          <Text variant="display">Menu</Text>
-        </View>
+      <View style={{ flex: 1 }}>
+        <ScrollView style={{ flex: 1 }}>
+          <View className="px-5 pt-4 pb-4">
+            <Text variant="display">Menu</Text>
+          </View>
 
-        <View className="flex flex-col px-5">
-          {sortedCategories.map((category) => (
-            <View key={category.id}>
-              <CategorySection category={category} updateItem={updateItem} />
-            </View>
-          ))}
-        </View>
-      </ScrollView>
+          <View className="flex flex-col px-5">
+            {sortedCategories.map((category) => (
+              <View key={category.id}>
+                <CategorySection category={category} updateItem={updateItem} />
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

@@ -14,7 +14,7 @@ export default function SettingsList() {
   const pathname = usePathname();
 
   return (
-    <ScrollView contentContainerClassName="pb-10">
+    <ScrollView style={{ flex: 1 }}>
       <View className={`pt-12 pb-4 ${isTablet ? "" : "px-5"}`}>
         <Text variant="display">Réglages</Text>
       </View>

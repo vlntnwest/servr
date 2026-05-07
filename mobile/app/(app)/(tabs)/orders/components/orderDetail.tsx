@@ -12,6 +12,7 @@ import {
 import { Order } from "@/types/api";
 import { ScrollView, View } from "react-native";
 import OrderOptions from "./orderOptions";
+import { usePrinter } from "@/context/printer";
 
 type Props = {
   order: Order;
@@ -26,6 +27,7 @@ export default function OrderDetail({
 }: Props) {
   const { bg, text } = getOrderStatusBadge(order.status);
   const actions = getStatusActions(order.status);
+  const { printOrder } = usePrinter();
 
   const createdAt = new Date(order.createdAt).toLocaleDateString("fr-FR", {
     day: "2-digit",
@@ -35,8 +37,12 @@ export default function OrderDetail({
     minute: "2-digit",
   });
 
+  const handlePrint = () => {
+    printOrder(order);
+  };
+
   return (
-    <ScrollView contentContainerClassName="px-5 py-4 gap-5">
+    <ScrollView contentContainerClassName="px-5 py-14 gap-5">
       {/* Header */}
       <View className="flex-row items-center justify-between">
         <Text
@@ -132,7 +138,6 @@ export default function OrderDetail({
               <Button
                 key={action.targetStatus}
                 variant={action.variant}
-                size="sm"
                 className="flex-1"
                 disabled={updating}
                 onPress={() => onStatusChange(action.targetStatus)}
@@ -140,6 +145,12 @@ export default function OrderDetail({
                 <Text>{updating ? "En cours…" : action.label}</Text>
               </Button>
             ))}
+          </View>
+          <Separator />
+          <View>
+            <Button variant="link" onPress={handlePrint}>
+              <Text>Imprimer</Text>
+            </Button>
           </View>
         </>
       )}
