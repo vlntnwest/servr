@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "servr-app",
+    "name": "My spots",
     "slug": "servr-app",
     "version": "1.0.0",
     "orientation": "default",
@@ -65,7 +65,8 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "./plugins/withAndroidPermissionAttributes"
     ],
     "experiments": {
       "typedRoutes": true,
