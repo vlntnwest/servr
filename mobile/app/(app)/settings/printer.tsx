@@ -67,7 +67,7 @@ export default function Printer() {
                     <IconSymbol
                       name="checkmark.circle.fill"
                       size={22}
-                      color="#34c759"
+                      color={BRAND.lime}
                     />
                   }
                   showSeparator={false}
@@ -84,7 +84,7 @@ export default function Printer() {
               label="Impression de test"
               left={
                 <IconBox bg={BRAND.orange}>
-                  <IconSymbol name="printer.fill" size={15} color="white" />
+                  <IconSymbol name="printer.fill" size={15} color={BRAND.cream} />
                 </IconBox>
               }
               onPress={printTest}
@@ -92,8 +92,8 @@ export default function Printer() {
             <Row
               label="Ticket exemple"
               left={
-                <IconBox bg="#5856d6">
-                  <IconSymbol name="list.bullet" size={15} color="white" />
+                <IconBox bg={BRAND.orange}>
+                  <IconSymbol name="list.bullet" size={15} color={BRAND.cream} />
                 </IconBox>
               }
               onPress={printExampleOrder}
@@ -101,8 +101,8 @@ export default function Printer() {
             <Row
               label="Reconnecter"
               left={
-                <IconBox bg="#ff9500">
-                  <IconSymbol name="arrow.clockwise" size={15} color="white" />
+                <IconBox bg={BRAND.orange}>
+                  <IconSymbol name="arrow.clockwise" size={15} color={BRAND.cream} />
                 </IconBox>
               }
               onPress={() => {}}
@@ -165,7 +165,7 @@ export default function Printer() {
               >
                 <Text
                   className="font-sans-medium text-[15px]"
-                  style={{ color: "#ff3b30" }}
+                  style={{ color: BRAND.maroon }}
                 >
                   Déconnecter l'imprimante
                 </Text>
