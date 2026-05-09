@@ -484,7 +484,6 @@ function SortableOptionGroupItem({
   onCollapse: () => void;
   onRemove: () => void;
   onStartAddChoice: () => void;
-  onChoiceSaved: () => Promise<void>;
   onCancelAddChoice: () => void;
   onError: (msg: string) => void;
   onRefreshGroups: () => Promise<void>;
@@ -1199,7 +1198,6 @@ function ProductSheet({
                       onCollapse={() => setExpandedGroups((prev) => { const next = new Set(prev); next.delete(group.id); return next; })}
                       onRemove={() => toggleOptionGroup(group.id)}
                       onStartAddChoice={() => setAddingChoiceFor(group.id)}
-                      onChoiceSaved={async () => {}}
                       onCancelAddChoice={() => setAddingChoiceFor(null)}
                       onError={onError}
                       onRefreshGroups={onRefreshGroups}

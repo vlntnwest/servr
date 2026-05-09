@@ -52,6 +52,7 @@ export default function OrderHistoryPage() {
       setLoading(false);
     };
     init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) {
