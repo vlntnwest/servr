@@ -112,7 +112,7 @@ export default function OrderDate() {
         setScheduledFor(first.slots[0] ?? "");
       }
     }
-  }, [asapAvailable, availableDays]);
+  }, [asapAvailable, availableDays, orderType, setScheduledFor]);
 
   const currentDayEntry =
     availableDays.find((d) => d.dateKey === selectedDay) ?? availableDays[0];

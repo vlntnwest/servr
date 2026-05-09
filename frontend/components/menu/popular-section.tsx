@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Plus } from "lucide-react";
 import type { Product } from "@/types/api";
 import { formatEuros } from "@/lib/utils";
 import ProductDetailSheet from "./product-detail-sheet";
