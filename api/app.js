@@ -156,7 +156,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiSpec));
 // Routes — mounted at both /api (v1 alias) and /api/v1
 const V1_PREFIXES = ["/api", "/api/v1"];
 for (const prefix of V1_PREFIXES) {
-  app.use(`${prefix}/user`, authLimiter, userRoutes);
+  app.use(`${prefix}/user`, globalLimiter, userRoutes);
   app.use(`${prefix}/restaurants`, globalLimiter, restaurantRoutes);
   app.use(`${prefix}/menu`, globalLimiter, menuRoutes);
   app.use(prefix, globalLimiter, orderRoutes);

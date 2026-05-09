@@ -51,7 +51,6 @@ export async function apiFetch<T>(
     if (res.status === 401) {
       const { error: refreshError } = await supabase.auth.refreshSession();
       if (refreshError) {
-        await supabase.auth.signOut();
         return { error: "Session expirée, veuillez vous reconnecter." };
       }
       const freshHeaders = await getAuthHeader();

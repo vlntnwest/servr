@@ -50,6 +50,7 @@ export function RestaurantProvider({
 
     const init = async () => {
       setIsLoading(true);
+      setError(null);
       const result = await apiFetch<User>("/user/me");
       if ("error" in result) {
         setError(result.error);
@@ -72,8 +73,17 @@ export function RestaurantProvider({
   );
 
   const refresh = useCallback(async () => {
-    // TODO: refresh restaurants
-  }, []);
+    if (!session) return;
+    setIsLoading(true);
+    setError(null);
+    const result = await apiFetch<User>("/user/me");
+    if ("error" in result) {
+      setError(result.error);
+    } else {
+      setRestaurants(result.data.restaurants ?? []);
+    }
+    setIsLoading(false);
+  }, [session]);
 
   return (
     <RestaurantContext.Provider

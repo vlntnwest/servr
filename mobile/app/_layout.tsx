@@ -27,7 +27,6 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { AuthProvider, useAuth } from "@/context/auth";
 import { NAV_THEME } from "@/lib/constants";
-import { supabase } from "@/lib/supabase";
 import { RestaurantProvider, useRestaurant } from "@/context/restaurant";
 import { PrinterProvider } from "@/context/printer";
 
@@ -74,8 +73,7 @@ function InitialLayout() {
     } else if (restaurants.length > 1) {
       if (!inSelectGroup) router.replace("/(select)/restaurant");
     } else if (restaurantError) {
-      // fetch failed (e.g. API unreachable) — back to login so the user isn't stuck silently
-      supabase.auth.signOut();
+      if (!inAuthGroup) router.replace("/(auth)/error" as any);
     }
   }, [
     session,
