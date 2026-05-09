@@ -28,6 +28,7 @@ const archivoItalic = Archivo({
 export const metadata: Metadata = {
   title: "Servr - Commander en ligne",
   description: "Commander en ligne",
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({

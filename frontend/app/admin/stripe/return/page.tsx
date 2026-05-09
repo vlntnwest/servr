@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStripeStatus, setRestaurantId } from "@/lib/api";
 import { createClient } from "@/lib/supabase/client";
@@ -11,7 +11,7 @@ export default function StripeReturnPage() {
   const router = useRouter();
   const [chargesEnabled, setChargesEnabled] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     const init = async () => {
