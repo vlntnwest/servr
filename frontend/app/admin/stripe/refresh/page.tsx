@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { initiateStripeOnboarding, setRestaurantId } from "@/lib/api";
 import { createClient } from "@/lib/supabase/client";
@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 
 export default function StripeRefreshPage() {
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     const refresh = async () => {
