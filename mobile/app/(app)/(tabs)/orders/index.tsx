@@ -19,27 +19,29 @@ export default function Orders() {
 
   const handlePress = (order: Order) => {
     orderStore.set(order);
-    router.push(`/(app)/orders/${order.id}`);
+    router.push(`/(app)/order/${order.id}`);
   };
 
   return (
     <SafeAreaView className="flex-1" edges={["top"]}>
-      <ScrollView contentContainerClassName="pb-10">
-        <View className="px-5 pt-12 pb-4">
-          <Text variant="display">Commandes</Text>
-        </View>
+      <View style={{ flex: 1 }}>
+        <ScrollView style={{ flex: 1 }}>
+          <View className="px-5 pt-4 pb-4">
+            <Text variant="display">Commandes</Text>
+          </View>
 
-        <View className="flex flex-row flex-wrap gap-3 px-5">
-          {orders?.map((order) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              onPress={() => handlePress(order)}
-              className="w-full md:w-[48%] lg:w-[31%]"
-            />
-          ))}
-        </View>
-      </ScrollView>
+          <View className="flex flex-row flex-wrap gap-3 px-5">
+            {orders?.map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                onPress={() => handlePress(order)}
+                className="w-full md:w-[48%] lg:w-[31%]"
+              />
+            ))}
+          </View>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

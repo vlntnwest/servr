@@ -61,7 +61,9 @@ function RestaurantSelector({
                   if (r.id !== currentId) onSelect(r.id);
                 }}
                 className={`w-full text-left px-4 py-2 text-sm hover:bg-black/5 transition-colors ${
-                  r.id === currentId ? "font-semibold text-black" : "text-[#676767]"
+                  r.id === currentId
+                    ? "font-semibold text-black"
+                    : "text-[#676767]"
                 }`}
               >
                 {r.name}

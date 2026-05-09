@@ -14,27 +14,25 @@ function PopularCard({ product }: { product: Product }) {
   return (
     <>
       <button
-        className="flex flex-col min-w-[152px] max-w-[152px] bg-white border border-black/5 rounded-md overflow-hidden text-left hover:bg-gray-50 transition-colors flex-shrink-0"
+        className="flex flex-col w-[230px] p-3 bg-white border border-brand-border text-brand-ink rounded-card overflow-hidden text-left flex-shrink-0 transition-colors hover:border-brand-ink/40 hover:cursor-pointer"
         onClick={() => setOpen(true)}
       >
         {product.imageUrl && (
           <Image
             src={product.imageUrl}
             alt={product.name}
-            width={152}
-            height={152}
-            className="w-full aspect-square object-cover"
-            style={{ height: "auto" }}
+            width={206}
+            height={156}
+            className="w-full aspect-[4/3] object-cover rounded-note"
           />
         )}
-        <div className="flex flex-col flex-1 p-2 gap-1">
-          <p className="font-bold text-sm leading-tight flex-1">
+        <div className="flex flex-col flex-1 pt-3 gap-1">
+          <p className="font-display-italic italic font-black text-card-name leading-none text-brand-ink line-clamp-2">
             {product.name}
           </p>
-          <p className="text-sm text-[#676767]">{formatEuros(price)}</p>
-          <div className="border border-black/10 rounded text-black/25 flex items-center justify-center mt-1 min-h-[34px]">
-            <Plus className="w-4 h-4" />
-          </div>
+          <p className="text-body-sm font-semibold text-brand-ink tracking-tight mt-1">
+            {formatEuros(price)}
+          </p>
         </div>
       </button>
 
@@ -55,11 +53,18 @@ export default function PopularSection({ products }: PopularSectionProps) {
   if (products.length === 0) return null;
 
   return (
-    <div className="pt-4 pl-4">
-      <h2 className="font-bold text-2xl mb-3">Populaire</h2>
-      <div className="flex gap-2  overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth snap-x snap-mandatory">
+    <div className="pt-4">
+      <div className="px-4 mb-4 flex items-baseline gap-3">
+        <h2 className="font-display text-display-sm tracking-tight text-brand-ink">
+          Populaire
+        </h2>
+        <span className="text-caption uppercase tracking-label text-brand-stone font-medium">
+          La sélection
+        </span>
+      </div>
+      <div className="flex gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth snap-x snap-mandatory overflow-y-visible px-4">
         {products.map((product) => (
-          <div key={product.id} className="snap-center">
+          <div key={product.id} className="snap-start">
             <PopularCard product={product} />
           </div>
         ))}

@@ -44,7 +44,7 @@ export default function AdminRedirectPage() {
   if (noRestaurant) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-[#676767]">Aucun restaurant trouvé.</p>
+        <p className="text-muted-foreground">Aucun restaurant trouvé.</p>
       </div>
     );
   }

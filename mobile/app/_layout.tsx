@@ -46,8 +46,13 @@ const DarkBrandTheme = {
 function InitialLayout() {
   const { session, initialized } = useAuth();
   usePushNotifications(!!session);
-  const { restaurants, selectedRestaurant, isLoading, error: restaurantError, selectRestaurant } =
-    useRestaurant();
+  const {
+    restaurants,
+    selectedRestaurant,
+    isLoading,
+    error: restaurantError,
+    selectRestaurant,
+  } = useRestaurant();
   const segments = useSegments();
   const router = useRouter();
 

@@ -1,22 +1,16 @@
-import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
+import { Stack } from "expo-router";
 
-export default function TabsLayout() {
+export default function AppLayout() {
   return (
-    <NativeTabs minimizeBehavior="onScrollDown">
-      <NativeTabs.Trigger name="orders">
-        <Label>Commandes</Label>
-        <Icon sf="list.bullet" drawable="custom_android_drawable" />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="menu">
-        <Label>Menu</Label>
-        <Icon sf="fork.knife" drawable="custom_android_drawable" />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="settings">
-        <Label>Paramètres</Label>
-        <Icon sf="gear" drawable="custom_android_drawable" />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen
+        name="order/[id]"
+        options={{
+          presentation: "formSheet",
+          sheetGrabberVisible: true,
+          headerShown: false,
+        }}
+      />
+    </Stack>
   );
 }

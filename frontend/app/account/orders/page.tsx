@@ -66,30 +66,30 @@ export default function OrderHistoryPage() {
     <div className="min-h-screen p-4 max-w-md mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Mes commandes</h1>
-        <Link href="/account" className="text-sm underline text-[#676767]">
+        <Link href="/account" className="text-sm underline text-muted-foreground">
           Mon compte
         </Link>
       </div>
 
       {orders.length === 0 ? (
-        <p className="text-[#676767] text-center mt-12">Aucune commande pour l&apos;instant.</p>
+        <p className="text-muted-foreground text-center mt-12">Aucune commande pour l&apos;instant.</p>
       ) : (
         <div className="space-y-3">
           {orders.map((order) => (
             <div
               key={order.id}
-              className="border border-black/5 rounded-lg p-4"
+              className="border border-border rounded-lg p-4"
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="font-mono text-sm font-medium">
                   #{order.orderNumber ?? order.id.slice(-8)}
                 </span>
-                <span className="text-xs text-[#676767]">
+                <span className="text-xs text-muted-foreground">
                   {STATUS_LABELS[order.status] ?? order.status}
                 </span>
               </div>
               <p className="text-sm font-medium">{order.restaurant.name}</p>
-              <p className="text-xs text-[#676767] mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {order.orderProducts
                   .map((op) => `${op.quantity}× ${op.product.name}`)
                   .join(", ")}
@@ -98,7 +98,7 @@ export default function OrderHistoryPage() {
                 <span className="text-sm font-semibold">
                   {parseFloat(order.totalPrice).toFixed(2)} €
                 </span>
-                <span className="text-xs text-[#676767]">
+                <span className="text-xs text-muted-foreground">
                   {new Date(order.createdAt).toLocaleDateString("fr-FR")}
                 </span>
               </div>

@@ -1,4 +1,4 @@
-import { useWindowDimensions } from "react-native";
+import { View, useWindowDimensions } from "react-native";
 import { Redirect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import SettingsList from "./components/settingsList";
@@ -12,7 +12,9 @@ export default function Settings() {
 
   return (
     <SafeAreaView className="flex-1" edges={["top"]}>
-      <SettingsList />
+      <View style={{ flex: 1 }}>
+        <SettingsList />
+      </View>
     </SafeAreaView>
   );
 }

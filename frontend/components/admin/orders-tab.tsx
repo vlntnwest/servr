@@ -169,10 +169,10 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
   }
 
   const PREP_LEVELS: { key: PreparationLevel; label: string; color: string }[] = [
-    { key: "EASY", label: "Calme", color: "bg-green-100 text-green-800" },
-    { key: "MEDIUM", label: "Modéré", color: "bg-yellow-100 text-yellow-800" },
-    { key: "BUSY", label: "Chargé", color: "bg-orange-100 text-orange-800" },
-    { key: "CLOSED", label: "Fermé", color: "bg-red-100 text-red-800" },
+    { key: "EASY", label: "Calme", color: "bg-brand-forest/15 text-brand-forest" },
+    { key: "MEDIUM", label: "Modéré", color: "bg-brand-yellow/30 text-brand-ink" },
+    { key: "BUSY", label: "Chargé", color: "bg-brand-orange/20 text-brand-orange" },
+    { key: "CLOSED", label: "Fermé", color: "bg-destructive/15 text-destructive" },
   ];
 
   const handlePrepLevelChange = async (level: PreparationLevel) => {
@@ -184,18 +184,18 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
     <>
     {/* WebSocket disconnection banner */}
     {!socketConnected && (
-      <div className="mb-4 flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-2 text-sm text-amber-800">
-        <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+      <div className="mb-4 flex items-center gap-2 rounded-lg bg-brand-yellow/20 border border-brand-yellow/40 px-4 py-2 text-sm text-brand-ink">
+        <span className="w-2 h-2 rounded-full bg-brand-yellow animate-pulse" />
         Connexion perdue, reconnexion en cours…
       </div>
     )}
 
     {/* Preparation level toggle */}
     <div className="flex items-center gap-3 mb-4">
-      <span className="text-xs font-semibold text-[#676767] uppercase tracking-wide">
+      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
         Affluence
       </span>
-      <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+      <div className="flex gap-1 p-1 bg-muted rounded-lg">
         {PREP_LEVELS.map(({ key, label, color }) => (
           <button
             key={key}
@@ -204,7 +204,7 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
               "px-3 py-1 rounded-md text-xs font-medium transition-all",
               prepLevel === key
                 ? `${color} shadow-sm`
-                : "text-gray-600 hover:text-gray-900",
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             {label}
@@ -214,7 +214,7 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
     </div>
 
     {/* Sub-view toggle */}
-          <div className="flex gap-1 p-1 bg-gray-100 rounded-lg w-fit mb-6">
+          <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit mb-6">
             {SUB_VIEWS.map(({ key, label }) => (
               <button
                 key={key}
@@ -222,8 +222,8 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
                 className={cn(
                   "px-3 py-1.5 rounded-md text-sm font-medium transition-all",
                   subView === key
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900",
+                    ? "bg-white text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {label}
@@ -233,7 +233,7 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
     
           {subView === "En cours" && (
               activeOrders.length === 0 ? (
-              <p className="text-[#676767] text-center py-12">Aucune commande en cours</p>
+              <p className="text-muted-foreground text-center py-12">Aucune commande en cours</p>
             ) : (
               <div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -256,19 +256,19 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
 
           {subView === "Terminées" && ( 
             finishedOrders.length === 0 ? (
-            <p className="text-[#676767] text-center py-12">Aucune commande terminée</p>
+            <p className="text-muted-foreground text-center py-12">Aucune commande terminée</p>
           ) : (
             <div>
               {/* Desktop table */}
-              <div className="hidden md:block rounded-lg border border-black/8 overflow-hidden">
+              <div className="hidden md:block rounded-lg border border-border overflow-hidden">
                 <table className="w-full text-sm">
-                  <thead className="bg-black/3 border-b border-black/8">
+                  <thead className="bg-black/3 border-b border-border">
                     <tr>
-                      <th className="text-left px-4 py-3 font-semibold text-[#676767]">#</th>
-                      <th className="text-left px-4 py-3 font-semibold text-[#676767]">Client</th>
-                      <th className="text-left px-4 py-3 font-semibold text-[#676767]">Total</th>
-                      <th className="text-left px-4 py-3 font-semibold text-[#676767]">Statut</th>
-                      <th className="text-left px-4 py-3 font-semibold text-[#676767]">Date</th>
+                      <th className="text-left px-4 py-3 font-semibold text-muted-foreground">#</th>
+                      <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Client</th>
+                      <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Total</th>
+                      <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Statut</th>
+                      <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Date</th>
                       <th className="px-4 py-3" />
                     </tr>
                   </thead>
@@ -281,13 +281,13 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
                         }`}
                         onClick={() => setSelectedOrder(order)}
                       >
-                        <td className="px-4 py-3 text-[#676767] text-xs">
+                        <td className="px-4 py-3 text-muted-foreground text-xs">
                           {order.orderNumber ? `#${order.orderNumber}` : "—"}
                         </td>
                         <td className="px-4 py-3">
                           <p className="font-medium">{order.fullName ?? "Client anonyme"}</p>
                           {order.phone && (
-                            <p className="text-xs text-[#676767]">{order.phone}</p>
+                            <p className="text-xs text-muted-foreground">{order.phone}</p>
                           )}
                         </td>
                         <td className="px-4 py-3 font-semibold">
@@ -300,11 +300,11 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
                             {getOrderStatusLabel(order.status)}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-[#676767]">
+                        <td className="px-4 py-3 text-muted-foreground">
                           {dayjs(order.createdAt).fromNow()}
                         </td>
                         <td className="px-4 py-3">
-                          <Eye className="w-4 h-4 text-[#676767]" />
+                          <Eye className="w-4 h-4 text-muted-foreground" />
                         </td>
                       </tr>
                     ))}
@@ -343,17 +343,17 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
               <div className="px-5 py-4 space-y-5">
                 {/* Customer info */}
                 <div className="space-y-1">
-                  <p className="text-xs font-semibold text-[#676767] uppercase tracking-wide">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Client
                   </p>
                   <p className="font-semibold">
                     {selectedOrder.fullName ?? "Client anonyme"}
                   </p>
                   {selectedOrder.phone && (
-                    <p className="text-sm text-[#676767]">{selectedOrder.phone}</p>
+                    <p className="text-sm text-muted-foreground">{selectedOrder.phone}</p>
                   )}
                   {selectedOrder.email && (
-                    <p className="text-sm text-[#676767]">{selectedOrder.email}</p>
+                    <p className="text-sm text-muted-foreground">{selectedOrder.email}</p>
                   )}
                 </div>
 
@@ -361,7 +361,7 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
 
                 {/* Order items */}
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold text-[#676767] uppercase tracking-wide">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Articles
                   </p>
                   {selectedOrder.orderProducts.map((op) => (
@@ -387,7 +387,7 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
                 {/* Meta */}
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-[#676767]">Statut</span>
+                    <span className="text-muted-foreground">Statut</span>
                     <span
                       className={`text-xs px-2 py-0.5 rounded-full font-medium ${getOrderStatusColor(selectedOrder.status)}`}
                     >
@@ -395,15 +395,15 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#676767]">Date</span>
+                    <span className="text-muted-foreground">Date</span>
                     <span>
                       {dayjs(selectedOrder.createdAt).format("DD/MM/YYYY à HH:mm")}
                     </span>
                   </div>
                   {selectedOrder.scheduledFor && (
                     <div className="flex justify-between">
-                      <span className="text-[#676767]">Prévu pour</span>
-                      <span className="text-amber-700 font-medium">
+                      <span className="text-muted-foreground">Prévu pour</span>
+                      <span className="text-brand-yellow font-medium">
                         {new Date(selectedOrder.scheduledFor).toLocaleTimeString("fr-FR", {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -418,7 +418,7 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
                   <>
                     <Separator />
                     <div>
-                      <p className="text-xs font-semibold text-[#676767] uppercase tracking-wide mb-2">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                         Actions
                       </p>
                       <div className="flex gap-2">
@@ -449,7 +449,7 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full text-red-600 border-red-200 hover:bg-red-50"
+                      className="w-full text-destructive border-destructive/30 hover:bg-destructive/10"
                       onClick={() => setRefundConfirmOpen(true)}
                     >
                       Rembourser
@@ -469,7 +469,7 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
             <DialogTitle>Confirmer le remboursement</DialogTitle>
           </DialogHeader>
           <div className="p-4 space-y-4">
-            <p className="text-sm text-[#676767]">
+            <p className="text-sm text-muted-foreground">
               Cette action va rembourser le paiement Stripe et annuler la commande.
               Cette action est irréversible.
             </p>
@@ -509,7 +509,7 @@ function OrderCard({
 }) {
   return (
     <button
-      className="w-full text-left bg-white border border-black/5 rounded-lg p-4 flex flex-col gap-2 hover:border-black/15 transition-colors"
+      className="w-full text-left bg-white border border-brand-border rounded-lg p-4 flex flex-col gap-2 hover:border-brand-border transition-colors"
       onClick={() => onOpenDetail(order)}
     >
       <div className="flex items-start justify-between gap-2">
@@ -523,7 +523,7 @@ function OrderCard({
 
       <div className="flex items-center justify-between text-sm">
         {order.orderNumber ? (
-          <span className="text-xs text-[#676767]">#{order.orderNumber}</span>
+          <span className="text-xs text-muted-foreground">#{order.orderNumber}</span>
         ) : (
           <span />
         )}
@@ -531,7 +531,7 @@ function OrderCard({
       </div>
 
       {order.scheduledFor && (
-        <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 w-fit">
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-brand-yellow bg-brand-yellow/20 border border-brand-yellow/40 rounded-full px-2 py-0.5 w-fit">
           Prévu pour{" "}
           {new Date(order.scheduledFor).toLocaleTimeString("fr-FR", {
             hour: "2-digit",
@@ -554,13 +554,13 @@ function FinishedOrderCard({
 }) {
   return (
     <button
-      className="w-full text-left bg-white border border-black/5 rounded-lg p-4 flex flex-col gap-2 hover:border-black/15 transition-colors"
+      className="w-full text-left bg-white border border-brand-border rounded-lg p-4 flex flex-col gap-2 hover:border-brand-border transition-colors"
       onClick={() => onOpenDetail(order)}
     >
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="font-bold text-sm">{order.fullName ?? "Client anonyme"}</p>
-          {order.phone && <p className="text-xs text-[#676767]">{order.phone}</p>}
+          {order.phone && <p className="text-xs text-muted-foreground">{order.phone}</p>}
         </div>
         <span
           className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${getOrderStatusColor(order.status)}`}
@@ -570,7 +570,7 @@ function FinishedOrderCard({
       </div>
 
       <div className="flex justify-between items-center text-sm">
-        <span className="text-[#676767]">{dayjs(order.createdAt).fromNow()}</span>
+        <span className="text-muted-foreground">{dayjs(order.createdAt).fromNow()}</span>
         <span className="font-semibold">{formatEuros(parseFloat(order.totalPrice))}</span>
       </div>
     </button>
@@ -592,9 +592,9 @@ function OrderOptions({ options }: { options: OrderProductOption[] }) {
     <div className="pl-3 mt-0.5 space-y-0.5">
       {Object.entries(groups).map(([group, choices]) => (
         <div key={group}>
-          <p className="text-xs text-[#676767] font-medium">{group}</p>
+          <p className="text-xs text-muted-foreground font-medium">{group}</p>
           {choices.map((c, i) => (
-            <p key={i} className="text-xs text-[#676767] pl-2">{c}</p>
+            <p key={i} className="text-xs text-muted-foreground pl-2">{c}</p>
           ))}
         </div>
       ))}
@@ -624,7 +624,7 @@ function Pagination({
       >
         Précédent
       </Button>
-      <span className="flex items-center text-sm text-[#676767]">
+      <span className="flex items-center text-sm text-muted-foreground">
         Page {page} / {totalPages}
       </span>
       <Button

@@ -2,7 +2,7 @@ import { updateOrderStatus } from "@/lib/api";
 import { orderStore } from "@/lib/order-store";
 import { router } from "expo-router";
 import { useState } from "react";
-import OrderDetail from "./components/orderDetail";
+import OrderDetail from "../(tabs)/orders/components/orderDetail";
 
 export default function OrderDetailScreen() {
   const order = orderStore.get();

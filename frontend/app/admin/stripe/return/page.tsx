@@ -55,7 +55,7 @@ export default function StripeReturnPage() {
       <div className="max-w-sm w-full text-center space-y-6">
         {chargesEnabled ? (
           <>
-            <CheckCircle className="w-12 h-12 text-green-600 mx-auto" />
+            <CheckCircle className="w-12 h-12 text-brand-forest mx-auto" />
             <h1 className="text-xl font-bold">Stripe configuré avec succès</h1>
             <p className="text-sm text-muted-foreground">
               Votre restaurant peut maintenant accepter les paiements par carte.
@@ -63,7 +63,7 @@ export default function StripeReturnPage() {
           </>
         ) : (
           <>
-            <Clock className="w-12 h-12 text-amber-500 mx-auto" />
+            <Clock className="w-12 h-12 text-brand-yellow mx-auto" />
             <h1 className="text-xl font-bold">Configuration en cours...</h1>
             <p className="text-sm text-muted-foreground">
               Stripe est en train de vérifier vos informations. Cela peut prendre

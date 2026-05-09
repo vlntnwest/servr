@@ -71,14 +71,11 @@ export default function CategoryNav({ categories }: CategoryNavProps) {
   if (visibleCategories.length === 0) return null;
 
   return (
-    <div
-      ref={stickyRef}
-      className="sticky top-[65px] z-30 bg-white border-b border-black/5"
-    >
+    <div ref={stickyRef} className="sticky top-[65px] z-30 bg-background">
       <div className="relative">
         <div
           ref={navRef}
-          className="max-w-screen-3xl mx-auto flex overflow-x-auto scrollbar-hide gap-1 px-4 md:px-8 xl:px-16 py-6"
+          className="max-w-screen-3xl mx-auto flex overflow-x-auto scrollbar-hide gap-2 px-4 md:px-8 xl:px-16 py-5"
         >
           {visibleCategories.map((cat) => (
             <button
@@ -88,10 +85,10 @@ export default function CategoryNav({ categories }: CategoryNavProps) {
               }}
               onClick={() => handleClick(cat.id)}
               className={cn(
-                "whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium transition-colors shrink-0",
+                "whitespace-nowrap px-4 py-1.5 rounded-full text-body-sm font-medium tracking-pill transition-colors shrink-0",
                 activeId === cat.id
-                  ? "bg-black text-white"
-                  : "text-gray-600 hover:bg-black/5",
+                  ? "bg-brand-ink text-brand-cream"
+                  : "text-brand-ink border border-brand-border hover:border-brand-ink",
               )}
             >
               {cat.name}
@@ -99,7 +96,7 @@ export default function CategoryNav({ categories }: CategoryNavProps) {
           ))}
         </div>
         {/* Right fade indicator */}
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background to-transparent pointer-events-none" />
       </div>
     </div>
   );

@@ -20,47 +20,55 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <>
       <button
-        className={`w-full text-left bg-white border border-black/5 transition-colors rounded-sm overflow-hidden p-4 ${
-          isUnavailable ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
-        }`}
+        className="group w-full text-left bg-white border border-brand-border rounded-card overflow-hidden p-4 transition-colors hover:border-brand-ink/40 hover:cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-brand-border"
         onClick={() => !isUnavailable && setOpen(true)}
         disabled={isUnavailable}
       >
-        <div className="flex items-stretch">
-          {/* Text content */}
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-base leading-tight">{product.name}</p>
-            <p className="text-[#676767] text-sm line-clamp-2 mt-0.5">
-              {product.description}
-            </p>
-            <p className="text-sm mt-1 text-[#676767]">
-              {formatEuros(price)}
-              {isUnavailable && (
-                <span className="text-red-600"> · Indisponible</span>
-              )}
-              {!isUnavailable && product.tags.includes("bestseller") && (
-                <span className="text-[#e67400]"> · Populaire</span>
-              )}
-            </p>
-          </div>
-
+        <div className="flex items-stretch gap-4">
           {/* Product image */}
           {product.imageUrl && (
-            <div className="shrink-0 flex items-center ml-4">
+            <div className="shrink-0 flex items-center">
               <Image
                 src={product.imageUrl}
                 alt={product.name}
-                width={100}
-                height={100}
-                className={`rounded object-cover aspect-square ${isUnavailable ? "grayscale" : ""}`}
+                width={104}
+                height={104}
+                className={`rounded-card object-cover aspect-square ${isUnavailable ? "grayscale" : ""}`}
               />
             </div>
           )}
 
-          {/* Full-height add button */}
+          {/* Text content */}
+          <div className="flex-1 min-w-0 flex flex-col">
+            <p className="font-display-italic italic font-black text-card-name leading-none text-brand-ink">
+              {product.name}
+            </p>
+            {product.description && (
+              <p className="text-body-sm text-brand-stone line-clamp-2 mt-2">
+                {product.description}
+              </p>
+            )}
+            <div className="mt-auto pt-2 flex items-center gap-2 text-body-sm">
+              <span className="font-semibold text-brand-ink tracking-tight">
+                {formatEuros(price)}
+              </span>
+              {isUnavailable && (
+                <span className="text-brand-stone uppercase tracking-pill text-caption">
+                  · Indisponible
+                </span>
+              )}
+              {!isUnavailable && product.tags.includes("bestseller") && (
+                <span className="text-brand-orange uppercase tracking-pill text-caption font-semibold">
+                  · Populaire
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Add button — pill, ink on cream */}
           {!isUnavailable && (
-            <div className="shrink-0 w-10 border border-black/8 flex items-center justify-center text-black/25 bg-transparent hover:bg-black/4 transition-colors rounded-sm ml-4">
-              <Plus className="w-5 h-5" />
+            <div className="self-center shrink-0 w-9 h-9 border border-brand-border bg-brand-cream/0 group-hover:bg-brand-ink group-hover:border-brand-ink group-hover:text-brand-cream flex items-center justify-center text-brand-ink transition-colors rounded-full">
+              <Plus className="w-4 h-4" strokeWidth={2.25} />
             </div>
           )}
         </div>

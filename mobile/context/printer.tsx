@@ -5,7 +5,12 @@ import {
   PrinterConstants,
   usePrintersDiscovery,
 } from "react-native-esc-pos-printer";
-import { Order, PrinterTypes, PrinterStatus, UsePrinterReturn } from "@/types/api";
+import {
+  Order,
+  PrinterTypes,
+  PrinterStatus,
+  UsePrinterReturn,
+} from "@/types/api";
 
 const PrinterContext = createContext<UsePrinterReturn | null>(null);
 
@@ -38,6 +43,21 @@ export function PrinterProvider({ children }: { children: React.ReactNode }) {
       return jsonValue != null ? JSON.parse(jsonValue) : null;
     } catch (e) {
       console.log("Error getting data", e);
+    }
+  };
+
+  const checkConnection = async (printer: PrinterTypes): Promise<boolean> => {
+    try {
+      const instance = new Printer({
+        target: printer.target,
+        deviceName: printer.deviceName,
+      });
+      await instance.connect(3000);
+      const s = await instance.getStatus();
+      await instance.disconnect();
+      return s?.online?.statusCode === PrinterConstants.TRUE;
+    } catch {
+      return false;
     }
   };
 
@@ -111,10 +131,15 @@ export function PrinterProvider({ children }: { children: React.ReactNode }) {
 
         await printerInstance.addTextAlign(PrinterConstants.ALIGN_CENTER);
         await printerInstance.addTextSize(2, 2);
-        await printerInstance.addText(`#${order.orderNumber ?? order.id.slice(0, 6)}\n`);
+        await printerInstance.addText(
+          `#${order.orderNumber ?? order.id.slice(0, 6)}\n`,
+        );
         await printerInstance.addTextSize(1, 1);
-        if (order.fullName) await printerInstance.addText(`${order.fullName}\n`);
-        await printerInstance.addText(`${new Date(order.createdAt).toLocaleString("fr-FR")}\n`);
+        if (order.fullName)
+          await printerInstance.addText(`${order.fullName}\n`);
+        await printerInstance.addText(
+          `${new Date(order.createdAt).toLocaleString("fr-FR")}\n`,
+        );
         await printerInstance.addTextAlign(PrinterConstants.ALIGN_LEFT);
         await printerInstance.addText("--------------------------------\n");
 
@@ -128,7 +153,9 @@ export function PrinterProvider({ children }: { children: React.ReactNode }) {
         await printerInstance.addText("--------------------------------\n");
         await printerInstance.addTextAlign(PrinterConstants.ALIGN_RIGHT);
         await printerInstance.addTextSize(1, 2);
-        await printerInstance.addText(`TOTAL: ${parseFloat(order.totalPrice).toFixed(2)} EUR\n`);
+        await printerInstance.addText(
+          `TOTAL: ${parseFloat(order.totalPrice).toFixed(2)} EUR\n`,
+        );
         await printerInstance.addTextSize(1, 1);
         await printerInstance.addFeedLine(3);
         await printerInstance.addCut();
@@ -144,10 +171,12 @@ export function PrinterProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    getData("printer").then((printer) => {
+    getData("printer").then(async (printer) => {
       if (printer) {
         setSavedPrinter(printer);
-        setStatus("connected");
+        setStatus("connecting");
+        const online = await checkConnection(printer);
+        setStatus(online ? "connected" : "error");
       }
     });
   }, []);

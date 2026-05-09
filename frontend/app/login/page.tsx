@@ -42,7 +42,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="bg-white border border-black/5 rounded-lg p-6">
+    <div className="bg-white border border-brand-border rounded-lg p-6">
       <h1 className="text-xl font-bold mb-4">Connexion</h1>
 
       <form onSubmit={handleLogin} className="space-y-4">
@@ -70,18 +70,18 @@ function LoginForm() {
         </div>
 
         {reason === "session_expired" && !error && (
-        <p className="text-sm text-amber-600 bg-amber-50 rounded p-2">
+        <p className="text-sm text-brand-yellow bg-brand-yellow/20 rounded p-2">
           Session expirée, veuillez vous reconnecter.
         </p>
       )}
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Se connecter"}
         </Button>
       </form>
 
-      <p className="text-center text-sm text-[#676767] mt-4">
+      <p className="text-center text-sm text-muted-foreground mt-4">
         Pas encore de compte ?{" "}
         <Link
           href={`/register${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`}
@@ -107,7 +107,7 @@ export default function LoginPage() {
             className="mx-auto"
           />
         </div>
-        <Suspense fallback={<div className="bg-white border border-black/5 rounded-lg p-6 h-48" />}>
+        <Suspense fallback={<div className="bg-white border border-brand-border rounded-lg p-6 h-48" />}>
           <LoginForm />
         </Suspense>
       </div>

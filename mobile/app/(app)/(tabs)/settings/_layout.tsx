@@ -7,7 +7,7 @@ import SettingsList from "./components/settingsList";
 export default function SettingsLayout() {
   const { width } = useWindowDimensions();
   const colorScheme = useColorScheme();
-  const bg = NAV_THEME[colorScheme ?? "light"].background;
+  const bg = NAV_THEME[colorScheme === "dark" ? "dark" : "light"].background;
 
   if (width >= 768) {
     return (
