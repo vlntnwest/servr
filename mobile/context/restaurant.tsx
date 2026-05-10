@@ -80,7 +80,11 @@ export function RestaurantProvider({
     if ("error" in result) {
       setError(result.error);
     } else {
-      setRestaurants(result.data.restaurants ?? []);
+      const updated = result.data.restaurants ?? [];
+      setRestaurants(updated);
+      setSelectedRestaurant((prev) =>
+        prev ? (updated.find((r) => r.id === prev.id) ?? prev) : null,
+      );
     }
     setIsLoading(false);
   }, [session]);
