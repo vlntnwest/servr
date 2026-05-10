@@ -18,22 +18,21 @@ function getTodayHours(openingHours: OpeningHour[]): string | null {
   return ranges.map((h) => `${h.openTime} - ${h.closeTime}`).join(" / ");
 }
 
-const PREP_BADGES: Record<PreparationLevel, { label: string; color: string }> =
-  {
-    EASY: {
-      label: "Peu d'attente",
-      color: "bg-brand-forest/10 text-brand-forest",
-    },
-    MEDIUM: {
-      label: "Attente modérée",
-      color: "bg-brand-yellow/20 text-[#7a5e08]",
-    },
-    BUSY: {
-      label: "Forte affluence",
-      color: "bg-brand-orange/15 text-brand-orange",
-    },
-    CLOSED: { label: "Fermé", color: "bg-destructive/10 text-destructive" },
-  };
+const PREP_BADGES: Record<PreparationLevel, { label: string; color: string }> = {
+  EASY: {
+    label: "~15 min",
+    color: "bg-brand-forest/10 text-brand-forest",
+  },
+  MEDIUM: {
+    label: "~25 min",
+    color: "bg-brand-yellow/20 text-[#7a5e08]",
+  },
+  BUSY: {
+    label: "~40 min",
+    color: "bg-brand-orange/15 text-brand-orange",
+  },
+  CLOSED: { label: "Fermé", color: "bg-destructive/10 text-destructive" },
+};
 
 interface RestaurantHeaderProps {
   restaurant: Restaurant;
