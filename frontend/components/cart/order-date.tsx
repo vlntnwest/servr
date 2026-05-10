@@ -5,7 +5,14 @@ import { getOpeningHours } from "@/lib/api";
 import { useCart } from "@/contexts/cart-context";
 import { useOptionalRestaurant } from "@/contexts/restaurant-context";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import type { OpeningHour } from "@/types/api";
+import type { OpeningHour, PreparationLevel } from "@/types/api";
+
+const PREP_DURATION_MINUTES: Record<PreparationLevel, number> = {
+  EASY: 15,
+  MEDIUM: 25,
+  BUSY: 40,
+  CLOSED: 0,
+};
 
 const DAYS_AHEAD = 7;
 
@@ -82,6 +89,7 @@ export default function OrderDate() {
   }, [restaurantCtx?.restaurant.preparationLevel, openingHours]);
 
   const availableDays = useMemo(() => {
+    if (restaurantCtx?.restaurant.preparationLevel === "CLOSED") return [];
     const days: { dateKey: string; label: string; slots: string[] }[] = [];
     for (let i = 0; i < DAYS_AHEAD; i++) {
       const date = new Date();
@@ -100,11 +108,11 @@ export default function OrderDate() {
       });
     }
     return days;
-  }, [openingHours]);
+  }, [openingHours, restaurantCtx?.restaurant.preparationLevel]);
 
   // Auto-switch to scheduled if asap not available
   useEffect(() => {
-    if (!asapAvailable && orderType === "asap") {
+    if (!asapAvailable && orderType === "asap" && availableDays.length > 0) {
       setOrderType("scheduled");
       const first = availableDays[0];
       if (first) {
@@ -113,6 +121,14 @@ export default function OrderDate() {
       }
     }
   }, [asapAvailable, availableDays, orderType, setScheduledFor]);
+
+  const estimatedReadyTime = useMemo(() => {
+    const lvl = restaurantCtx?.restaurant.preparationLevel;
+    if (!lvl || lvl === "CLOSED" || !asapAvailable) return null;
+    const minutes = PREP_DURATION_MINUTES[lvl];
+    const ready = new Date(Date.now() + minutes * 60 * 1000);
+    return `${String(ready.getHours()).padStart(2, "0")}:${String(ready.getMinutes()).padStart(2, "0")}`;
+  }, [restaurantCtx?.restaurant.preparationLevel, asapAvailable]);
 
   const currentDayEntry =
     availableDays.find((d) => d.dateKey === selectedDay) ?? availableDays[0];
@@ -143,7 +159,14 @@ export default function OrderDate() {
           onClick={() => asapAvailable && handleTypeChange("asap")}
           className={`flex items-center py-2 -mx-4 px-4 transition-colors ${asapAvailable ? "cursor-pointer hover:bg-brand-ink/[0.02]" : "opacity-40 cursor-not-allowed"}`}
         >
-          <span className="flex-1 text-body">Au plus vite</span>
+          <div className="flex-1">
+            <span className="text-body">Au plus vite</span>
+            {estimatedReadyTime && orderType === "asap" && (
+              <p className="text-body-sm text-brand-stone">
+                Prévu pour {estimatedReadyTime}
+              </p>
+            )}
+          </div>
           <RadioGroupItem
             value="asap"
             id="asap"
