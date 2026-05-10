@@ -5,6 +5,8 @@ const REQUIRED_ENV_VARS = [
   "SUPABASE_URL",
   "SUPABASE_SERVICE_ROLE_KEY",
   "CLIENT_URL",
+  "STRIPE_SECRET_KEY",
+  "STRIPE_WEBHOOK_SECRET",
 ];
 const missing = REQUIRED_ENV_VARS.filter((v) => !process.env[v]);
 if (missing.length) {

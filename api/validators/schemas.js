@@ -188,13 +188,15 @@ const exceptionalHourSchema = z.object({
   label: z.string().max(100).optional(),
 });
 
-// Checkout schemas
+// Checkout schemas — fullName and phone are REQUIRED so the restaurant can
+// reach the customer if anything goes wrong (substitution, refund, etc.).
 const checkoutSessionSchema = z.object({
   restaurantId: z.string().uuid(),
-  fullName: z.string().min(1).max(50).optional(),
-  phone: phoneSchema.optional(),
+  fullName: z.string().min(1).max(50),
+  phone: phoneSchema,
   email: z.string().email().optional(),
   items: z.array(orderItemSchema).min(1),
+  promoCode: z.string().min(1).max(50).optional(),
   scheduledFor: z.string().datetime({ offset: true }).optional(),
 });
 
