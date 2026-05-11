@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { createCheckoutSession } from "@/lib/api";
+import { createCheckoutSession, getRestaurantLive } from "@/lib/api";
 import { useCart } from "@/contexts/cart-context";
 import { useOptionalRestaurant } from "@/contexts/restaurant-context";
 import { useUserContext } from "@/contexts/user-context";
@@ -54,6 +54,9 @@ export default function CheckoutModal({
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const isPhoneValid = /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/.test(form.phone);
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
+
   function translateApiError(raw: string): string {
     if (raw.includes("currently closed") || raw.includes("fermé"))
       return "Le restaurant est actuellement fermé.";
@@ -79,6 +82,17 @@ export default function CheckoutModal({
     setError(null);
 
     try {
+      if (restaurantCtx?.restaurant.id) {
+        const fresh = await getRestaurantLive(restaurantCtx.restaurant.id);
+        if (fresh) restaurantCtx.updateRestaurant(fresh);
+        const prepLevel = fresh?.preparationLevel ?? restaurantCtx.restaurant.preparationLevel;
+        if (prepLevel === "CLOSED") {
+          setError("Le restaurant est actuellement fermé.");
+          setLoading(false);
+          return;
+        }
+      }
+
       const items = toCheckoutItems();
       const result = await createCheckoutSession(
         {
@@ -191,8 +205,8 @@ export default function CheckoutModal({
 
           <Button
             type="submit"
-            className="w-full rounded-full h-12 bg-brand-orange hover:bg-brand-orange/90 text-body font-semibold tracking-cta text-brand-cream"
-            disabled={loading}
+            className="w-full rounded-full h-12 bg-brand-orange hover:bg-brand-orange/90 text-body font-semibold tracking-cta text-brand-cream disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading || !form.fullName.trim() || !isEmailValid || !isPhoneValid}
           >
             {loading ? (
               <>

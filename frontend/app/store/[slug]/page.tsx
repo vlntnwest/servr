@@ -37,7 +37,6 @@ export default async function StorePage({
     <>
       <Header />
       <RestaurantHeader
-        restaurant={restaurant}
         openingHours={openingHours}
         exceptionalHours={exceptionalHours}
       />

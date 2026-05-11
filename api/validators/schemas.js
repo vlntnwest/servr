@@ -129,9 +129,9 @@ const orderItemSchema = z.object({
 });
 
 const orderSchema = z.object({
-  fullName: z.string().min(1).max(50).optional(),
-  phone: phoneSchema.optional(),
-  email: z.string().email().optional(),
+  fullName: z.string().min(1).max(50),
+  phone: phoneSchema,
+  email: z.string().email(),
   items: z.array(orderItemSchema).min(1),
   promoCode: z.string().min(1).max(50).optional(),
   scheduledFor: z.string().datetime({ offset: true }).optional(),
@@ -191,9 +191,9 @@ const exceptionalHourSchema = z.object({
 // Checkout schemas
 const checkoutSessionSchema = z.object({
   restaurantId: z.string().uuid(),
-  fullName: z.string().min(1).max(50).optional(),
-  phone: phoneSchema.optional(),
-  email: z.string().email().optional(),
+  fullName: z.string().min(1).max(50),
+  phone: phoneSchema,
+  email: z.string().email(),
   items: z.array(orderItemSchema).min(1),
   scheduledFor: z.string().datetime({ offset: true }).optional(),
 });

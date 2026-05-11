@@ -63,6 +63,9 @@ module.exports.createCheckoutSession = async (req, res, next) => {
     if (!restaurant)
       return res.status(404).json({ error: "Restaurant not found" });
 
+    if (restaurant.preparationLevel === "CLOSED")
+      return res.status(400).json({ error: "Restaurant is currently closed" });
+
     const openingHours = await prisma.openingHour.findMany({
       where: { restaurantId },
     });

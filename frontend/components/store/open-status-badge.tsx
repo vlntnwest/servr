@@ -46,7 +46,7 @@ export default function OpenStatusBadge({
   const [open, setOpen] = useState(() => isOpen(openingHours, exceptionalHours));
 
   useEffect(() => {
-    // Recalculate every minute
+    setOpen(isOpen(openingHours, exceptionalHours));
     const interval = setInterval(() => {
       setOpen(isOpen(openingHours, exceptionalHours));
     }, 60_000);

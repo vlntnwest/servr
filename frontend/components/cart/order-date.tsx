@@ -20,6 +20,7 @@ function generateSlotsForDate(
   date: Date,
   openTime: string,
   closeTime: string,
+  prepMinutes: number,
 ): string[] {
   const [openH, openM] = openTime.split(":").map(Number);
   const [closeH, closeM] = closeTime.split(":").map(Number);
@@ -28,7 +29,7 @@ function generateSlotsForDate(
   const end = new Date(date);
   end.setHours(closeH, closeM, 0, 0);
   const isToday = date.toDateString() === new Date().toDateString();
-  const minFrom = isToday ? new Date(Date.now() + 30 * 60 * 1000) : start;
+  const minFrom = isToday ? new Date(Date.now() + prepMinutes * 60 * 1000) : start;
   const cursor = new Date(Math.max(start.getTime(), minFrom.getTime()));
   const rem = cursor.getMinutes() % 15;
   if (rem !== 0) cursor.setMinutes(cursor.getMinutes() + (15 - rem), 0, 0);
@@ -90,6 +91,8 @@ export default function OrderDate() {
 
   const availableDays = useMemo(() => {
     if (restaurantCtx?.restaurant.preparationLevel === "CLOSED") return [];
+    const lvl = restaurantCtx?.restaurant.preparationLevel ?? "EASY";
+    const prepMinutes = PREP_DURATION_MINUTES[lvl];
     const days: { dateKey: string; label: string; slots: string[] }[] = [];
     for (let i = 0; i < DAYS_AHEAD; i++) {
       const date = new Date();
@@ -99,7 +102,7 @@ export default function OrderDate() {
       if (ranges.length === 0) continue;
       const slots = ranges
         .sort((a, b) => a.openTime.localeCompare(b.openTime))
-        .flatMap((h) => generateSlotsForDate(date, h.openTime, h.closeTime));
+        .flatMap((h) => generateSlotsForDate(date, h.openTime, h.closeTime, prepMinutes));
       if (slots.length === 0) continue;
       days.push({
         dateKey: date.toDateString(),

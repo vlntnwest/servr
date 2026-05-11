@@ -1,13 +1,11 @@
+"use client";
+
 import Image from "next/image";
-import type {
-  Restaurant,
-  OpeningHour,
-  ExceptionalHour,
-  PreparationLevel,
-} from "@/types/api";
+import type { OpeningHour, ExceptionalHour, PreparationLevel } from "@/types/api";
 import { MapPin, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import OpenStatusBadge from "./open-status-badge";
+import { useRestaurant } from "@/contexts/restaurant-context";
 
 function getTodayHours(openingHours: OpeningHour[]): string | null {
   const dayOfWeek = new Date().getDay();
@@ -35,16 +33,15 @@ const PREP_BADGES: Record<PreparationLevel, { label: string; color: string }> = 
 };
 
 interface RestaurantHeaderProps {
-  restaurant: Restaurant;
   openingHours: OpeningHour[];
   exceptionalHours: ExceptionalHour[];
 }
 
 export default function RestaurantHeader({
-  restaurant,
   openingHours,
   exceptionalHours,
 }: RestaurantHeaderProps) {
+  const { restaurant } = useRestaurant();
   const todayHours = getTodayHours(openingHours);
   const prepBadge = restaurant.preparationLevel
     ? PREP_BADGES[restaurant.preparationLevel]
@@ -87,10 +84,12 @@ export default function RestaurantHeader({
           )}
 
           <div className="flex flex-wrap items-center gap-2 mt-4">
-            <OpenStatusBadge
-              openingHours={openingHours}
-              exceptionalHours={exceptionalHours}
-            />
+            {restaurant.preparationLevel !== "CLOSED" && (
+              <OpenStatusBadge
+                openingHours={openingHours}
+                exceptionalHours={exceptionalHours}
+              />
+            )}
             {prepBadge && restaurant.preparationLevel !== "EASY" && (
               <span
                 className={cn(
