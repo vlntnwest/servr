@@ -25,7 +25,12 @@
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://backend.my-spots.fr",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://ooxsqvhgwxrufiozmwfv.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_KEY": "sb_publishable_vYKt0EfMhqaQp0wiWdLF0w_alB9bbBa"
+      }
     }
   },
   "submit": {
