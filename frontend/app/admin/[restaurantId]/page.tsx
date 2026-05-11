@@ -11,7 +11,6 @@ import OpeningHoursTab from "@/components/admin/opening-hours-tab";
 import ProductsTab from "@/components/admin/products-tab";
 import SettingsTab from "@/components/admin/settings-tab";
 import PromoCodesTab from "@/components/admin/promo-codes-tab";
-import Image from "next/image";
 import { LogOut, Loader2, ChevronDown } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
