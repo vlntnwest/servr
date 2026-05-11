@@ -174,11 +174,11 @@ module.exports.createCheckoutSession = async (req, res, next) => {
     // Stripe rejects amounts under €0.50; refuse 100%-off codes online.
     if (appliedPromo && discountedTotal < 0.5) {
       return res.status(400).json({
-        error: "Le total après réduction est trop faible pour un paiement en ligne.",
+        error:
+          "Le total après réduction est trop faible pour un paiement en ligne.",
       });
     }
-    const discountFactor =
-      totalPrice > 0 ? discountedTotal / totalPrice : 1;
+    const discountFactor = totalPrice > 0 ? discountedTotal / totalPrice : 1;
 
     // ── On-site payment (no Stripe account) ──────────────────────────────────
     if (!restaurant.stripeAccountId) {
