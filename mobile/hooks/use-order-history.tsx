@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
-import { Order, PaginatedResponse } from "@/types/api";
+import { Order, Pagination } from "@/types/api";
 import { useRestaurant } from "@/context/restaurant";
 
 export function useOrderHistory() {
@@ -19,16 +19,18 @@ export function useOrderHistory() {
       setIsLoading(true);
       setError(null);
 
-      const result = await apiFetch<PaginatedResponse<Order>>(
+      const result = await apiFetch<Order[]>(
         `/restaurants/${selectedRestaurant.id}/orders?status=DELIVERED,CANCELLED&page=${pageToFetch}&limit=20`,
       );
 
       if ("error" in result) {
         setError(result.error);
       } else {
-        const { data, pagination } = result.data;
+        // apiFetch<T> types result.data as T, but the full JSON body is
+        // { data: Order[], pagination: {...} } — pagination lives at root level
+        const pagination = (result as unknown as { pagination: Pagination }).pagination;
         setOrders((prev) =>
-          pageToFetch === 1 ? data : [...prev, ...data],
+          pageToFetch === 1 ? result.data : [...prev, ...result.data],
         );
         setHasMore(pageToFetch < pagination.totalPages);
       }
