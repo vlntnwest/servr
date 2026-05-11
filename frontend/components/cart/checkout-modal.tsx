@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { createCheckoutSession } from "@/lib/api";
+import { createCheckoutSession, getRestaurantLive } from "@/lib/api";
 import { useCart } from "@/contexts/cart-context";
 import { useOptionalRestaurant } from "@/contexts/restaurant-context";
 import { useUserContext } from "@/contexts/user-context";
@@ -54,6 +54,9 @@ export default function CheckoutModal({
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const isPhoneValid = /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/.test(form.phone);
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
+
   function translateApiError(raw: string): string {
     if (raw.includes("currently closed") || raw.includes("fermé"))
       return "Le restaurant est actuellement fermé.";
@@ -75,16 +78,47 @@ export default function CheckoutModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return; // prevent double-submit
+
+    const fullName = form.fullName.trim();
+    const phone = form.phone.trim();
+    const email = form.email.trim();
+
+    if (!fullName) {
+      setError("Veuillez renseigner votre nom.");
+      return;
+    }
+    if (!phone) {
+      setError(
+        "Le téléphone est requis pour vous joindre en cas de souci avec votre commande.",
+      );
+      return;
+    }
+    if (!/^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/.test(phone)) {
+      setError("Numéro de téléphone invalide (format français attendu).");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
+      if (restaurantCtx?.restaurant.id) {
+        const fresh = await getRestaurantLive(restaurantCtx.restaurant.id);
+        if (fresh) restaurantCtx.updateRestaurant(fresh);
+        const prepLevel = fresh?.preparationLevel ?? restaurantCtx.restaurant.preparationLevel;
+        if (prepLevel === "CLOSED") {
+          setError("Le restaurant est actuellement fermé.");
+          setLoading(false);
+          return;
+        }
+      }
+
       const items = toCheckoutItems();
       const result = await createCheckoutSession(
         {
-          fullName: form.fullName || undefined,
-          phone: form.phone || undefined,
-          email: form.email || undefined,
+          fullName,
+          phone,
+          email: email || undefined,
           items,
           scheduledFor: initialScheduledFor || undefined,
         },
@@ -191,8 +225,8 @@ export default function CheckoutModal({
 
           <Button
             type="submit"
-            className="w-full rounded-full h-12 bg-brand-orange hover:bg-brand-orange/90 text-body font-semibold tracking-cta text-brand-cream"
-            disabled={loading}
+            className="w-full rounded-full h-12 bg-brand-orange hover:bg-brand-orange/90 text-body font-semibold tracking-cta text-brand-cream disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading || !form.fullName.trim() || !isEmailValid || !isPhoneValid}
           >
             {loading ? (
               <>

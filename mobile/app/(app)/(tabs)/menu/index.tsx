@@ -15,7 +15,7 @@ export default function Menu() {
     <SafeAreaView className="flex-1" edges={["top"]}>
       <View style={{ flex: 1 }}>
         <ScrollView style={{ flex: 1 }}>
-          <View className="px-5 pt-4 pb-4">
+          <View className="px-5 pt-12 pb-4">
             <Text variant="display">Menu</Text>
           </View>
 

@@ -1,13 +1,11 @@
+"use client";
+
 import Image from "next/image";
-import type {
-  Restaurant,
-  OpeningHour,
-  ExceptionalHour,
-  PreparationLevel,
-} from "@/types/api";
+import type { OpeningHour, ExceptionalHour, PreparationLevel } from "@/types/api";
 import { MapPin, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import OpenStatusBadge from "./open-status-badge";
+import { useRestaurant } from "@/contexts/restaurant-context";
 
 function getTodayHours(openingHours: OpeningHour[]): string | null {
   const dayOfWeek = new Date().getDay();
@@ -18,34 +16,32 @@ function getTodayHours(openingHours: OpeningHour[]): string | null {
   return ranges.map((h) => `${h.openTime} - ${h.closeTime}`).join(" / ");
 }
 
-const PREP_BADGES: Record<PreparationLevel, { label: string; color: string }> =
-  {
-    EASY: {
-      label: "Peu d'attente",
-      color: "bg-brand-forest/10 text-brand-forest",
-    },
-    MEDIUM: {
-      label: "Attente modérée",
-      color: "bg-brand-yellow/20 text-[#7a5e08]",
-    },
-    BUSY: {
-      label: "Forte affluence",
-      color: "bg-brand-orange/15 text-brand-orange",
-    },
-    CLOSED: { label: "Fermé", color: "bg-destructive/10 text-destructive" },
-  };
+const PREP_BADGES: Record<PreparationLevel, { label: string; color: string }> = {
+  EASY: {
+    label: "~15 min",
+    color: "bg-brand-forest/10 text-brand-forest",
+  },
+  MEDIUM: {
+    label: "~25 min",
+    color: "bg-brand-yellow/20 text-[#7a5e08]",
+  },
+  BUSY: {
+    label: "~40 min",
+    color: "bg-brand-orange/15 text-brand-orange",
+  },
+  CLOSED: { label: "Fermé", color: "bg-destructive/10 text-destructive" },
+};
 
 interface RestaurantHeaderProps {
-  restaurant: Restaurant;
   openingHours: OpeningHour[];
   exceptionalHours: ExceptionalHour[];
 }
 
 export default function RestaurantHeader({
-  restaurant,
   openingHours,
   exceptionalHours,
 }: RestaurantHeaderProps) {
+  const { restaurant } = useRestaurant();
   const todayHours = getTodayHours(openingHours);
   const prepBadge = restaurant.preparationLevel
     ? PREP_BADGES[restaurant.preparationLevel]
@@ -88,10 +84,12 @@ export default function RestaurantHeader({
           )}
 
           <div className="flex flex-wrap items-center gap-2 mt-4">
-            <OpenStatusBadge
-              openingHours={openingHours}
-              exceptionalHours={exceptionalHours}
-            />
+            {restaurant.preparationLevel !== "CLOSED" && (
+              <OpenStatusBadge
+                openingHours={openingHours}
+                exceptionalHours={exceptionalHours}
+              />
+            )}
             {prepBadge && restaurant.preparationLevel !== "EASY" && (
               <span
                 className={cn(

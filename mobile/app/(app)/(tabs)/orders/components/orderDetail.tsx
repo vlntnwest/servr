@@ -146,14 +146,15 @@ export default function OrderDetail({
               </Button>
             ))}
           </View>
-          <Separator />
-          <View>
-            <Button variant="link" onPress={handlePrint}>
-              <Text>Imprimer</Text>
-            </Button>
-          </View>
         </>
       )}
+
+      {actions.length > 0 && <Separator />}
+      <View>
+        <Button variant="link" onPress={handlePrint}>
+          <Text>Imprimer</Text>
+        </Button>
+      </View>
     </ScrollView>
   );
 }

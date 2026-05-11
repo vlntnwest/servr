@@ -75,7 +75,7 @@ async function apiFetch<T>(
 
 export async function getRestaurant(): Promise<Restaurant | null> {
   const res = await fetch(`${API_URL}/api/v1/restaurants/${RESTAURANT_ID}`, {
-    next: { revalidate: 3600 },
+    next: { revalidate: 0 },
   });
   const json = await res.json();
   return json.data ?? null;
@@ -85,7 +85,18 @@ export async function getRestaurantBySlug(
   slug: string,
 ): Promise<Restaurant | null> {
   const res = await fetch(`${API_URL}/api/v1/restaurants/by-slug/${slug}`, {
-    next: { revalidate: 3600 },
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) return null;
+  const json = await res.json();
+  return json.data ?? null;
+}
+
+export async function getRestaurantLive(
+  id: string,
+): Promise<Restaurant | null> {
+  const res = await fetch(`${API_URL}/api/v1/restaurants/${id}`, {
+    cache: "no-store",
   });
   if (!res.ok) return null;
   const json = await res.json();
@@ -134,10 +145,11 @@ export async function validatePromoCode(
 
 export async function createCheckoutSession(
   payload: {
-    fullName?: string;
-    phone?: string;
+    fullName: string;
+    phone: string;
     email?: string;
     items: CheckoutItem[];
+    promoCode?: string;
     scheduledFor?: string;
   },
   restaurantId?: string,

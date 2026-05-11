@@ -7,6 +7,7 @@ import { Order } from "@/types/api";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback } from "react";
 import OrderCard from "./components/orderCard";
+import Affluence from "./components/affluence";
 
 export default function Orders() {
   const { orders, refetch } = useOrders();
@@ -26,7 +27,9 @@ export default function Orders() {
     <SafeAreaView className="flex-1" edges={["top"]}>
       <View style={{ flex: 1 }}>
         <ScrollView style={{ flex: 1 }}>
-          <View className="px-5 pt-4 pb-4">
+          <Affluence />
+
+          <View className="px-5 pb-2">
             <Text variant="display">Commandes</Text>
           </View>
 

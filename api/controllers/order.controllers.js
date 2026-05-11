@@ -50,6 +50,15 @@ module.exports.createOrder = async (req, res, next) => {
   const { fullName, phone, email, items, promoCode, scheduledFor } = req.body;
 
   try {
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { id: restaurantId },
+    });
+    if (!restaurant)
+      return res.status(404).json({ error: "Restaurant not found" });
+
+    if (restaurant.preparationLevel === "CLOSED")
+      return res.status(400).json({ error: "Restaurant is currently closed" });
+
     const openingHours = await prisma.openingHour.findMany({
       where: { restaurantId },
     });
@@ -206,12 +215,12 @@ module.exports.createOrder = async (req, res, next) => {
     logger.info({ orderId: data.id, restaurantId }, "Order created");
     sendOrderConfirmation({ to: data.email, order: data });
 
-    const restaurant = await prisma.restaurant.findUnique({
+    const restaurantForPush = await prisma.restaurant.findUnique({
       where: { id: restaurantId },
       include: { admin: { select: { pushToken: true } } },
     });
-    if (restaurant?.admin?.pushToken) {
-      sendPushNotification(restaurant.admin.pushToken, {
+    if (restaurantForPush?.admin?.pushToken) {
+      sendPushNotification(restaurantForPush.admin.pushToken, {
         title: "Nouvelle commande !",
         body: `Commande #${data.orderNumber} — ${data.fullName}`,
       }).catch((err) => logger.warn({ err }, "Push notification failed"));
