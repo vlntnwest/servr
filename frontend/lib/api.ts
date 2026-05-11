@@ -145,10 +145,11 @@ export async function validatePromoCode(
 
 export async function createCheckoutSession(
   payload: {
-    fullName?: string;
-    phone?: string;
+    fullName: string;
+    phone: string;
     email?: string;
     items: CheckoutItem[];
+    promoCode?: string;
     scheduledFor?: string;
   },
   restaurantId?: string,

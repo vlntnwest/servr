@@ -78,6 +78,26 @@ export default function CheckoutModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return; // prevent double-submit
+
+    const fullName = form.fullName.trim();
+    const phone = form.phone.trim();
+    const email = form.email.trim();
+
+    if (!fullName) {
+      setError("Veuillez renseigner votre nom.");
+      return;
+    }
+    if (!phone) {
+      setError(
+        "Le téléphone est requis pour vous joindre en cas de souci avec votre commande.",
+      );
+      return;
+    }
+    if (!/^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/.test(phone)) {
+      setError("Numéro de téléphone invalide (format français attendu).");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -96,9 +116,9 @@ export default function CheckoutModal({
       const items = toCheckoutItems();
       const result = await createCheckoutSession(
         {
-          fullName: form.fullName || undefined,
-          phone: form.phone || undefined,
-          email: form.email || undefined,
+          fullName,
+          phone,
+          email: email || undefined,
           items,
           scheduledFor: initialScheduledFor || undefined,
         },

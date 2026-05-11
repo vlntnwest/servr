@@ -52,9 +52,52 @@ async function createOrderProducts(tx, orderId, items) {
 
 // ─── createCheckoutSession ────────────────────────────────────────────────────
 
+async function resolvePromoCode(restaurantId, code, totalPrice) {
+  if (!code) return { promoCode: null, discountedTotal: totalPrice };
+
+  const promo = await prisma.promoCode.findUnique({
+    where: {
+      restaurantId_code: { restaurantId, code: code.toUpperCase() },
+    },
+  });
+  if (!promo || !promo.isActive) {
+    return { error: "Code promo invalide ou inactif" };
+  }
+  if (promo.expiresAt && promo.expiresAt < new Date()) {
+    return { error: "Code promo expiré" };
+  }
+  if (promo.maxUses !== null && promo.usedCount >= promo.maxUses) {
+    return { error: "Code promo épuisé" };
+  }
+  if (
+    promo.minOrderAmount !== null &&
+    totalPrice < parseFloat(promo.minOrderAmount)
+  ) {
+    return {
+      error: `Montant minimum de ${promo.minOrderAmount} € requis pour ce code`,
+    };
+  }
+
+  const discountValue = parseFloat(promo.discountValue);
+  let discounted =
+    promo.discountType === "PERCENTAGE"
+      ? totalPrice * (1 - discountValue / 100)
+      : Math.max(0, totalPrice - discountValue);
+  discounted = Math.round(discounted * 100) / 100;
+
+  return { promoCode: promo, discountedTotal: discounted };
+}
+
 module.exports.createCheckoutSession = async (req, res, next) => {
-  const { restaurantId, fullName, phone, email, items, scheduledFor } =
-    req.body;
+  const {
+    restaurantId,
+    fullName,
+    phone,
+    email,
+    items,
+    promoCode,
+    scheduledFor,
+  } = req.body;
 
   try {
     const restaurant = await prisma.restaurant.findUnique({
@@ -118,6 +161,25 @@ module.exports.createCheckoutSession = async (req, res, next) => {
       totalPrice += (basePrice + optionsPrice) * item.quantity;
     }
 
+    const promoResult = await resolvePromoCode(
+      restaurantId,
+      promoCode,
+      totalPrice,
+    );
+    if (promoResult.error) {
+      return res.status(400).json({ error: promoResult.error });
+    }
+    const appliedPromo = promoResult.promoCode;
+    const discountedTotal = promoResult.discountedTotal;
+    // Stripe rejects amounts under €0.50; refuse 100%-off codes online.
+    if (appliedPromo && discountedTotal < 0.5) {
+      return res.status(400).json({
+        error: "Le total après réduction est trop faible pour un paiement en ligne.",
+      });
+    }
+    const discountFactor =
+      totalPrice > 0 ? discountedTotal / totalPrice : 1;
+
     // ── On-site payment (no Stripe account) ──────────────────────────────────
     if (!restaurant.stripeAccountId) {
       const order = await withOrderNumber(async (tx, orderNumber) => {
@@ -127,12 +189,18 @@ module.exports.createCheckoutSession = async (req, res, next) => {
             fullName,
             phone,
             email,
-            totalPrice,
+            totalPrice: discountedTotal,
             status: "PENDING_ON_SITE_PAYMENT",
             orderNumber,
             scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
           },
         });
+        if (appliedPromo) {
+          await tx.promoCode.update({
+            where: { id: appliedPromo.id },
+            data: { usedCount: { increment: 1 } },
+          });
+        }
         await createOrderProducts(tx, created.id, items);
         return tx.order.findUnique({
           where: { id: created.id },
@@ -157,6 +225,9 @@ module.exports.createCheckoutSession = async (req, res, next) => {
     }
 
     // ── Stripe: create DRAFT order, then Stripe session ──────────────────────
+    // The promo counter is incremented now (pre-payment) — failed payments
+    // may slightly inflate `usedCount`, acceptable for a single-restaurant
+    // pilot. Revisit if/when promo enforcement becomes critical.
     const draftOrder = await prisma.$transaction(async (tx) => {
       const created = await tx.order.create({
         data: {
@@ -164,11 +235,17 @@ module.exports.createCheckoutSession = async (req, res, next) => {
           fullName,
           phone,
           email,
-          totalPrice,
+          totalPrice: discountedTotal,
           status: "DRAFT",
           scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
         },
       });
+      if (appliedPromo) {
+        await tx.promoCode.update({
+          where: { id: appliedPromo.id },
+          data: { usedCount: { increment: 1 } },
+        });
+      }
       await createOrderProducts(tx, created.id, items);
       return created;
     });
@@ -183,10 +260,17 @@ module.exports.createCheckoutSession = async (req, res, next) => {
         return sum + (oc ? parseFloat(oc.priceModifier) : 0);
       }, 0);
 
-      const unitAmount = Math.round((basePrice + optionsTotal) * 100);
-      const productName = optionNames.length
+      // Apply promo discount proportionally on each line so Stripe's total
+      // matches the amount stored on the order.
+      const unitAmount = Math.round(
+        (basePrice + optionsTotal) * 100 * discountFactor,
+      );
+      const baseName = optionNames.length
         ? `${product.name} (${optionNames.join(", ")})`
         : product.name;
+      const productName = appliedPromo
+        ? `${baseName} — promo ${appliedPromo.code}`
+        : baseName;
 
       return {
         price_data: {
@@ -208,6 +292,16 @@ module.exports.createCheckoutSession = async (req, res, next) => {
     const applicationFeeAmount = Math.round(
       totalAmountCents * PLATFORM_FEE_PERCENT,
     );
+
+    if (!stripe) {
+      logger.error(
+        { orderId: draftOrder.id },
+        "Stripe SDK not initialized — STRIPE_SECRET_KEY missing",
+      );
+      return res
+        .status(503)
+        .json({ error: "Service de paiement temporairement indisponible" });
+    }
 
     let session;
     try {

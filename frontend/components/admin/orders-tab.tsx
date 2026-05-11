@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { getOrders, updateOrderStatus, refundOrder, getRestaurant, updatePreparationLevel } from "@/lib/api";
 import type { PreparationLevel } from "@/types/api";
-import { getSocket } from "@/lib/socket";
+import { connectSocket } from "@/lib/socket";
+import type { Socket } from "socket.io-client";
 import type { Order, OrderProductOption } from "@/types/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -97,31 +98,41 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
   useEffect(() => {
     if (!restaurantId) return;
 
-    const socket = getSocket();
-    if (!socket.connected) socket.connect();
-
-    socket.emit("join:restaurant", restaurantId);
+    let active = true;
+    let socket: Socket | null = null;
 
     const handleNewOrder = () => { fetchRef.current?.(); };
     const handleStatusUpdated = () => { fetchRef.current?.(); };
     const handleDisconnect = () => setSocketConnected(false);
-    const handleReconnect = () => {
-      setSocketConnected(true);
-      socket.emit("join:restaurant", restaurantId);
-      // Reload orders to catch up on missed events
-      fetchRef.current?.();
-    };
 
-    socket.on("order:new", handleNewOrder);
-    socket.on("order:statusUpdated", handleStatusUpdated);
-    socket.on("disconnect", handleDisconnect);
-    socket.on("connect", handleReconnect);
+    (async () => {
+      const s = await connectSocket();
+      if (!s || !active) return;
+      socket = s;
+
+      const join = () => s.emit("join:restaurant", restaurantId);
+      join();
+
+      const handleReconnect = () => {
+        setSocketConnected(true);
+        join();
+        fetchRef.current?.();
+      };
+
+      s.on("order:new", handleNewOrder);
+      s.on("order:statusUpdated", handleStatusUpdated);
+      s.on("disconnect", handleDisconnect);
+      s.on("connect", handleReconnect);
+    })();
 
     return () => {
-      socket.off("order:new", handleNewOrder);
-      socket.off("order:statusUpdated", handleStatusUpdated);
-      socket.off("disconnect", handleDisconnect);
-      socket.off("connect", handleReconnect);
+      active = false;
+      if (socket) {
+        socket.off("order:new", handleNewOrder);
+        socket.off("order:statusUpdated", handleStatusUpdated);
+        socket.off("disconnect", handleDisconnect);
+        socket.off("connect");
+      }
     };
   }, [restaurantId]);
 

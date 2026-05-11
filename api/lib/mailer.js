@@ -43,8 +43,9 @@ async function sendOrderConfirmation({ to, order }) {
 
   try {
     const createdAt = order.createdAt ? new Date(order.createdAt) : new Date();
+    const orderRef = order.orderNumber || order.id.slice(0, 8).toUpperCase();
     const html = renderTemplate({
-      orderNumber: order.id.slice(0, 8).toUpperCase(),
+      orderNumber: orderRef,
       clientName: order.fullName || "Client",
       orderDate: createdAt.toLocaleDateString("fr-FR"),
       orderTime: createdAt.toLocaleTimeString("fr-FR", {
@@ -58,7 +59,7 @@ async function sendOrderConfirmation({ to, order }) {
     await transporter.sendMail({
       from: `"Pokey" <${process.env.SMTP_USER}>`,
       to,
-      subject: `Confirmation de commande #${order.id.slice(0, 8).toUpperCase()}`,
+      subject: `Confirmation de commande #${orderRef}`,
       html,
     });
     logger.info({ orderId: order.id, to }, "Order confirmation email sent");

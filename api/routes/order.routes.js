@@ -4,20 +4,15 @@ const orderControllers = require("../controllers/order.controllers");
 const checkAuth = require("../middleware/auth.middleware");
 const { isRestaurantAdmin } = require("../middleware/role.middleware");
 const { validate } = require("../middleware/validate.middleware");
-const {
-  orderSchema,
-  updateOrderStatusSchema,
-} = require("../validators/schemas");
+const { updateOrderStatusSchema } = require("../validators/schemas");
 
-// Public — no auth required
+// Public — no auth required (used by confirmation pages; UUID is unguessable)
 router.get("/orders/:orderId", orderControllers.getOrderPublic);
 
-// Public — create order (no auth required)
-router.post(
-  "/restaurants/:restaurantId/orders",
-  validate({ body: orderSchema }),
-  orderControllers.createOrder,
-);
+// NOTE: the legacy `POST /restaurants/:restaurantId/orders` route was removed.
+// Customers must go through `POST /checkout/create-session` so the order is
+// either tied to a Stripe payment or explicitly marked PENDING_ON_SITE_PAYMENT.
+// The controller (`order.controllers.createOrder`) is kept for unit tests only.
 
 // Protected — STAFF+ required
 router.get(

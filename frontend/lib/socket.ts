@@ -1,4 +1,5 @@
 import { io, Socket } from "socket.io-client";
+import { createClient } from "@/lib/supabase/client";
 
 let socket: Socket | null = null;
 
@@ -15,4 +16,21 @@ export function getSocket(): Socket {
     });
   }
   return socket;
+}
+
+/**
+ * Returns a connected, authenticated socket — or null if no Supabase session.
+ * The API rejects unauthenticated socket connections (`socket.handshake.auth.token`).
+ */
+export async function connectSocket(): Promise<Socket | null> {
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session?.access_token) return null;
+
+  const s = getSocket();
+  s.auth = { token: session.access_token };
+  if (!s.connected) s.connect();
+  return s;
 }
