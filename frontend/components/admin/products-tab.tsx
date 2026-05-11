@@ -160,8 +160,8 @@ export default function ProductsTab() {
           className={cn(
             "mb-4 flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium",
             notification.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200",
+              ? "bg-brand-forest/10 text-brand-forest border border-brand-forest/20"
+              : "bg-destructive/10 text-destructive border border-destructive/20",
           )}
         >
           {notification.type === "success" ? (
@@ -174,7 +174,7 @@ export default function ProductsTab() {
       )}
 
       {/* Sub-view toggle */}
-      <div className="flex gap-1 p-1 bg-gray-100 rounded-lg w-fit mb-6">
+      <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit mb-6">
         {SUB_VIEWS.map(({ key, label }) => (
           <button
             key={key}
@@ -182,8 +182,8 @@ export default function ProductsTab() {
             className={cn(
               "px-3 py-1.5 rounded-md text-sm font-medium transition-all",
               subView === key
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-600 hover:text-gray-900",
+                ? "bg-white text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             {label}
@@ -286,16 +286,16 @@ function ProductsView({
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Rechercher un produit..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 h-10 rounded-sm border border-black/20 bg-white text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full pl-9 pr-3 h-10 rounded-sm border border-border bg-white text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
         </div>
-        <div className="flex gap-1 p-1 bg-gray-100 rounded-lg shrink-0">
+        <div className="flex gap-1 p-1 bg-muted rounded-lg shrink-0">
           {(["all", "available", "unavailable"] as const).map((f) => (
             <button
               key={f}
@@ -303,8 +303,8 @@ function ProductsView({
               className={cn(
                 "px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                 filter === f
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900",
+                  ? "bg-white text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               {f === "all"
@@ -327,26 +327,26 @@ function ProductsView({
         </Button>
       </div>
 
-      <p className="text-xs text-[#676767] mb-3">
+      <p className="text-xs text-muted-foreground mb-3">
         {filtered.length} produit{filtered.length !== 1 ? "s" : ""}
       </p>
 
       {filtered.length === 0 ? (
-        <p className="text-center text-[#676767] py-12">
+        <p className="text-center text-muted-foreground py-12">
           Aucun produit trouvé
         </p>
       ) : (
-        <div className="border border-black/8 rounded-lg overflow-hidden">
+        <div className="border border-border rounded-lg overflow-hidden">
           {filtered.map((product, i) => (
             <div
               key={product.id}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors",
-                i !== filtered.length - 1 && "border-b border-black/5",
+                "flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors",
+                i !== filtered.length - 1 && "border-b border-border",
               )}
             >
               {/* Thumbnail */}
-              <div className="w-10 h-10 rounded-md overflow-hidden bg-gray-100 shrink-0">
+              <div className="w-10 h-10 rounded-md overflow-hidden bg-muted shrink-0">
                 {product.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -356,7 +356,7 @@ function ProductsView({
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Package className="w-4 h-4 text-gray-400" />
+                    <Package className="w-4 h-4 text-muted-foreground" />
                   </div>
                 )}
               </div>
@@ -377,13 +377,13 @@ function ProductsView({
                     </Badge>
                   )}
                 </div>
-                <p className="text-xs text-[#676767] truncate">
+                <p className="text-xs text-muted-foreground truncate">
                   {product.categorieName}
                 </p>
               </div>
 
               {/* Price */}
-              <p className="text-sm font-semibold text-[#1f4493] shrink-0">
+              <p className="text-sm font-semibold text-primary shrink-0">
                 {formatEuros(parseFloat(product.price))}
               </p>
 
@@ -397,14 +397,14 @@ function ProductsView({
                   className="p-1.5 hover:bg-black/5 rounded-md transition-colors"
                   aria-label="Modifier"
                 >
-                  <Pencil className="w-3.5 h-3.5 text-[#676767]" />
+                  <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
                 <button
                   onClick={() => setDeleteTarget(product)}
-                  className="p-1.5 hover:bg-red-50 rounded-md transition-colors"
+                  className="p-1.5 hover:bg-destructive/10 rounded-md transition-colors"
                   aria-label="Supprimer"
                 >
-                  <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
                 </button>
               </div>
             </div>
@@ -433,7 +433,7 @@ function ProductsView({
             <DialogTitle>Supprimer ce produit ?</DialogTitle>
           </DialogHeader>
           <div className="p-4 space-y-4">
-            <p className="text-sm text-[#676767]">
+            <p className="text-sm text-muted-foreground">
               Cette action est irréversible. &ldquo;{deleteTarget?.name}&rdquo;
               sera définitivement supprimé.
             </p>
@@ -473,7 +473,6 @@ function SortableOptionGroupItem({
   onCollapse,
   onRemove,
   onStartAddChoice,
-  onChoiceSaved,
   onCancelAddChoice,
   onError,
   onRefreshGroups,
@@ -485,7 +484,6 @@ function SortableOptionGroupItem({
   onCollapse: () => void;
   onRemove: () => void;
   onStartAddChoice: () => void;
-  onChoiceSaved: () => Promise<void>;
   onCancelAddChoice: () => void;
   onError: (msg: string) => void;
   onRefreshGroups: () => Promise<void>;
@@ -499,11 +497,11 @@ function SortableOptionGroupItem({
       dragListener={false}
       dragControls={controls}
       transition={{ layout: { duration: 0 } }}
-      className="border-b border-black/5 last:border-0 bg-white"
+      className="border-b border-border last:border-0 bg-white"
     >
-      <div className="flex items-center gap-2 px-3 py-2.5 hover:bg-gray-50 transition-colors">
+      <div className="flex items-center gap-2 px-3 py-2.5 hover:bg-muted transition-colors">
         <GripVertical
-          className="w-3.5 h-3.5 text-gray-300 cursor-grab shrink-0 touch-none"
+          className="w-3.5 h-3.5 text-muted-foreground/40 cursor-grab shrink-0 touch-none"
           onPointerDown={(e) => {
             isDragging.current = true;
             if (isExpanded) onCollapse();
@@ -526,34 +524,34 @@ function SortableOptionGroupItem({
         >
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium truncate">{group.name}</p>
-            <p className="text-xs text-[#676767]">
+            <p className="text-xs text-muted-foreground">
               {group.hasMultiple ? "Multiple" : "Unique"} ·{" "}
               {group.optionChoices.length} choix
               {group.isRequired && (
-                <span className="ml-1 text-[#e67400]">· Requis</span>
+                <span className="ml-1 text-primary">· Requis</span>
               )}
             </p>
           </div>
           {isExpanded ? (
-            <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
           ) : (
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
           )}
         </button>
         <button
           type="button"
           onClick={onRemove}
-          className="text-gray-300 hover:text-red-400 transition-colors shrink-0 cursor-pointer"
+          className="text-muted-foreground/40 hover:text-destructive/80 transition-colors shrink-0 cursor-pointer"
         >
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
 
       {isExpanded && (
-        <div className="border-t border-black/5 bg-gray-50/50">
+        <div className="border-t border-border bg-muted/50">
           {group.optionChoices.length === 0 &&
             addingChoiceFor !== group.id && (
-              <p className="text-xs text-[#676767] px-8 py-2.5 italic">
+              <p className="text-xs text-muted-foreground px-8 py-2.5 italic">
                 Aucun choix pour l&apos;instant
               </p>
             )}
@@ -562,15 +560,15 @@ function SortableOptionGroupItem({
             .map((choice) => (
               <div
                 key={choice.id}
-                className="flex items-center gap-3 px-8 py-2 border-b border-black/5 last:border-0 text-xs"
+                className="flex items-center gap-3 px-8 py-2 border-b border-border last:border-0 text-xs"
               >
                 <span className="flex-1">{choice.name}</span>
                 <span
                   className={cn(
                     "shrink-0",
                     parseFloat(choice.priceModifier) > 0
-                      ? "text-[#e67400]"
-                      : "text-gray-400",
+                      ? "text-primary"
+                      : "text-muted-foreground",
                   )}
                 >
                   {parseFloat(choice.priceModifier) > 0
@@ -832,7 +830,7 @@ function ProductSheet({
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
           {/* Image upload */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
               Image
             </label>
             {form.imageUrl ? (
@@ -877,22 +875,22 @@ function ProductSheet({
                     "flex flex-col items-center justify-center w-full h-32 rounded-lg border-2 border-dashed cursor-pointer transition-colors",
                     dragOver
                       ? "border-primary bg-primary/5"
-                      : "border-black/20 hover:border-primary/50 hover:bg-gray-50",
-                    errors.imageUrl && "border-red-400",
+                      : "border-border hover:border-primary/50 hover:bg-muted",
+                    errors.imageUrl && "border-destructive/80",
                   )}
                 >
                   {uploading ? (
-                    <Loader2 className="w-6 h-6 animate-spin text-[#676767]" />
+                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                   ) : (
                     <>
-                      <Upload className="w-6 h-6 text-[#676767] mb-1" />
-                      <p className="text-xs text-[#676767]">
+                      <Upload className="w-6 h-6 text-muted-foreground mb-1" />
+                      <p className="text-xs text-muted-foreground">
                         Glissez une image ou{" "}
                         <span className="text-primary font-medium">
                           cliquez
                         </span>
                       </p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
                         JPEG, PNG, WebP · max 5 MB
                       </p>
                     </>
@@ -923,8 +921,8 @@ function ProductSheet({
 
           {/* Name */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
-              Nom <span className="text-red-500">*</span>
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
+              Nom <span className="text-destructive">*</span>
             </label>
             <Input
               value={form.name}
@@ -938,8 +936,8 @@ function ProductSheet({
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
-              Description <span className="text-red-500">*</span>
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
+              Description <span className="text-destructive">*</span>
             </label>
             <textarea
               value={form.description}
@@ -948,15 +946,15 @@ function ProductSheet({
               maxLength={255}
               rows={3}
               className={cn(
-                "flex w-full rounded-sm border bg-white px-3 py-2 text-sm transition-colors placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed resize-none",
-                errors.description ? "border-red-500" : "border-black/20",
+                "flex w-full rounded-sm border bg-white px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed resize-none",
+                errors.description ? "border-destructive" : "border-border",
               )}
             />
             <div className="flex justify-between mt-1">
               {errors.description && (
-                <p className="text-xs text-red-500">{errors.description}</p>
+                <p className="text-xs text-destructive">{errors.description}</p>
               )}
-              <p className="text-xs text-gray-400 ml-auto">
+              <p className="text-xs text-muted-foreground ml-auto">
                 {form.description.length}/255
               </p>
             </div>
@@ -964,15 +962,15 @@ function ProductSheet({
 
           {/* Category */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
-              Catégorie <span className="text-red-500">*</span>
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
+              Catégorie <span className="text-destructive">*</span>
             </label>
             <select
               value={form.categorieId}
               onChange={(e) => setField("categorieId", e.target.value)}
               className={cn(
                 "flex h-10 w-full rounded-sm border bg-white px-3 py-2 text-sm focus-visible:outline-none focus:ring-2 focus:ring-primary",
-                errors.categorieId ? "border-red-500" : "border-black/20",
+                errors.categorieId ? "border-destructive" : "border-border",
               )}
             >
               <option value="">Sélectionner une catégorie</option>
@@ -983,15 +981,15 @@ function ProductSheet({
               ))}
             </select>
             {errors.categorieId && (
-              <p className="mt-1 text-xs text-red-500">{errors.categorieId}</p>
+              <p className="mt-1 text-xs text-destructive">{errors.categorieId}</p>
             )}
           </div>
 
           {/* Price + Discount */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Prix (€) <span className="text-red-500">*</span>
+              <label className="block text-xs font-medium text-foreground/70 mb-1.5">
+                Prix (€) <span className="text-destructive">*</span>
               </label>
               <Input
                 type="number"
@@ -1005,7 +1003,7 @@ function ProductSheet({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground/70 mb-1.5">
                 Remise (€)
               </label>
               <Input
@@ -1024,7 +1022,7 @@ function ProductSheet({
           {/* Display order + Availability */}
           <div className="grid grid-cols-2 gap-3 items-end">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground/70 mb-1.5">
                 Ordre d&apos;affichage
               </label>
               <Input
@@ -1036,7 +1034,7 @@ function ProductSheet({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+              <label className="block text-xs font-medium text-foreground/70 mb-1.5">
                 Disponibilité
               </label>
               <button
@@ -1045,8 +1043,8 @@ function ProductSheet({
                 className={cn(
                   "flex items-center gap-2 h-10 px-4 w-full rounded-sm border text-sm font-medium transition-colors",
                   form.isAvailable
-                    ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
-                    : "border-black/20 bg-white text-gray-500 hover:bg-gray-50",
+                    ? "border-brand-forest/40 bg-brand-forest/10 text-brand-forest hover:bg-brand-forest/15"
+                    : "border-border bg-white text-muted-foreground hover:bg-muted",
                 )}
               >
                 {form.isAvailable ? (
@@ -1066,7 +1064,7 @@ function ProductSheet({
 
           {/* Tags */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
               Tags
             </label>
             <div className="flex gap-2">
@@ -1120,7 +1118,7 @@ function ProductSheet({
           {/* Option Groups */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-medium text-gray-700">
+              <label className="text-xs font-medium text-foreground/70">
                 Groupes d&apos;options
               </label>
               <button
@@ -1145,7 +1143,7 @@ function ProductSheet({
                     type="button"
                     onClick={() => setAddGroupOpen((o) => !o)}
                     disabled={available.length === 0}
-                    className="w-full h-9 px-3 text-xs rounded-lg border border-black/10 bg-white text-gray-500 hover:bg-gray-50 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    className="w-full h-9 px-3 text-xs rounded-lg border border-black/10 bg-white text-muted-foreground hover:bg-muted transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <Plus className="w-3 h-3 shrink-0" />
                     {available.length === 0
@@ -1153,7 +1151,7 @@ function ProductSheet({
                       : "Ajouter un groupe d'options"}
                   </button>
                   {addGroupOpen && available.length > 0 && (
-                    <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-black/10 rounded-lg shadow-lg overflow-hidden">
+                    <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-brand-border rounded-lg shadow-lg overflow-hidden">
                       {available.map((g) => (
                         <button
                           key={g.id}
@@ -1162,10 +1160,10 @@ function ProductSheet({
                             toggleOptionGroup(g.id);
                             setAddGroupOpen(false);
                           }}
-                          className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 transition-colors"
+                          className="w-full text-left px-3 py-2 text-xs hover:bg-muted transition-colors"
                         >
                           <span className="font-medium">{g.name}</span>
-                          <span className="ml-2 text-[#676767]">
+                          <span className="ml-2 text-muted-foreground">
                             {g.hasMultiple ? "Multiple" : "Unique"} · {g.optionChoices.length} choix
                           </span>
                         </button>
@@ -1200,7 +1198,6 @@ function ProductSheet({
                       onCollapse={() => setExpandedGroups((prev) => { const next = new Set(prev); next.delete(group.id); return next; })}
                       onRemove={() => toggleOptionGroup(group.id)}
                       onStartAddChoice={() => setAddingChoiceFor(group.id)}
-                      onChoiceSaved={async () => {}}
                       onCancelAddChoice={() => setAddingChoiceFor(null)}
                       onError={onError}
                       onRefreshGroups={onRefreshGroups}
@@ -1212,7 +1209,7 @@ function ProductSheet({
 
             {optionGroups.length === 0 && (
               <div className="text-center py-6 border-2 border-dashed border-black/10 rounded-lg">
-                <p className="text-xs text-[#676767]">
+                <p className="text-xs text-muted-foreground">
                   Aucun groupe d&apos;options
                 </p>
                 <button
@@ -1247,7 +1244,7 @@ function ProductSheet({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-black/8 px-6 py-4 flex gap-2">
+        <div className="border-t border-border px-6 py-4 flex gap-2">
           <SheetClose asChild>
             <Button
               variant="outline"
@@ -1305,7 +1302,7 @@ function InlineChoiceAddRow({
   };
 
   return (
-    <div className="flex items-center gap-2 px-8 py-2 bg-white border-t border-black/5">
+    <div className="flex items-center gap-2 px-8 py-2 bg-white border-t border-border">
       <input
         type="text"
         autoFocus
@@ -1316,7 +1313,7 @@ function InlineChoiceAddRow({
           if (e.key === "Enter") handleSave();
           if (e.key === "Escape") onCancel();
         }}
-        className="flex-1 h-7 px-2 text-xs border border-black/20 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        className="flex-1 h-7 px-2 text-xs border border-border rounded-sm focus:outline-none focus:ring-2 focus:ring-primary"
       />
       <input
         type="number"
@@ -1325,9 +1322,9 @@ function InlineChoiceAddRow({
         placeholder="0.00"
         value={price}
         onChange={(e) => setPrice(e.target.value)}
-        className="w-16 h-7 px-2 text-xs border border-black/20 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        className="w-16 h-7 px-2 text-xs border border-border rounded-sm focus:outline-none focus:ring-2 focus:ring-primary"
       />
-      <span className="text-xs text-[#676767]">€</span>
+      <span className="text-xs text-muted-foreground">€</span>
       <button
         type="button"
         onClick={handleSave}
@@ -1345,7 +1342,7 @@ function InlineChoiceAddRow({
         onClick={onCancel}
         className="p-1 hover:bg-black/5 rounded-md transition-colors"
       >
-        <X className="w-3 h-3 text-[#676767]" />
+        <X className="w-3 h-3 text-muted-foreground" />
       </button>
     </div>
   );

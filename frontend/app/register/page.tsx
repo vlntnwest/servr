@@ -54,7 +54,7 @@ function RegisterForm() {
     return (
       <div className="text-center">
         <h1 className="text-xl font-bold mb-2">Vérifiez vos emails</h1>
-        <p className="text-[#676767]">
+        <p className="text-muted-foreground">
           Un lien de confirmation vous a été envoyé à <strong>{email}</strong>.
         </p>
       </div>
@@ -62,7 +62,7 @@ function RegisterForm() {
   }
 
   return (
-    <div className="bg-white border border-black/5 rounded-lg p-6">
+    <div className="bg-white border border-brand-border rounded-lg p-6">
       <h1 className="text-xl font-bold mb-4">Créer un compte</h1>
 
       <div className="space-y-2 mb-4">
@@ -76,7 +76,7 @@ function RegisterForm() {
 
       <div className="flex items-center gap-2 my-4">
         <div className="flex-1 border-t" />
-        <span className="text-xs text-[#676767]">ou</span>
+        <span className="text-xs text-muted-foreground">ou</span>
         <div className="flex-1 border-t" />
       </div>
 
@@ -105,14 +105,14 @@ function RegisterForm() {
           />
         </div>
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Créer un compte"}
         </Button>
       </form>
 
-      <p className="text-center text-sm text-[#676767] mt-4">
+      <p className="text-center text-sm text-muted-foreground mt-4">
         Déjà un compte ?{" "}
         <Link
           href={`/login${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`}
@@ -129,7 +129,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <Suspense fallback={<div className="bg-white border border-black/5 rounded-lg p-6 h-48" />}>
+        <Suspense fallback={<div className="bg-white border border-brand-border rounded-lg p-6 h-48" />}>
           <RegisterForm />
         </Suspense>
       </div>

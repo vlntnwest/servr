@@ -78,10 +78,10 @@ export default function OpeningHoursTab() {
         {hours.map((h, idx) => (
           <div
             key={idx}
-            className="bg-white border border-black/5 rounded-lg p-3 flex items-center gap-3"
+            className="bg-white border border-brand-border rounded-lg p-3 flex items-center gap-3"
           >
             <select
-              className="text-sm border border-black/15 rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="text-sm border border-border rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary"
               value={h.dayOfWeek}
               onChange={(e) => updateHour(idx, "dayOfWeek", Number(e.target.value))}
             >
@@ -98,7 +98,7 @@ export default function OpeningHoursTab() {
               placeholder="11:30"
               className="w-20 text-sm"
             />
-            <span className="text-[#676767] text-sm">—</span>
+            <span className="text-muted-foreground text-sm">—</span>
             <Input
               type="text"
               value={h.closeTime}
@@ -107,7 +107,7 @@ export default function OpeningHoursTab() {
               className="w-20 text-sm"
             />
             <button
-              className="ml-auto text-red-500 hover:text-red-700 p-1"
+              className="ml-auto text-destructive hover:text-destructive/80 p-1"
               onClick={() => removeHour(idx)}
             >
               <Trash2 className="w-4 h-4" />

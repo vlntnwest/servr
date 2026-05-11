@@ -36,7 +36,7 @@ export default function StatsTab() {
             className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
               period === p.value
                 ? "bg-primary text-white border-primary"
-                : "border-black/15 hover:border-primary hover:text-primary"
+                : "border-border hover:border-primary hover:text-primary"
             }`}
             onClick={() => setPeriod(p.value)}
           >
@@ -53,26 +53,26 @@ export default function StatsTab() {
         </div>
       ) : stats ? (
         <div className="grid sm:grid-cols-2 gap-4">
-          <div className="bg-white border border-black/5 rounded-lg p-4">
-            <p className="text-[#676767] text-sm">Commandes</p>
+          <div className="bg-white border border-brand-border rounded-lg p-4">
+            <p className="text-muted-foreground text-sm">Commandes</p>
             <p className="text-3xl font-bold mt-1">{stats.totalOrders}</p>
           </div>
-          <div className="bg-white border border-black/5 rounded-lg p-4">
-            <p className="text-[#676767] text-sm">Chiffre d&apos;affaires</p>
+          <div className="bg-white border border-brand-border rounded-lg p-4">
+            <p className="text-muted-foreground text-sm">Chiffre d&apos;affaires</p>
             <p className="text-3xl font-bold mt-1">{formatEuros(stats.revenue)}</p>
           </div>
 
           {stats.popularProducts.length > 0 && (
-            <div className="bg-white border border-black/5 rounded-lg p-4 sm:col-span-2">
+            <div className="bg-white border border-brand-border rounded-lg p-4 sm:col-span-2">
               <h3 className="font-bold mb-3">Produits populaires</h3>
               <div className="space-y-2">
                 {stats.popularProducts.map((p, i) => (
                   <div key={i} className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                      <span className="text-[#676767] text-sm w-5">{i + 1}.</span>
+                      <span className="text-muted-foreground text-sm w-5">{i + 1}.</span>
                       <span className="text-sm">{p.name}</span>
                     </div>
-                    <span className="text-sm font-semibold text-[#676767]">
+                    <span className="text-sm font-semibold text-muted-foreground">
                       {p.count} vendus
                     </span>
                   </div>
@@ -82,7 +82,7 @@ export default function StatsTab() {
           )}
         </div>
       ) : (
-        <p className="text-[#676767]">Aucune donnée disponible</p>
+        <p className="text-muted-foreground">Aucune donnée disponible</p>
       )}
     </div>
   );

@@ -71,6 +71,23 @@ module.exports.getUserOrders = async (req, res, next) => {
   }
 };
 
+module.exports.updatePushToken = async (req, res, next) => {
+  const { id } = req.user;
+  const { token } = req.body;
+
+  try {
+    await prisma.user.update({
+      where: { id },
+      data: { pushToken: token },
+    });
+
+    logger.info({ userId: id }, "Push token updated");
+    return res.status(200).json({ message: "Push token updated" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports.deleteUser = async (req, res, next) => {
   const { id } = req.user;
 

@@ -28,7 +28,7 @@ function initSocket(httpServer) {
 
       const dbUser = await prisma.user.findUnique({
         where: { id: user.id },
-        include: { restaurantMembers: true },
+        include: { restaurants: true },
       });
       if (!dbUser) {
         return next(new Error("User not found"));
@@ -46,8 +46,8 @@ function initSocket(httpServer) {
     logger.info({ socketId: socket.id, userId: socket.data.user.id }, "Socket connected");
 
     socket.on("join:restaurant", (restaurantId) => {
-      const isMember = socket.data.user.restaurantMembers.some(
-        (m) => m.restaurantId === restaurantId,
+      const isMember = socket.data.user.restaurants.some(
+        (r) => r.id === restaurantId,
       );
       if (!isMember) {
         logger.warn({ socketId: socket.id, restaurantId }, "Unauthorized join:restaurant attempt");

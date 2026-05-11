@@ -1,5 +1,10 @@
 import { notFound } from "next/navigation";
-import { getRestaurantBySlug, getMenuForRestaurant, getOpeningHours, getExceptionalHours } from "@/lib/api";
+import {
+  getRestaurantBySlug,
+  getMenuForRestaurant,
+  getOpeningHours,
+  getExceptionalHours,
+} from "@/lib/api";
 import Header from "@/components/layout/header";
 import RestaurantHeader from "@/components/store/restaurant-header";
 import CategoryNav from "@/components/menu/category-nav";
@@ -31,7 +36,10 @@ export default async function StorePage({
   return (
     <>
       <Header />
-      <RestaurantHeader restaurant={restaurant} openingHours={openingHours} exceptionalHours={exceptionalHours} />
+      <RestaurantHeader
+        openingHours={openingHours}
+        exceptionalHours={exceptionalHours}
+      />
       <CategoryNav categories={sorted} />
       <main>
         <Suspense

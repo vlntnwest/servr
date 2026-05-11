@@ -51,7 +51,7 @@ const ResponsiveModalContent = React.forwardRef<
         <DialogPrimitive.Content
           ref={ref}
           className={cn(
-            "fixed z-50 bg-white shadow-xl",
+            "fixed z-50 bg-card shadow-xl",
             isMobile
               ? cn(
                   "inset-x-0 bottom-0",
@@ -91,7 +91,7 @@ const ResponsiveModalHeader = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col space-y-1.5 p-4 border-b border-black/8", className)} {...props} />
+  <div className={cn("flex flex-col space-y-1.5 p-4 border-b border-border", className)} {...props} />
 );
 ResponsiveModalHeader.displayName = "ResponsiveModalHeader";
 

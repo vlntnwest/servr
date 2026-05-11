@@ -1,7 +1,9 @@
 const nodemailer = require("nodemailer");
-const fs = require("fs");
-const path = require("path");
 const logger = require("../logger");
+
+const smtpConfigured = ["SMTP_HOST", "SMTP_USER", "SMTP_PASS"].every(
+  (k) => !!process.env[k],
+);
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -13,44 +15,38 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const templatePath = path.join(__dirname, "../Template/emailTemplate.html");
-const emailTemplate = fs.readFileSync(templatePath, "utf8");
-
-function renderTemplate(data) {
-  return emailTemplate
-    .replace(/\{\{orderNumber\}\}/g, data.orderNumber)
-    .replace(/\{\{clientName\}\}/g, data.clientName)
-    .replace(/\{\{orderDate\}\}/g, data.orderDate)
-    .replace(/\{\{orderTime\}\}/g, data.orderTime)
-    .replace(/\{\{totalPrice\}\}/g, data.totalPrice)
-    .replace(/\{\{orderlink\}\}/g, data.orderLink);
-}
-
 /**
  * Send order confirmation email to client.
  * Fire-and-forget: errors are logged but do not throw.
  */
 async function sendOrderConfirmation({ to, order }) {
   if (!to) return;
+  if (!smtpConfigured) {
+    logger.warn(
+      { orderId: order.id },
+      "Order confirmation email skipped — SMTP not configured",
+    );
+    return;
+  }
 
   try {
-    const createdAt = order.createdAt ? new Date(order.createdAt) : new Date();
-    const html = renderTemplate({
-      orderNumber: order.id.slice(0, 8).toUpperCase(),
-      clientName: order.fullName || "Client",
-      orderDate: createdAt.toLocaleDateString("fr-FR"),
-      orderTime: createdAt.toLocaleTimeString("fr-FR", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      totalPrice: `${parseFloat(order.totalPrice).toFixed(2)} €`,
-      orderLink: `${process.env.CLIENT_URL}/order/${order.id}`,
-    });
+    const orderRef = order.orderNumber
+      ? `#${order.orderNumber}`
+      : `#${order.id.slice(0, 8).toUpperCase()}`;
+
+    const html = `
+      <div style="font-family:Helvetica,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+        <h2>Confirmation de votre commande ${orderRef}</h2>
+        <p>Bonjour ${order.fullName || ""},</p>
+        <p>Votre commande a bien été <strong>confirmée</strong>.</p>
+        <p style="color:#999;font-size:14px;">Merci pour votre commande !</p>
+      </div>
+    `;
 
     await transporter.sendMail({
       from: `"Pokey" <${process.env.SMTP_USER}>`,
       to,
-      subject: `Confirmation de commande #${order.id.slice(0, 8).toUpperCase()}`,
+      subject: `Confirmation de commande ${orderRef}`,
       html,
     });
     logger.info({ orderId: order.id, to }, "Order confirmation email sent");
@@ -67,6 +63,14 @@ async function sendOrderConfirmation({ to, order }) {
  * Fire-and-forget: errors are logged but do not throw.
  */
 async function sendInvitationEmail({ to, restaurantName, inviteLink }) {
+  if (!smtpConfigured) {
+    logger.warn(
+      { to, restaurantName },
+      "Invitation email skipped — SMTP not configured",
+    );
+    return;
+  }
+
   const html = `
     <div style="font-family:Helvetica,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
       <h2>Vous avez été invité à rejoindre ${restaurantName}</h2>
@@ -106,6 +110,13 @@ const NOTIFIABLE_STATUSES = Object.keys(STATUS_LABELS);
 async function sendOrderStatusUpdate({ to, order, newStatus }) {
   if (!to) return;
   if (!NOTIFIABLE_STATUSES.includes(newStatus)) return;
+  if (!smtpConfigured) {
+    logger.warn(
+      { orderId: order.id, newStatus },
+      "Order status email skipped — SMTP not configured",
+    );
+    return;
+  }
 
   try {
     const label = STATUS_LABELS[newStatus];
@@ -128,7 +139,10 @@ async function sendOrderStatusUpdate({ to, order, newStatus }) {
       subject: `Commande ${orderRef} — ${label}`,
       html,
     });
-    logger.info({ orderId: order.id, to, newStatus }, "Order status update email sent");
+    logger.info(
+      { orderId: order.id, to, newStatus },
+      "Order status update email sent",
+    );
   } catch (err) {
     logger.error(
       { orderId: order.id, to, error: err.message },
@@ -153,8 +167,16 @@ async function verifySmtp() {
     await transporter.verify();
     logger.info("SMTP connection verified");
   } catch (err) {
-    logger.warn({ error: err.message }, "SMTP connection failed — emails may not be sent");
+    logger.warn(
+      { error: err.message },
+      "SMTP connection failed — emails may not be sent",
+    );
   }
 }
 
-module.exports = { sendOrderConfirmation, sendInvitationEmail, sendOrderStatusUpdate, verifySmtp };
+module.exports = {
+  sendOrderConfirmation,
+  sendInvitationEmail,
+  sendOrderStatusUpdate,
+  verifySmtp,
+};

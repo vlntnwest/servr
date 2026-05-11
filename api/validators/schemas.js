@@ -129,9 +129,9 @@ const orderItemSchema = z.object({
 });
 
 const orderSchema = z.object({
-  fullName: z.string().min(1).max(50).optional(),
-  phone: phoneSchema.optional(),
-  email: z.string().email().optional(),
+  fullName: z.string().min(1).max(50),
+  phone: phoneSchema,
+  email: z.string().email(),
   items: z.array(orderItemSchema).min(1),
   promoCode: z.string().min(1).max(50).optional(),
   scheduledFor: z.string().datetime({ offset: true }).optional(),
@@ -188,20 +188,27 @@ const exceptionalHourSchema = z.object({
   label: z.string().max(100).optional(),
 });
 
-// Checkout schemas
+// Checkout schemas — fullName and phone are REQUIRED so the restaurant can
+// reach the customer if anything goes wrong (substitution, refund, etc.).
 const checkoutSessionSchema = z.object({
   restaurantId: z.string().uuid(),
-  fullName: z.string().min(1).max(50).optional(),
-  phone: phoneSchema.optional(),
+  fullName: z.string().min(1).max(50),
+  phone: phoneSchema,
   email: z.string().email().optional(),
   items: z.array(orderItemSchema).min(1),
+  promoCode: z.string().min(1).max(50).optional(),
   scheduledFor: z.string().datetime({ offset: true }).optional(),
+});
+
+const pushTokenSchema = z.object({
+  token: z.string().min(1),
 });
 
 module.exports = {
   // User
   updateUserSchema,
   getUserOrdersQuerySchema,
+  pushTokenSchema,
 
   // Restaurant
   restaurantSchema,

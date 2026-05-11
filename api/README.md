@@ -204,6 +204,39 @@ Headers: `apikey: <SUPABASE_ANON_KEY>`
 Authorization: Bearer <access_token>
 ```
 
+## Stripe Connect setup
+
+The platform uses Stripe Connect with **direct charges**: customer payments are
+created on each restaurant's connected account, with a 5% application fee
+routed back to the platform.
+
+### Webhook configuration (REQUIRED)
+
+The webhook must be registered as a **Connect webhook** in the Stripe
+Dashboard, not a regular account-level one. Otherwise events fired on
+connected accounts never reach the API and orders never transition from
+`DRAFT` to `PENDING`.
+
+1. Stripe Dashboard → Developers → Webhooks → Add an endpoint
+2. URL: `https://<your-api-host>/api/checkout/webhook`
+3. Toggle **Listen to events on Connected accounts**
+4. Subscribe to: `checkout.session.completed`, `checkout.session.expired`,
+   `payment_intent.payment_failed`, `account.updated`
+5. Copy the signing secret into `STRIPE_WEBHOOK_SECRET`
+
+Local testing:
+`stripe listen --forward-connect-to localhost:5001/api/checkout/webhook`.
+
+### Pre-launch checklist
+
+- [ ] All vars in `REQUIRED_ENV_VARS` set (server refuses to boot otherwise)
+- [ ] `npx prisma migrate deploy` run on the live DB
+- [ ] Restaurant has completed Stripe onboarding — `GET /restaurants/:id/stripe/status` returns `chargesEnabled: true`
+- [ ] Connect webhook configured (see above) and test event delivered
+- [ ] SMTP verified at boot (`SMTP connection verified` in logs)
+- [ ] Kitchen tablet: logged in, push permission granted, `users.push_token` populated
+- [ ] End-to-end real-card test: order → webhook → kitchen ticket → email → status update
+
 ## License
 
 Private project — All rights reserved.

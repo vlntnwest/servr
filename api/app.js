@@ -30,29 +30,41 @@ const pinoHttp = require("pino-http");
 
 const app = express();
 
+// Hostinger sits behind a reverse proxy/LB — trust one hop so req.ip reflects the real client IP
+app.set("trust proxy", 1);
+
 const isLocalhost = (req) =>
   req.ip === "127.0.0.1" || req.ip === "::1" || req.ip === "::ffff:127.0.0.1";
 
+const skipRateLimit = (req) =>
+  process.env.NODE_ENV !== "production" || isLocalhost(req);
+
 // Rate limiting configuration
-const globalLimiter = rateLimit({
+// Public/unauthenticated traffic — strict limit per IP (anti-abuse)
+const unauthLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // 100 requests per window per IP
   standardHeaders: true,
   legacyHeaders: false,
-  skip: isLocalhost,
+  skip: skipRateLimit,
   message: { error: "Too many requests, please try again later." },
 });
 
-const authLimiter = rateLimit({
+// Authenticated traffic — generous (admin dashboards make many parallel calls)
+const authedLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 15, // 15 requests per window per IP
+  max: 1000, // 1000 requests per window per IP
   standardHeaders: true,
   legacyHeaders: false,
-  skip: isLocalhost,
-  message: {
-    error: "Too many authentication attempts, please try again later.",
-  },
+  skip: skipRateLimit,
+  message: { error: "Too many requests, please try again later." },
 });
+
+// Picks the appropriate limiter based on whether the request carries a Bearer token
+const globalLimiter = (req, res, next) =>
+  req.headers.authorization
+    ? authedLimiter(req, res, next)
+    : unauthLimiter(req, res, next);
 
 const paymentLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -60,19 +72,21 @@ const paymentLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many payment attempts, please try again later." },
-  skip: (req) => req.path === "/webhook",
+  skip: (req) => req.path === "/webhook" || skipRateLimit(req),
 });
 
 // HTTP request logging with response time (pino-http)
-app.use(pinoHttp({
-  logger,
-  autoLogging: false,
-  redact: ["req.headers.authorization", "req.headers.cookie"],
-  serializers: {
-    req: (req) => ({ method: req.method, url: req.url }),
-    res: (res) => ({ statusCode: res.statusCode }),
-  },
-}));
+app.use(
+  pinoHttp({
+    logger,
+    autoLogging: false,
+    redact: ["req.headers.authorization", "req.headers.cookie"],
+    serializers: {
+      req: (req) => ({ method: req.method, url: req.url }),
+      res: (res) => ({ statusCode: res.statusCode }),
+    },
+  }),
+);
 
 // Request ID (must be before other middleware)
 app.use(requestId);
@@ -81,8 +95,14 @@ app.use(requestId);
 app.use(helmet());
 
 // Webhook route FIRST - before CORS and JSON parsing to preserve raw body for signature verification
-app.use("/api/checkout/webhook", express.raw({ type: "application/json", limit: "1mb" }));
-app.use("/api/v1/checkout/webhook", express.raw({ type: "application/json", limit: "1mb" }));
+app.use(
+  "/api/checkout/webhook",
+  express.raw({ type: "application/json", limit: "1mb" }),
+);
+app.use(
+  "/api/v1/checkout/webhook",
+  express.raw({ type: "application/json", limit: "1mb" }),
+);
 
 // CORS
 const corsOption = {
@@ -104,9 +124,6 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
-
-// Apply global rate limiter to all routes
-app.use(globalLimiter);
 
 // Health check — verifies Postgres and Supabase Auth connectivity
 app.get("/health", async (req, res) => {
@@ -135,7 +152,9 @@ app.get("/health", async (req, res) => {
 // Stripe health check — protected, OWNER-level (checks platform API key only)
 app.get("/health/stripe", checkAuth, async (req, res) => {
   if (!process.env.STRIPE_SECRET_KEY) {
-    return res.status(503).json({ status: "error", detail: "Stripe not configured" });
+    return res
+      .status(503)
+      .json({ status: "error", detail: "Stripe not configured" });
   }
   try {
     const Stripe = require("stripe");
@@ -143,7 +162,9 @@ app.get("/health/stripe", checkAuth, async (req, res) => {
     await stripe.balance.retrieve();
     return res.status(200).json({ status: "ok" });
   } catch {
-    return res.status(503).json({ status: "error", detail: "Stripe unreachable" });
+    return res
+      .status(503)
+      .json({ status: "error", detail: "Stripe unreachable" });
   }
 });
 
@@ -153,7 +174,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiSpec));
 // Routes — mounted at both /api (v1 alias) and /api/v1
 const V1_PREFIXES = ["/api", "/api/v1"];
 for (const prefix of V1_PREFIXES) {
-  app.use(`${prefix}/user`, authLimiter, userRoutes);
+  app.use(`${prefix}/user`, globalLimiter, userRoutes);
   app.use(`${prefix}/restaurants`, globalLimiter, restaurantRoutes);
   app.use(`${prefix}/menu`, globalLimiter, menuRoutes);
   app.use(prefix, globalLimiter, orderRoutes);

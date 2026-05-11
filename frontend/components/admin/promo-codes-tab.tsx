@@ -53,7 +53,7 @@ export default function PromoCodesTab() {
   return (
     <div className="pt-4">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-[#676767]">
+        <p className="text-sm text-muted-foreground">
           {codes.length} code{codes.length !== 1 ? "s" : ""} promo
         </p>
         <Button onClick={() => setCreateOpen(true)}>
@@ -64,9 +64,9 @@ export default function PromoCodesTab() {
 
       {codes.length === 0 ? (
         <div className="text-center py-16 border-2 border-dashed border-black/10 rounded-xl">
-          <Tag className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-[#676767]">Aucun code promo</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <Tag className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+          <p className="text-sm font-medium text-muted-foreground">Aucun code promo</p>
+          <p className="text-xs text-muted-foreground mt-1">
             Créez des codes promo pour fidéliser vos clients
           </p>
           <Button
@@ -79,13 +79,13 @@ export default function PromoCodesTab() {
           </Button>
         </div>
       ) : (
-        <div className="border border-black/8 rounded-lg overflow-hidden">
+        <div className="border border-border rounded-lg overflow-hidden">
           {codes.map((code, i) => (
             <div
               key={code.id}
               className={cn(
-                "flex items-center gap-4 px-4 py-3.5 hover:bg-gray-50 transition-colors",
-                i !== codes.length - 1 && "border-b border-black/5",
+                "flex items-center gap-4 px-4 py-3.5 hover:bg-muted transition-colors",
+                i !== codes.length - 1 && "border-b border-border",
               )}
             >
               <div className="flex-1 min-w-0">
@@ -95,14 +95,14 @@ export default function PromoCodesTab() {
                     className={cn(
                       "text-xs px-2 py-0.5 rounded-full font-medium",
                       code.isActive
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-600",
+                        ? "bg-brand-forest/15 text-brand-forest"
+                        : "bg-muted text-muted-foreground",
                     )}
                   >
                     {code.isActive ? "Actif" : "Inactif"}
                   </span>
                 </div>
-                <p className="text-xs text-[#676767] mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {code.discountType === "PERCENTAGE"
                     ? `${parseFloat(code.discountValue)}%`
                     : formatEuros(parseFloat(code.discountValue))}{" "}
@@ -116,7 +116,7 @@ export default function PromoCodesTab() {
                 </p>
               </div>
               <button
-                className="p-2 text-[#676767] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                 onClick={() => handleDelete(code.id)}
               >
                 <Trash2 className="w-4 h-4" />
@@ -197,14 +197,14 @@ function CreatePromoDialog({
         </DialogHeader>
         <div className="p-4 space-y-4">
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
+            <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-3 py-2 rounded-lg">
               {error}
             </p>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
-              Code <span className="text-red-500">*</span>
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
+              Code <span className="text-destructive">*</span>
             </label>
             <Input
               placeholder="EX: BIENVENUE10"
@@ -214,10 +214,10 @@ function CreatePromoDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
               Type de réduction
             </label>
-            <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+            <div className="flex gap-1 p-1 bg-muted rounded-lg">
               {(["PERCENTAGE", "FIXED"] as const).map((t) => (
                 <button
                   key={t}
@@ -226,8 +226,8 @@ function CreatePromoDialog({
                   className={cn(
                     "flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                     discountType === t
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900",
+                      ? "bg-white text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {t === "PERCENTAGE" ? "Pourcentage" : "Montant fixe"}
@@ -237,9 +237,9 @@ function CreatePromoDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
               Valeur {discountType === "PERCENTAGE" ? "(%)" : "(€)"}{" "}
-              <span className="text-red-500">*</span>
+              <span className="text-destructive">*</span>
             </label>
             <Input
               type="number"
@@ -252,7 +252,7 @@ function CreatePromoDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
               Nombre max d&apos;utilisations
             </label>
             <Input
@@ -265,7 +265,7 @@ function CreatePromoDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+            <label className="block text-xs font-medium text-foreground/70 mb-1.5">
               Date d&apos;expiration
             </label>
             <Input

@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 export default function AdminRedirectPage() {
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const [noRestaurant, setNoRestaurant] = useState(false);
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function AdminRedirectPage() {
   if (noRestaurant) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-[#676767]">Aucun restaurant trouvé.</p>
+        <p className="text-muted-foreground">Aucun restaurant trouvé.</p>
       </div>
     );
   }

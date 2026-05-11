@@ -7,6 +7,7 @@
     "npm": ">=9.0.0"
   },
   "scripts": {
+    "postinstall": "prisma generate",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "vitest run",
@@ -22,7 +23,7 @@
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "@sentry/node": "^10.40.0",
-    "@supabase/supabase-js": "^2.91.1",
+    "@supabase/supabase-js": "^2.105.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -30,7 +31,7 @@
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.1.0",
     "multer": "^2.1.0",
-    "nodemailer": "^7.0.3",
+    "nodemailer": "^8.0.7",
     "pg": "^8.17.2",
     "pino": "^10.3.0",
     "pino-http": "^11.0.0",

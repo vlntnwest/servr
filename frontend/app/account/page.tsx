@@ -51,6 +51,7 @@ export default function AccountPage() {
       setLoading(false);
     };
     init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,7 +91,7 @@ export default function AccountPage() {
     <div className="min-h-screen p-4 max-w-md mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Mon compte</h1>
-        <Link href="/account/orders" className="text-sm underline text-[#676767]">
+        <Link href="/account/orders" className="text-sm underline text-muted-foreground">
           Mes commandes
         </Link>
       </div>
@@ -104,7 +105,7 @@ export default function AccountPage() {
             readOnly
             disabled
             autoComplete="email"
-            className="text-[#676767]"
+            className="text-muted-foreground"
           />
         </div>
         <div className="space-y-1.5">
@@ -126,8 +127,8 @@ export default function AccountPage() {
           />
         </div>
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
-        {success && <p className="text-sm text-green-600">Profil mis à jour.</p>}
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        {success && <p className="text-sm text-brand-forest">Profil mis à jour.</p>}
 
         <Button type="submit" className="w-full" disabled={saving}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enregistrer"}

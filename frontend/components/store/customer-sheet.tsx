@@ -20,17 +20,19 @@ export default function CustomerSheet() {
   return (
     <>
       <button
-        className="p-2 rounded-full hover:bg-black/5 transition-colors"
+        className="p-2 rounded-full hover:bg-brand-ink/5 transition-colors"
         onClick={() => setOpen(true)}
         aria-label="Menu"
       >
-        <User className="w-5 h-5 text-gray-600" />
+        <User className="w-5 h-5 text-brand-stone" />
       </button>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-sm p-0">
-          <SheetHeader className="px-5 py-4 border-b border-black/5">
-            <SheetTitle>{user ? "Mon compte" : "Menu"}</SheetTitle>
+        <SheetContent side="right" className="w-full sm:max-w-sm p-0" hideCloseButton>
+          <SheetHeader className="px-5 py-4 border-b border-brand-border">
+            <SheetTitle className="font-display-italic italic font-black text-[22px] leading-none text-brand-ink">
+              {user ? "Mon compte" : "Menu"}
+            </SheetTitle>
           </SheetHeader>
 
           <div className="py-2">
@@ -45,7 +47,7 @@ export default function CustomerSheet() {
                   Historique des commandes
                 </SheetLink>
 
-                <div className="border-t border-black/5 my-2" />
+                <div className="border-t border-brand-border my-2" />
 
                 <SheetLink href="/contact" onClick={() => setOpen(false)}>
                   <Mail className="w-4 h-4" />
@@ -56,12 +58,12 @@ export default function CustomerSheet() {
                   Mentions légales
                 </SheetLink>
 
-                <div className="border-t border-black/5 my-2" />
+                <div className="border-t border-brand-border my-2" />
 
                 <div className="px-4">
                   <Button
                     variant="outline"
-                    className="w-full text-red-600 border-red-200 hover:bg-red-50"
+                    className="w-full h-11 rounded-full border-brand-border text-destructive hover:bg-destructive/5 hover:border-destructive/40"
                     onClick={() => {
                       supabase.auth.signOut();
                       setOpen(false);
@@ -83,7 +85,7 @@ export default function CustomerSheet() {
                   Créer un compte
                 </SheetLink>
 
-                <div className="border-t border-black/5 my-2" />
+                <div className="border-t border-brand-border my-2" />
 
                 <SheetLink href="/contact" onClick={() => setOpen(false)}>
                   <Mail className="w-4 h-4" />
@@ -115,10 +117,10 @@ function SheetLink({
     <a
       href={href}
       onClick={onClick}
-      className="flex items-center gap-3 px-5 py-3 text-sm hover:bg-black/[0.03] transition-colors"
+      className="flex items-center gap-3 px-5 py-3 text-body text-brand-ink hover:bg-brand-ink/[0.03] transition-colors"
     >
       {children}
-      <ChevronRight className="w-4 h-4 ml-auto text-gray-400" />
+      <ChevronRight className="w-4 h-4 ml-auto text-brand-stone" />
     </a>
   );
 }

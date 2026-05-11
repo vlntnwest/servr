@@ -1,13 +1,11 @@
+"use client";
+
 import Image from "next/image";
-import type {
-  Restaurant,
-  OpeningHour,
-  ExceptionalHour,
-  PreparationLevel,
-} from "@/types/api";
+import type { OpeningHour, ExceptionalHour, PreparationLevel } from "@/types/api";
 import { MapPin, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import OpenStatusBadge from "./open-status-badge";
+import { useRestaurant } from "@/contexts/restaurant-context";
 
 function getTodayHours(openingHours: OpeningHour[]): string | null {
   const dayOfWeek = new Date().getDay();
@@ -18,39 +16,43 @@ function getTodayHours(openingHours: OpeningHour[]): string | null {
   return ranges.map((h) => `${h.openTime} - ${h.closeTime}`).join(" / ");
 }
 
-const PREP_BADGES: Record<PreparationLevel, { label: string; color: string }> =
-  {
-    EASY: { label: "Peu d'attente", color: "bg-green-100 text-green-800" },
-    MEDIUM: {
-      label: "Attente modérée",
-      color: "bg-yellow-100 text-yellow-800",
-    },
-    BUSY: { label: "Forte affluence", color: "bg-orange-100 text-orange-800" },
-    CLOSED: { label: "Fermé", color: "bg-red-100 text-red-800" },
-  };
+const PREP_BADGES: Record<PreparationLevel, { label: string; color: string }> = {
+  EASY: {
+    label: "~15 min",
+    color: "bg-brand-forest/10 text-brand-forest",
+  },
+  MEDIUM: {
+    label: "~25 min",
+    color: "bg-brand-yellow/20 text-[#7a5e08]",
+  },
+  BUSY: {
+    label: "~40 min",
+    color: "bg-brand-orange/15 text-brand-orange",
+  },
+  CLOSED: { label: "Fermé", color: "bg-destructive/10 text-destructive" },
+};
 
 interface RestaurantHeaderProps {
-  restaurant: Restaurant;
   openingHours: OpeningHour[];
   exceptionalHours: ExceptionalHour[];
 }
 
 export default function RestaurantHeader({
-  restaurant,
   openingHours,
   exceptionalHours,
 }: RestaurantHeaderProps) {
+  const { restaurant } = useRestaurant();
   const todayHours = getTodayHours(openingHours);
   const prepBadge = restaurant.preparationLevel
     ? PREP_BADGES[restaurant.preparationLevel]
     : null;
 
   return (
-    <div className="border-b border-black/5 bg-white">
-      <div className="max-w-screen-3xl mx-auto flex flex-col md:flex-row md:items-start md:gap-6 md:p-8 xl:p-16">
+    <div className="bg-background">
+      <div className="max-w-screen-3xl mx-auto flex flex-col md:flex-row md:items-start md:gap-8 md:p-8 xl:p-16">
         {/* Image — full bleed on mobile, rounded card on desktop */}
         {restaurant.imageUrl && (
-          <div className="relative w-full aspect-[16/9] md:w-[30%] min-h-[300px] md:shrink-0 md:rounded-sm overflow-hidden bg-gray-100">
+          <div className="relative w-full aspect-[16/9] md:w-[30%] min-h-[300px] md:shrink-0 md:rounded-card overflow-hidden bg-muted">
             <Image
               src={restaurant.imageUrl}
               alt={restaurant.name}
@@ -62,10 +64,12 @@ export default function RestaurantHeader({
         )}
 
         {/* Info */}
-        <div className="flex-1 px-4 py-5 md:px-0 md:py-0">
-          <h1 className="text-4xl font-bold mb-1">{restaurant.name}</h1>
+        <div className="flex-1 px-4 py-6 md:px-0 md:py-0">
+          <h1 className="font-display-italic italic font-black text-[40px] leading-none tracking-tight mb-3 text-brand-ink">
+            {restaurant.name}
+          </h1>
 
-          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm text-[#585c5c]">
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-body-sm text-brand-stone">
             <MapPin className="w-3.5 h-3.5 shrink-0" />
             <span>
               {restaurant.address}, {restaurant.zipCode} {restaurant.city}
@@ -73,21 +77,23 @@ export default function RestaurantHeader({
           </div>
 
           {todayHours && (
-            <div className="flex items-center gap-1.5 text-sm text-[#585c5c] mt-1">
+            <div className="flex items-center gap-1.5 text-body-sm text-brand-stone mt-1">
               <Clock className="w-3.5 h-3.5 shrink-0" />
               <span>Aujourd&apos;hui : {todayHours}</span>
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-2 mt-3">
-            <OpenStatusBadge
-              openingHours={openingHours}
-              exceptionalHours={exceptionalHours}
-            />
+          <div className="flex flex-wrap items-center gap-2 mt-4">
+            {restaurant.preparationLevel !== "CLOSED" && (
+              <OpenStatusBadge
+                openingHours={openingHours}
+                exceptionalHours={exceptionalHours}
+              />
+            )}
             {prepBadge && restaurant.preparationLevel !== "EASY" && (
               <span
                 className={cn(
-                  "text-xs px-2.5 py-1 rounded-full font-medium",
+                  "text-caption px-3 py-1 rounded-full font-semibold tracking-pill",
                   prepBadge.color,
                 )}
               >

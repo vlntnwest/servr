@@ -41,7 +41,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (
         event === "SIGNED_IN" ||
-        event === "TOKEN_REFRESHED" ||
         event === "INITIAL_SESSION"
       ) {
         if (session) {
