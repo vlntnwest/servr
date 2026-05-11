@@ -52,6 +52,22 @@ export default function SettingsList() {
         </View>
       </View>
 
+      <Text variant="default" className="px-5 mb-1.5 mt-4">
+        Activité
+      </Text>
+      <View className={`${isTablet ? "" : "px-5"}`}>
+        <View className="rounded-[30px] overflow-hidden">
+          <Row
+            iconName="clock.arrow.circlepath"
+            iconBg={BRAND.stone}
+            label="Historique des commandes"
+            onPress={() => router.push("/settings/history")}
+            active={pathname === "/settings/history"}
+            showSeparator={false}
+          />
+        </View>
+      </View>
+
       <Button
         variant="link"
         onPress={() => supabase.auth.signOut()}
