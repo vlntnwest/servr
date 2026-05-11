@@ -36,8 +36,12 @@ app.set("trust proxy", 1);
 const isLocalhost = (req) =>
   req.ip === "127.0.0.1" || req.ip === "::1" || req.ip === "::ffff:127.0.0.1";
 
+const isInternalRequest = (req) =>
+  process.env.INTERNAL_API_SECRET &&
+  req.headers["x-internal-secret"] === process.env.INTERNAL_API_SECRET;
+
 const skipRateLimit = (req) =>
-  process.env.NODE_ENV !== "production" || isLocalhost(req);
+  process.env.NODE_ENV !== "production" || isLocalhost(req) || isInternalRequest(req);
 
 // Rate limiting configuration
 // Public/unauthenticated traffic — strict limit per IP (anti-abuse)
