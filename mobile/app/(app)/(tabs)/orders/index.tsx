@@ -29,7 +29,7 @@ export default function Orders() {
         <ScrollView style={{ flex: 1 }}>
           <Affluence />
 
-          <View className="px-5 pt-4 pb-2">
+          <View className="px-5 pb-2">
             <Text variant="display">Commandes</Text>
           </View>
 
