@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { ShoppingBag, Clock, CreditCard, Users, BarChart3, Zap } from "lucide-react";
+import {
+  ShoppingBag,
+  Clock,
+  CreditCard,
+  Users,
+  BarChart3,
+  Zap,
+} from "lucide-react";
 
 const FEATURES = [
   {
@@ -46,7 +53,7 @@ export default function HomePage() {
       {/* Hero */}
       <header className="border-b border-border">
         <div className="max-w-screen-xl mx-auto px-4 h-16 flex items-center justify-between">
-          <span className="text-xl font-bold text-primary">Servr</span>
+          <span className="text-xl font-bold text-primary">My Spots</span>
           <div className="flex items-center gap-3">
             <Link
               href="/login"
@@ -71,8 +78,8 @@ export default function HomePage() {
             La commande en ligne pour votre restaurant
           </h1>
           <p className="mt-6 text-lg text-muted-foreground max-w-xl mx-auto">
-            Créez votre page de commande en quelques minutes. Gérez vos produits,
-            commandes et paiements depuis un seul tableau de bord.
+            Créez votre page de commande en quelques minutes. Gérez vos
+            produits, commandes et paiements depuis un seul tableau de bord.
           </p>
           <div className="mt-10 flex items-center justify-center gap-4">
             <Link
@@ -98,7 +105,10 @@ export default function HomePage() {
             </h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {FEATURES.map(({ icon: Icon, title, description }) => (
-                <div key={title} className="bg-white border border-brand-border rounded-lg p-6">
+                <div
+                  key={title}
+                  className="bg-white border border-brand-border rounded-lg p-6"
+                >
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                     <Icon className="w-5 h-5 text-primary" />
                   </div>
@@ -133,7 +143,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="max-w-screen-xl mx-auto px-4 text-center text-sm text-muted-foreground">
-          Servr — Commande en ligne pour restaurants
+          My Spots — Commande en ligne pour restaurants
         </div>
       </footer>
     </div>
