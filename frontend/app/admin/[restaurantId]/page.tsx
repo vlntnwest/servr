@@ -160,15 +160,7 @@ export default function AdminRestaurantPage({
       {/* Admin header */}
       <header className="sticky top-0 z-40 bg-white border-b border-black/8">
         <div className="flex items-center h-[65px] px-4 max-w-screen-xl mx-auto">
-          <div className="flex-1">
-            <Image
-              src="https://g10afdaataaj4tkl.public.blob.vercel-storage.com/img/1Fichier-21.svg"
-              alt="Pokey Bar"
-              width={80}
-              height={32}
-              className="object-contain"
-            />
-          </div>
+          <div className="flex-1"></div>
 
           {/* Restaurant selector — only shown when user has >1 restaurant */}
           {restaurants.length > 1 && (
