@@ -26,7 +26,7 @@ const archivoItalic = Archivo({
 });
 
 export const metadata: Metadata = {
-  title: "Servr - Commander en ligne",
+  title: "My Spots - Commander en ligne",
   description: "Commander en ligne",
   robots: { index: false, follow: false },
 };
@@ -37,7 +37,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${dmSans.variable} ${archivoBlack.variable} ${archivoItalic.variable}`}>
+    <html
+      lang="fr"
+      className={`${dmSans.variable} ${archivoBlack.variable} ${archivoItalic.variable}`}
+    >
       <body>
         <UserProvider>
           <CartProvider>{children}</CartProvider>
