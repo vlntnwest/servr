@@ -112,9 +112,17 @@ app.use(
   express.raw({ type: "application/json", limit: "1mb" }),
 );
 
-// CORS
+// CORS — CLIENT_URL peut contenir plusieurs origines séparées par des virgules
+const allowedOrigins = (process.env.CLIENT_URL ?? "")
+  .split(",")
+  .map((u) => u.trim())
+  .filter(Boolean);
+
 const corsOption = {
-  origin: process.env.CLIENT_URL,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: origin not allowed — ${origin}`));
+  },
   credentials: true,
   allowedHeaders: ["sessionId", "Content-Type", "Authorization"],
   exposedHeaders: ["sessionId"],
