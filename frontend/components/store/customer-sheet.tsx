@@ -4,13 +4,14 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useUserContext } from "@/contexts/user-context";
+import { useOptionalRestaurant } from "@/contexts/restaurant-context";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { User, LogOut, ChevronRight, ClipboardList, Mail, FileText } from "lucide-react";
+import { User, LogOut, ChevronRight, ClipboardList, Phone, FileText, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function CustomerSheet() {
@@ -18,6 +19,8 @@ export default function CustomerSheet() {
   const pathname = usePathname();
   const supabase = createClient();
   const { user } = useUserContext();
+  const restaurantCtx = useOptionalRestaurant();
+  const restaurantPhone = restaurantCtx?.restaurant?.phone ?? null;
 
   return (
     <>
@@ -26,7 +29,7 @@ export default function CustomerSheet() {
         onClick={() => setOpen(true)}
         aria-label="Menu"
       >
-        <User className="w-5 h-5 text-brand-stone" />
+        <Menu className="w-5 h-5 text-brand-stone" />
       </button>
 
       <Sheet open={open} onOpenChange={setOpen}>
@@ -51,10 +54,17 @@ export default function CustomerSheet() {
 
                 <div className="border-t border-brand-border my-2" />
 
-                <SheetLink href="/contact" onClick={() => setOpen(false)}>
-                  <Mail className="w-4 h-4" />
-                  Nous contacter
-                </SheetLink>
+                {restaurantPhone ? (
+                  <SheetLink href={`tel:${restaurantPhone}`} onClick={() => setOpen(false)}>
+                    <Phone className="w-4 h-4" />
+                    Appeler le restaurant
+                  </SheetLink>
+                ) : (
+                  <SheetLink href="/contact" onClick={() => setOpen(false)}>
+                    <Phone className="w-4 h-4" />
+                    Nous contacter
+                  </SheetLink>
+                )}
                 <SheetLink href="/legal" onClick={() => setOpen(false)}>
                   <FileText className="w-4 h-4" />
                   Mentions légales
@@ -89,10 +99,17 @@ export default function CustomerSheet() {
 
                 <div className="border-t border-brand-border my-2" />
 
-                <SheetLink href="/contact" onClick={() => setOpen(false)}>
-                  <Mail className="w-4 h-4" />
-                  Nous contacter
-                </SheetLink>
+                {restaurantPhone ? (
+                  <SheetLink href={`tel:${restaurantPhone}`} onClick={() => setOpen(false)}>
+                    <Phone className="w-4 h-4" />
+                    Appeler le restaurant
+                  </SheetLink>
+                ) : (
+                  <SheetLink href="/contact" onClick={() => setOpen(false)}>
+                    <Phone className="w-4 h-4" />
+                    Nous contacter
+                  </SheetLink>
+                )}
                 <SheetLink href="/legal" onClick={() => setOpen(false)}>
                   <FileText className="w-4 h-4" />
                   Mentions légales
