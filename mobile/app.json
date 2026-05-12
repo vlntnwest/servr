@@ -15,7 +15,8 @@
         "aps-environment": "production"
       },
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSBluetoothAlwaysUsageDescription": "L'application utilise le Bluetooth pour se connecter à l'imprimante thermique."
       }
     },
     "android": {
