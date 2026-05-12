@@ -3,7 +3,6 @@
 import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +29,10 @@ function LoginForm() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     if (error) {
       setError(error.message);
@@ -70,14 +72,18 @@ function LoginForm() {
         </div>
 
         {reason === "session_expired" && !error && (
-        <p className="text-sm text-brand-yellow bg-brand-yellow/20 rounded p-2">
-          Session expirée, veuillez vous reconnecter.
-        </p>
-      )}
-      {error && <p className="text-sm text-destructive">{error}</p>}
+          <p className="text-sm text-brand-yellow bg-brand-yellow/20 rounded p-2">
+            Session expirée, veuillez vous reconnecter.
+          </p>
+        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Se connecter"}
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            "Se connecter"
+          )}
         </Button>
       </form>
 
@@ -98,16 +104,12 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <Image
-            src="https://g10afdaataaj4tkl.public.blob.vercel-storage.com/img/1Fichier-21.svg"
-            alt="Pokey Bar"
-            width={160}
-            height={60}
-            className="mx-auto"
-          />
-        </div>
-        <Suspense fallback={<div className="bg-white border border-brand-border rounded-lg p-6 h-48" />}>
+        <div className="mb-8 text-center"></div>
+        <Suspense
+          fallback={
+            <div className="bg-white border border-brand-border rounded-lg p-6 h-48" />
+          }
+        >
           <LoginForm />
         </Suspense>
       </div>

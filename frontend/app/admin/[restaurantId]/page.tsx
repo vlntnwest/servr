@@ -11,7 +11,6 @@ import OpeningHoursTab from "@/components/admin/opening-hours-tab";
 import ProductsTab from "@/components/admin/products-tab";
 import SettingsTab from "@/components/admin/settings-tab";
 import PromoCodesTab from "@/components/admin/promo-codes-tab";
-import Image from "next/image";
 import { LogOut, Loader2, ChevronDown } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
@@ -158,17 +157,9 @@ export default function AdminRestaurantPage({
   return (
     <div className="min-h-screen">
       {/* Admin header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-black/8">
+      <header className="sticky top-0 z-40 border-b border-black/8">
         <div className="flex items-center h-[65px] px-4 max-w-screen-xl mx-auto">
-          <div className="flex-1">
-            <Image
-              src="https://g10afdaataaj4tkl.public.blob.vercel-storage.com/img/1Fichier-21.svg"
-              alt="Pokey Bar"
-              width={80}
-              height={32}
-              className="object-contain"
-            />
-          </div>
+          <div className="flex-1"></div>
 
           {/* Restaurant selector — only shown when user has >1 restaurant */}
           {restaurants.length > 1 && (

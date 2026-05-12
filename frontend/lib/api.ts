@@ -16,7 +16,13 @@ import type {
 } from "@/types/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+const INTERNAL_SECRET = process.env.INTERNAL_API_SECRET ?? "";
 let RESTAURANT_ID = "";
+
+function internalHeaders(): Record<string, string> {
+  if (!INTERNAL_SECRET) return {};
+  return { "x-internal-secret": INTERNAL_SECRET };
+}
 export function setRestaurantId(id: string) {
   RESTAURANT_ID = id;
 }
@@ -86,6 +92,7 @@ export async function getRestaurantBySlug(
 ): Promise<Restaurant | null> {
   const res = await fetch(`${API_URL}/api/v1/restaurants/by-slug/${slug}`, {
     next: { revalidate: 0 },
+    headers: internalHeaders(),
   });
   if (!res.ok) return null;
   const json = await res.json();
@@ -108,7 +115,7 @@ export async function getMenuForRestaurant(
 ): Promise<Category[]> {
   const res = await fetch(
     `${API_URL}/api/v1/menu/restaurants/${restaurantId}/menu`,
-    { next: { revalidate: 60 } },
+    { next: { revalidate: 60 }, headers: internalHeaders() },
   );
   const json = await res.json();
   return json.data ?? [];
@@ -118,7 +125,9 @@ export async function getOpeningHours(
   restaurantId?: string,
 ): Promise<OpeningHour[]> {
   const rid = restaurantId ?? RESTAURANT_ID;
-  const res = await fetch(`${API_URL}/api/v1/restaurants/${rid}/opening-hours`);
+  const res = await fetch(`${API_URL}/api/v1/restaurants/${rid}/opening-hours`, {
+    headers: internalHeaders(),
+  });
   const json = await res.json();
   return json.data ?? [];
 }
@@ -145,10 +154,11 @@ export async function validatePromoCode(
 
 export async function createCheckoutSession(
   payload: {
-    fullName?: string;
-    phone?: string;
+    fullName: string;
+    phone: string;
     email?: string;
     items: CheckoutItem[];
+    promoCode?: string;
     scheduledFor?: string;
   },
   restaurantId?: string,
@@ -262,6 +272,7 @@ export async function getExceptionalHours(
   const rid = restaurantId ?? RESTAURANT_ID;
   const res = await fetch(
     `${API_URL}/api/v1/restaurants/${rid}/exceptional-hours`,
+    { headers: internalHeaders() },
   );
   const json = await res.json();
   return json.data ?? [];

@@ -12,7 +12,7 @@
       "requireFullScreen": true,
       "bundleIdentifier": "com.vlntnwest.servrapp",
       "entitlements": {
-        "aps-environment": "development"
+        "aps-environment": "production"
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
