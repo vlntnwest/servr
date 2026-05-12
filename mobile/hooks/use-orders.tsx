@@ -30,7 +30,7 @@ export const useOrders = () => {
     setIsLoading(true);
     setError(null);
     const result = await apiFetch<Order[]>(
-      `/restaurants/${selectedRestaurant.id}/orders?status=PENDING,IN_PROGRESS,COMPLETED`,
+      `/restaurants/${selectedRestaurant.id}/orders?status=PENDING_ON_SITE_PAYMENT,PENDING,IN_PROGRESS,COMPLETED`,
     );
     if ("error" in result) {
       setError(result.error);

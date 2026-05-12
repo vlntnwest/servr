@@ -44,7 +44,7 @@ export function formatEuros(amount: number): string {
 export function getOrderStatusLabel(status: string): string {
   const labels: Record<string, string> = {
     PENDING: "En attente",
-    PENDING_ON_SITE_PAYMENT: "Paiement sur place",
+    PENDING_ON_SITE_PAYMENT: "À encaisser",
     IN_PROGRESS: "En cours",
     COMPLETED: "Prêt",
     DELIVERED: "Livré",
@@ -104,8 +104,8 @@ export function getOrderStatusBadge(status: string): {
   const badges: Record<string, { bg: string; text: string }> = {
     PENDING: { bg: "bg-brand-yellow", text: "text-brand-forest" },
     PENDING_ON_SITE_PAYMENT: {
-      bg: "bg-brand-yellow",
-      text: "text-brand-forest",
+      bg: "bg-brand-orange",
+      text: "text-brand-cream",
     },
     IN_PROGRESS: { bg: "bg-brand-orange", text: "text-brand-cream" },
     COMPLETED: { bg: "bg-brand-lime", text: "text-brand-forest" },

@@ -64,6 +64,27 @@ export default function OrderDetail({
 
       <Separator />
 
+      {/* On-site payment notice */}
+      {order.status === "PENDING_ON_SITE_PAYMENT" && (
+        <View
+          className="flex-row items-center gap-3 rounded-card px-4 py-3"
+          style={{ backgroundColor: BRAND.orange + "20" }}
+        >
+          <Text className="text-lg">💳</Text>
+          <View className="flex-1">
+            <Text
+              className="font-sans-semibold text-body-sm"
+              style={{ color: BRAND.orange }}
+            >
+              Paiement à régler au retrait
+            </Text>
+            <Text className="text-body-sm text-muted-foreground">
+              Le client paiera {formatEuros(parseFloat(order.totalPrice))} sur place
+            </Text>
+          </View>
+        </View>
+      )}
+
       {/* Client */}
       <View className="gap-1">
         <Text variant="caption" className="text-muted-foreground">
