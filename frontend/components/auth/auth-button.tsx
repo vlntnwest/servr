@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
@@ -8,6 +9,7 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export default function AuthButton() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const pathname = usePathname();
   const supabase = createClient();
 
   useEffect(() => {
@@ -40,7 +42,7 @@ export default function AuthButton() {
       size="icon"
       asChild
     >
-      <a href="/login" aria-label="Se connecter">
+      <a href={`/login?redirect=${encodeURIComponent(pathname)}`} aria-label="Se connecter">
         <User className="w-5 h-5" />
       </a>
     </Button>

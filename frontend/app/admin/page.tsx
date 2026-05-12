@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 export default function AdminRedirectPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
@@ -17,7 +18,7 @@ export default function AdminRedirectPage() {
         } = await supabase.auth.getSession();
 
         if (!session) {
-          router.replace("/login");
+          router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
           return;
         }
 

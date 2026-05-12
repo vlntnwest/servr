@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, use } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { setRestaurantId } from "@/lib/api";
 import OrdersTab from "@/components/admin/orders-tab";
@@ -84,6 +84,7 @@ export default function AdminRestaurantPage({
 }) {
   const { restaurantId } = use(params);
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = useMemo(() => createClient(), []);
 
   const [user, setUser] = useState<User | null>(null);
@@ -98,7 +99,7 @@ export default function AdminRestaurantPage({
       } = await supabase.auth.getSession();
 
       if (!session) {
-        router.replace("/login");
+        router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
         return;
       }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useUserContext } from "@/contexts/user-context";
 import {
@@ -14,6 +15,7 @@ import { Button } from "@/components/ui/button";
 
 export default function CustomerSheet() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
   const supabase = createClient();
   const { user } = useUserContext();
 
@@ -76,11 +78,11 @@ export default function CustomerSheet() {
               </>
             ) : (
               <>
-                <SheetLink href="/login" onClick={() => setOpen(false)}>
+                <SheetLink href={`/login?redirect=${encodeURIComponent(pathname)}`} onClick={() => setOpen(false)}>
                   <User className="w-4 h-4" />
                   Se connecter
                 </SheetLink>
-                <SheetLink href="/register" onClick={() => setOpen(false)}>
+                <SheetLink href={`/register?redirect=${encodeURIComponent(pathname)}`} onClick={() => setOpen(false)}>
                   <User className="w-4 h-4" />
                   Créer un compte
                 </SheetLink>

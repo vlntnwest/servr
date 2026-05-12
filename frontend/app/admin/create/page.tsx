@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { createRestaurant } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 
 export default function CreateRestaurantPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = useMemo(() => createClient(), []);
 
   const [name, setName] = useState("");
@@ -31,7 +32,7 @@ export default function CreateRestaurantPage() {
         } = await supabase.auth.getSession();
 
         if (!session) {
-          router.replace("/login");
+          router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
           return;
         }
 
