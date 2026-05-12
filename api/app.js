@@ -2,7 +2,6 @@ require("dotenv").config({ path: "./.env" });
 
 const express = require("express");
 const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
@@ -32,56 +31,6 @@ const app = express();
 
 // Hostinger sits behind a reverse proxy/LB — trust one hop so req.ip reflects the real client IP
 app.set("trust proxy", 1);
-
-const isLocalhost = (req) =>
-  req.ip === "127.0.0.1" || req.ip === "::1" || req.ip === "::ffff:127.0.0.1";
-
-const isInternalRequest = (req) =>
-  process.env.INTERNAL_API_SECRET &&
-  req.headers["x-internal-secret"] === process.env.INTERNAL_API_SECRET;
-
-const skipRateLimit = (req) =>
-  process.env.NODE_ENV !== "production" || isLocalhost(req) || isInternalRequest(req);
-
-// Rate limiting configuration
-// Public/unauthenticated traffic — strict limit per IP (anti-abuse)
-const unauthLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per window per IP
-  standardHeaders: true,
-  legacyHeaders: false,
-  skip: skipRateLimit,
-  message: { error: "Too many requests, please try again later." },
-  handler: (req, res, _next, options) => {
-    logger.warn({ ip: req.ip, xff: req.headers["x-forwarded-for"], url: req.url }, "Rate limit hit (unauth)");
-    res.status(options.statusCode).json(options.message);
-  },
-});
-
-// Authenticated traffic — generous (admin dashboards make many parallel calls)
-const authedLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // 1000 requests per window per IP
-  standardHeaders: true,
-  legacyHeaders: false,
-  skip: skipRateLimit,
-  message: { error: "Too many requests, please try again later." },
-});
-
-// Picks the appropriate limiter based on whether the request carries a Bearer token
-const globalLimiter = (req, res, next) =>
-  req.headers.authorization
-    ? authedLimiter(req, res, next)
-    : unauthLimiter(req, res, next);
-
-const paymentLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 requests per window per IP
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: "Too many payment attempts, please try again later." },
-  skip: (req) => req.path === "/webhook" || skipRateLimit(req),
-});
 
 // HTTP request logging with response time (pino-http)
 app.use(
@@ -190,16 +139,16 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiSpec));
 // Routes — mounted at both /api (v1 alias) and /api/v1
 const V1_PREFIXES = ["/api", "/api/v1"];
 for (const prefix of V1_PREFIXES) {
-  app.use(`${prefix}/user`, globalLimiter, userRoutes);
-  app.use(`${prefix}/restaurants`, globalLimiter, restaurantRoutes);
-  app.use(`${prefix}/menu`, globalLimiter, menuRoutes);
-  app.use(prefix, globalLimiter, orderRoutes);
-  app.use(prefix, globalLimiter, openingHourRoutes);
-  app.use(prefix, globalLimiter, statsRoutes);
-  app.use(prefix, globalLimiter, uploadRoutes);
-  app.use(`${prefix}/checkout`, paymentLimiter, checkoutRoutes);
-  app.use(prefix, globalLimiter, promoCodeRoutes);
-  app.use(prefix, globalLimiter, exceptionalHourRoutes);
+  app.use(`${prefix}/user`, userRoutes);
+  app.use(`${prefix}/restaurants`, restaurantRoutes);
+  app.use(`${prefix}/menu`, menuRoutes);
+  app.use(prefix, orderRoutes);
+  app.use(prefix, openingHourRoutes);
+  app.use(prefix, statsRoutes);
+  app.use(prefix, uploadRoutes);
+  app.use(`${prefix}/checkout`, checkoutRoutes);
+  app.use(prefix, promoCodeRoutes);
+  app.use(prefix, exceptionalHourRoutes);
 }
 
 // Platform admin routes (not versioned, auth required)
