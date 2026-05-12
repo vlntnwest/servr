@@ -43,6 +43,12 @@ export default function CreateRestaurantPage() {
 
         if (res.ok) {
           const { data } = await res.json();
+
+          if (data.role !== "RESTAURATEUR") {
+            router.replace("/");
+            return;
+          }
+
           const firstId = data.restaurants?.[0]?.id;
           if (firstId) {
             router.replace(`/admin/${firstId}`);

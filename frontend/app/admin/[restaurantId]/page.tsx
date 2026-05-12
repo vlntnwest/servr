@@ -117,6 +117,12 @@ export default function AdminRestaurantPage({
       }
 
       const { data: meData } = await meRes.json();
+
+      if (meData.role !== "RESTAURATEUR") {
+        router.replace("/");
+        return;
+      }
+
       const memberIds: string[] =
         meData.restaurants?.map((r: { id: string }) => r.id) ?? [];
 
