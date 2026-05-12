@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
@@ -8,7 +8,6 @@ import { Loader2 } from "lucide-react";
 export default function AdminRedirectPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const [noRestaurant, setNoRestaurant] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -35,19 +34,11 @@ export default function AdminRedirectPage() {
         }
       }
 
-      setNoRestaurant(true);
+      router.replace("/admin/create");
     };
 
     init();
   }, [supabase, router]);
-
-  if (noRestaurant) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Aucun restaurant trouvé.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center">
