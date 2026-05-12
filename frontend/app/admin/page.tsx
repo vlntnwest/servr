@@ -11,30 +11,34 @@ export default function AdminRedirectPage() {
 
   useEffect(() => {
     const init = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (!session) {
-        router.replace("/login");
-        return;
-      }
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/me`,
-        { headers: { Authorization: `Bearer ${session.access_token}` } },
-      );
-
-      if (res.ok) {
-        const { data } = await res.json();
-        const firstId = data.restaurants?.[0]?.id;
-        if (firstId) {
-          router.replace(`/admin/${firstId}`);
+        if (!session) {
+          router.replace("/login");
           return;
         }
-      }
 
-      router.replace("/admin/create");
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/me`,
+          { headers: { Authorization: `Bearer ${session.access_token}` } },
+        );
+
+        if (res.ok) {
+          const { data } = await res.json();
+          const firstId = data.restaurants?.[0]?.id;
+          if (firstId) {
+            router.replace(`/admin/${firstId}`);
+            return;
+          }
+        }
+
+        router.replace("/admin/create");
+      } catch {
+        router.replace("/admin/create");
+      }
     };
 
     init();
