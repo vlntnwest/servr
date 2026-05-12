@@ -3,7 +3,7 @@ const router = express.Router();
 const restaurantControllers = require("../controllers/restaurant.controllers");
 const stripeControllers = require("../controllers/stripe.controllers");
 const checkAuth = require("../middleware/auth.middleware");
-const { isRestaurantAdmin } = require("../middleware/role.middleware");
+const { isRestaurantAdmin, isRestaurateur } = require("../middleware/role.middleware");
 const { validate } = require("../middleware/validate.middleware");
 const { restaurantSchema, updatePreparationLevelSchema } = require("../validators/schemas");
 
@@ -16,6 +16,7 @@ router.get("/:restaurantId", restaurantControllers.getRestaurant);
 router.post(
   "/",
   checkAuth,
+  isRestaurateur,
   validate({ body: restaurantSchema }),
   restaurantControllers.createRestaurant,
 );
