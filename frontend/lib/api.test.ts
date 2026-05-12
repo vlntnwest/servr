@@ -89,7 +89,16 @@ describe("createRestaurant", () => {
     });
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining("/restaurants/"),
-      expect.objectContaining({ method: "POST" }),
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          name: "Le Gourmet",
+          address: "1 rue de la Paix",
+          zipCode: "75001",
+          city: "Paris",
+          phone: "0612345678",
+        }),
+      }),
     );
   });
 
