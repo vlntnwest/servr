@@ -332,6 +332,21 @@ export async function updateRestaurant(
   });
 }
 
+export async function createRestaurant(payload: {
+  name: string;
+  address: string;
+  zipCode: string;
+  city: string;
+  phone: string;
+  email?: string;
+}): Promise<{ data?: Restaurant; error?: string }> {
+  const result = await apiFetch<Restaurant>("/restaurants/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  return "data" in result ? { data: result.data } : { error: result.error };
+}
+
 export async function uploadImage(file: File): Promise<string | null> {
   const authHeaders = await getAuthHeader();
   const formData = new FormData();
