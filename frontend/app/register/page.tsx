@@ -2,15 +2,17 @@
 
 import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
+import { isSafeRedirect } from "@/lib/redirectUtils";
 
 function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const [email, setEmail] = useState("");
@@ -18,18 +20,25 @@ function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const redirectTo = searchParams.get("redirect");
+  const destination = isSafeRedirect(redirectTo) ? redirectTo : "/";
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { role: "CUSTOMER" } },
+    });
 
     if (error) {
       setError(error.message);
       setLoading(false);
     } else {
-      router.replace("/admin");
+      router.replace(destination);
     }
   };
 
@@ -71,7 +80,10 @@ function RegisterForm() {
 
       <p className="text-center text-sm text-muted-foreground mt-4">
         Déjà un compte ?{" "}
-        <Link href="/login" className="underline">
+        <Link
+          href={`/login${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`}
+          className="underline"
+        >
           Se connecter
         </Link>
       </p>
