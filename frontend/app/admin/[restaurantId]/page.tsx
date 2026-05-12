@@ -208,7 +208,7 @@ export default function AdminRestaurantPage({
           </TabsList>
 
           <TabsContent value="orders">
-            <OrdersTab restaurantId={restaurantId} />
+            <OrdersTab />
           </TabsContent>
           <TabsContent value="stats">
             <StatsTab />

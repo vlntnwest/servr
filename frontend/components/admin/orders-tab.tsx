@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getOrders, updateOrderStatus, refundOrder, getRestaurant, updatePreparationLevel } from "@/lib/api";
 import type { PreparationLevel } from "@/types/api";
-import { connectSocket } from "@/lib/socket";
-import type { Socket } from "socket.io-client";
 import type { Order, OrderProductOption } from "@/types/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -42,7 +40,7 @@ const FINISHED_STATUSES = "DELIVERED,CANCELLED";
 
 type SubView = "En cours" | "Terminées";
 
-export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
+export default function OrdersTab() {
   const [activeOrders, setActiveOrders] = useState<Order[]>([]);
   const [finishedOrders, setFinishedOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,8 +54,6 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
   const [refunding, setRefunding] = useState(false);
   const [statusChanging, setStatusChanging] = useState<string | null>(null); // orderId being changed
   const [prepLevel, setPrepLevel] = useState<PreparationLevel>("EASY");
-  const [socketConnected, setSocketConnected] = useState(true);
-  const fetchRef = useRef<(() => Promise<void>) | undefined>(undefined);
 
   const fetchActive = useCallback(async () => {
     const result = await getOrders(activePage, 20, ACTIVE_STATUSES);
@@ -86,55 +82,6 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
       if (r?.preparationLevel) setPrepLevel(r.preparationLevel);
     });
   }, [fetchAll]);
-
-  // Keep a ref to the latest fetchAll for socket handlers
-  useEffect(() => {
-    fetchRef.current = async () => {
-      await Promise.all([fetchActive(), fetchFinished()]);
-    };
-  }, [fetchActive, fetchFinished]);
-
-  // WebSocket: listen for real-time order events
-  useEffect(() => {
-    if (!restaurantId) return;
-
-    let active = true;
-    let socket: Socket | null = null;
-
-    const handleNewOrder = () => { fetchRef.current?.(); };
-    const handleStatusUpdated = () => { fetchRef.current?.(); };
-    const handleDisconnect = () => setSocketConnected(false);
-
-    (async () => {
-      const s = await connectSocket();
-      if (!s || !active) return;
-      socket = s;
-
-      const join = () => s.emit("join:restaurant", restaurantId);
-      join();
-
-      const handleReconnect = () => {
-        setSocketConnected(true);
-        join();
-        fetchRef.current?.();
-      };
-
-      s.on("order:new", handleNewOrder);
-      s.on("order:statusUpdated", handleStatusUpdated);
-      s.on("disconnect", handleDisconnect);
-      s.on("connect", handleReconnect);
-    })();
-
-    return () => {
-      active = false;
-      if (socket) {
-        socket.off("order:new", handleNewOrder);
-        socket.off("order:statusUpdated", handleStatusUpdated);
-        socket.off("disconnect", handleDisconnect);
-        socket.off("connect");
-      }
-    };
-  }, [restaurantId]);
 
   const handleStatusChange = async (orderId: string, status: string) => {
     if (statusChanging) return; // prevent double-click
@@ -193,14 +140,6 @@ export default function OrdersTab({ restaurantId }: { restaurantId?: string }) {
 
   return (
     <>
-    {/* WebSocket disconnection banner */}
-    {!socketConnected && (
-      <div className="mb-4 flex items-center gap-2 rounded-lg bg-brand-yellow/20 border border-brand-yellow/40 px-4 py-2 text-sm text-brand-ink">
-        <span className="w-2 h-2 rounded-full bg-brand-yellow animate-pulse" />
-        Connexion perdue, reconnexion en cours…
-      </div>
-    )}
-
     {/* Preparation level toggle */}
     <div className="flex items-center gap-3 mb-4">
       <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
