@@ -113,12 +113,12 @@ module.exports.createCheckoutSession = async (req, res, next) => {
       where: { restaurantId },
     });
     if (scheduledFor) {
-      if (!isScheduledTimeValid(openingHours, scheduledFor)) {
+      if (!isScheduledTimeValid(openingHours, scheduledFor, restaurant.timezone)) {
         return res.status(400).json({
           error: "Scheduled time is outside opening hours or in the past",
         });
       }
-    } else if (!(await isRestaurantOpen(restaurantId, openingHours))) {
+    } else if (!(await isRestaurantOpen(restaurantId, openingHours, restaurant.timezone))) {
       return res.status(400).json({ error: "Restaurant is currently closed" });
     }
 

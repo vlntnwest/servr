@@ -7,8 +7,13 @@ import { cn } from "@/lib/utils";
 import OpenStatusBadge from "./open-status-badge";
 import { useRestaurant } from "@/contexts/restaurant-context";
 
-function getTodayHours(openingHours: OpeningHour[]): string | null {
-  const dayOfWeek = new Date().getDay();
+function getTodayHours(openingHours: OpeningHour[], timezone: string): string | null {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
+    weekday: "short",
+  }).formatToParts(new Date());
+  const WEEKDAY: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  const dayOfWeek = WEEKDAY[parts.find((p) => p.type === "weekday")!.value];
   const ranges = openingHours
     .filter((h) => h.dayOfWeek === dayOfWeek)
     .sort((a, b) => a.openTime.localeCompare(b.openTime));
@@ -42,7 +47,7 @@ export default function RestaurantHeader({
   exceptionalHours,
 }: RestaurantHeaderProps) {
   const { restaurant } = useRestaurant();
-  const todayHours = getTodayHours(openingHours);
+  const todayHours = getTodayHours(openingHours, restaurant.timezone);
   const prepBadge = restaurant.preparationLevel
     ? PREP_BADGES[restaurant.preparationLevel]
     : null;
@@ -88,6 +93,7 @@ export default function RestaurantHeader({
               <OpenStatusBadge
                 openingHours={openingHours}
                 exceptionalHours={exceptionalHours}
+                timezone={restaurant.timezone}
               />
             )}
             {prepBadge && restaurant.preparationLevel !== "EASY" && (

@@ -69,6 +69,7 @@ export type Restaurant = {
   imageUrl: string | null;
   stripeAccountId: string | null;
   preparationLevel: PreparationLevel;
+  timezone: string;
   createdAt: string;
   updatedAt: string;
 };
