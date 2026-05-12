@@ -4,7 +4,7 @@ const logger = require("../logger");
 module.exports.getOpeningHours = async (req, res, next) => {
   const { restaurantId } = req.params;
 
-  logger.info({ restaurantId }, "Getting opening hours");
+  logger.info({ restaurantId, ip: req.ip, xff: req.headers["x-forwarded-for"] }, "Getting opening hours");
   try {
     const data = await prisma.openingHour.findMany({
       where: { restaurantId },

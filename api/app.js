@@ -48,6 +48,10 @@ const unauthLimiter = rateLimit({
   legacyHeaders: false,
   skip: skipRateLimit,
   message: { error: "Too many requests, please try again later." },
+  handler: (req, res, _next, options) => {
+    logger.warn({ ip: req.ip, xff: req.headers["x-forwarded-for"], url: req.url }, "Rate limit hit (unauth)");
+    res.status(options.statusCode).json(options.message);
+  },
 });
 
 // Authenticated traffic — generous (admin dashboards make many parallel calls)
