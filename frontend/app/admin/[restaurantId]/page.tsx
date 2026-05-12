@@ -164,7 +164,7 @@ export default function AdminRestaurantPage({
   return (
     <div className="min-h-screen">
       {/* Admin header */}
-      <header className="sticky top-0 z-40 border-b border-black/8">
+      <header className="sticky top-0 z-40 bg-background border-b border-black/8">
         <div className="flex items-center h-[65px] px-4 max-w-screen-xl mx-auto">
           <div className="flex-1"></div>
 
