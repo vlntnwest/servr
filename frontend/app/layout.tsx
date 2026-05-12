@@ -3,6 +3,8 @@ import { DM_Sans, Archivo_Black, Archivo } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/contexts/cart-context";
 import { UserProvider } from "@/contexts/user-context";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -45,6 +47,8 @@ export default function RootLayout({
         <UserProvider>
           <CartProvider>{children}</CartProvider>
         </UserProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
