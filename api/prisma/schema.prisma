@@ -20,6 +20,7 @@ model User {
   city              String?            @map("city") @db.VarChar(50)
   zipCode           String?            @map("zip_code") @db.VarChar(5)
   pushToken         String?            @map("push_token")
+  role              UserRole           @default(CUSTOMER)
   restaurants       Restaurant[]
 
   @@map("users")
@@ -262,6 +263,14 @@ model PromoCode {
   @@unique([restaurantId, code])
   @@index([restaurantId])
   @@map("promo_codes")
+  @@schema("public")
+}
+
+enum UserRole {
+  CUSTOMER
+  RESTAURATEUR
+
+  @@map("user_role")
   @@schema("public")
 }
 
