@@ -151,7 +151,7 @@ export default function AdminRestaurantPage({
     };
 
     init();
-  }, [restaurantId, supabase, router]);
+  }, [restaurantId, supabase, router, pathname]);
 
   if (loading) {
     return (

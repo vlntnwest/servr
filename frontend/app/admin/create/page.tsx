@@ -63,7 +63,7 @@ export default function CreateRestaurantPage() {
     };
 
     guard();
-  }, [supabase, router]);
+  }, [supabase, router, pathname]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

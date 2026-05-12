@@ -52,7 +52,7 @@ export default function LegalPage() {
             Propriété intellectuelle
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            L'ensemble des contenus présents sur le site my-spots.fr (textes,
+            L&apos;ensemble des contenus présents sur le site my-spots.fr (textes,
             images, graphismes, logo) est la propriété exclusive de Studio
             Valentin Westermeyer, sauf mention contraire. Toute reproduction,
             représentation, modification ou exploitation sans autorisation
@@ -70,8 +70,8 @@ export default function LegalPage() {
           </p>
           <p className="text-muted-foreground leading-relaxed mt-3">
             Conformément au Règlement Général sur la Protection des Données
-            (RGPD) et à la loi Informatique et Libertés, vous disposez d'un
-            droit d'accès, de rectification et de suppression de vos données.
+            (RGPD) et à la loi Informatique et Libertés, vous disposez d&apos;un
+            droit d&apos;accès, de rectification et de suppression de vos données.
             Pour exercer ces droits, contactez-nous à{" "}
             <a href="mailto:hello@my-spots.fr" className="underline">
               hello@my-spots.fr
@@ -85,7 +85,7 @@ export default function LegalPage() {
           <p className="text-muted-foreground leading-relaxed">
             Ce site utilise des cookies techniques nécessaires à son
             fonctionnement (authentification, session). Aucun cookie de traçage
-            publicitaire n'est utilisé.
+            publicitaire n&apos;est utilisé.
           </p>
         </section>
 

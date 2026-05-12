@@ -49,7 +49,7 @@ export default function AdminRedirectPage() {
     };
 
     init();
-  }, [supabase, router]);
+  }, [supabase, router, pathname]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">
