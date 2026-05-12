@@ -34,4 +34,15 @@ const isPlatformAdmin = (req, res, next) => {
   next();
 };
 
-module.exports = { isRestaurantAdmin, isPlatformAdmin };
+const isRestaurateur = (req, res, next) => {
+  if (req.user?.role !== "RESTAURATEUR") {
+    logger.warn(
+      { userId: req.user?.id, role: req.user?.role },
+      "Non-restaurateur attempted restricted action",
+    );
+    return res.status(403).json({ error: "Access denied" });
+  }
+  next();
+};
+
+module.exports = { isRestaurantAdmin, isPlatformAdmin, isRestaurateur };
