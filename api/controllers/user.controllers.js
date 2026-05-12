@@ -18,6 +18,7 @@ module.exports.getUserData = async (req, res, next) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    logger.info({ userId: id }, "User data retrieved");
     return res.status(200).json({ data });
   } catch (error) {
     next(error);
