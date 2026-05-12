@@ -61,7 +61,7 @@ export default function PopularSection({ products }: PopularSectionProps) {
           La sélection
         </span>
       </div>
-      <div className="flex gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth snap-x snap-mandatory overflow-y-visible px-4">
+      <div className="flex gap-3 overflow-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth">
         {products.map((product) => (
           <div key={product.id} className="snap-start">
             <PopularCard product={product} />
