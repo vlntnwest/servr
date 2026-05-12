@@ -43,11 +43,20 @@ module.exports.createRestaurant = async (req, res, next) => {
   const user = req.user;
   const { name, slug, address, zipCode, city, phone, email, imageUrl } = req.body;
 
+  const resolvedSlug =
+    slug ||
+    name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
   try {
     const data = await prisma.restaurant.create({
       data: {
         name,
-        slug,
+        slug: resolvedSlug,
         address,
         zipCode,
         city,
