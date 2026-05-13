@@ -55,6 +55,7 @@ export function RestaurantProvider({
       if ("error" in result) {
         setError(result.error);
       } else {
+        console.log("[restaurant] init restaurants:", result.data.restaurants?.map(r => ({ id: r.id, preparationLevel: r.preparationLevel })));
         setRestaurants(result.data.restaurants ?? []);
       }
       setIsLoading(false);
@@ -66,6 +67,7 @@ export function RestaurantProvider({
   const selectRestaurant = useCallback(
     (id: string) => {
       const restaurant = restaurants.find((r) => r.id === id) ?? null;
+      console.log("[restaurant] selectRestaurant →", restaurant?.id, "preparationLevel:", restaurant?.preparationLevel);
       setSelectedRestaurant(restaurant);
       setRestaurantId(restaurant?.id ?? "");
     },
@@ -81,6 +83,7 @@ export function RestaurantProvider({
       setError(result.error);
     } else {
       const updated = result.data.restaurants ?? [];
+      console.log("[restaurant] refresh restaurants:", updated.map(r => ({ id: r.id, preparationLevel: r.preparationLevel })));
       setRestaurants(updated);
       setSelectedRestaurant((prev) =>
         prev ? (updated.find((r) => r.id === prev.id) ?? prev) : null,

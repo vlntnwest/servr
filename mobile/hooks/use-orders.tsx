@@ -2,7 +2,7 @@ import { useRestaurant } from "@/context/restaurant";
 import { apiFetch, getOrder, updateOrderStatus } from "@/lib/api";
 import { Order } from "@/types/api";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert } from "react-native";
+import { Alert, AppState } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { usePrinter } from "@/context/printer";
 import { useAuth } from "@/context/auth";
@@ -42,6 +42,13 @@ export const useOrders = () => {
 
   useEffect(() => {
     fetchOrders();
+  }, [fetchOrders]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") fetchOrders();
+    });
+    return () => subscription.remove();
   }, [fetchOrders]);
 
   useEffect(() => {

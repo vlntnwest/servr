@@ -19,7 +19,7 @@ export default function SettingsList() {
         <Text variant="display">Réglages</Text>
       </View>
 
-      <Text variant="default" className="px-5 mb-1.5 mt-4">
+      {/* <Text variant="default" className="px-5 mb-1.5 mt-4">
         Général
       </Text>
       <View className={`${isTablet ? "" : "px-5"}`}>
@@ -33,7 +33,7 @@ export default function SettingsList() {
             showSeparator={false}
           />
         </View>
-      </View>
+      </View> */}
 
       <Text variant="default" className="px-5 mb-1.5 mt-4">
         Matériel

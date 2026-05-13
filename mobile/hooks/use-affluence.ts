@@ -12,31 +12,36 @@ export const PREP_LEVEL_LABELS: Record<PreparationLevel, string> = {
 
 export function useAffluence() {
   const { selectedRestaurant, refresh } = useRestaurant();
-  const [level, setLevelState] = useState<PreparationLevel>(
-    selectedRestaurant?.preparationLevel ?? "EASY",
-  );
+  const [optimisticLevel, setOptimisticLevel] = useState<PreparationLevel | null>(null);
+
+  const level: PreparationLevel =
+    optimisticLevel ?? selectedRestaurant?.preparationLevel ?? "EASY";
+
+  console.log("[affluence] optimistic:", optimisticLevel, "| context:", selectedRestaurant?.preparationLevel, "| displayed:", level);
 
   useEffect(() => {
-    if (selectedRestaurant?.preparationLevel) {
-      setLevelState(selectedRestaurant.preparationLevel);
-    }
-  }, [selectedRestaurant?.preparationLevel]);
+    console.log("[affluence] selectedRestaurant changed →", selectedRestaurant?.id, "preparationLevel:", selectedRestaurant?.preparationLevel);
+  }, [selectedRestaurant]);
 
   const setLevel = useCallback(
     async (newLevel: PreparationLevel) => {
-      const previous = level;
-      setLevelState(newLevel);
+      const previous = selectedRestaurant?.preparationLevel ?? null;
+      setOptimisticLevel(newLevel);
       const result = await apiFetch<Restaurant>(
         `/restaurants/${getRestaurantId()}/preparation-level`,
-        { method: "PATCH", body: JSON.stringify({ preparationLevel: newLevel }) },
+        {
+          method: "PATCH",
+          body: JSON.stringify({ preparationLevel: newLevel }),
+        },
       );
       if ("error" in result) {
-        setLevelState(previous);
+        setOptimisticLevel(previous);
       } else {
+        setOptimisticLevel(null);
         await refresh();
       }
     },
-    [level, refresh],
+    [selectedRestaurant?.preparationLevel, refresh],
   );
 
   return { level, setLevel };
