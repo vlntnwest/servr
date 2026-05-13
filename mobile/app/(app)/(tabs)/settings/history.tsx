@@ -23,7 +23,7 @@ export default function OrderHistory() {
   };
 
   return (
-    <SafeAreaView className="flex-1" edges={["bottom"]}>
+    <SafeAreaView className="flex-1" edges={["top"]}>
       <FlatList
         data={orders}
         keyExtractor={(item) => item.id}
@@ -46,9 +46,7 @@ export default function OrderHistory() {
           ) : null
         }
         ListFooterComponent={
-          isLoading ? (
-            <ActivityIndicator className="py-4" />
-          ) : null
+          isLoading ? <ActivityIndicator className="py-4" /> : null
         }
         renderItem={({ item }) => (
           <OrderCard

@@ -46,7 +46,10 @@ export default function SettingsLayout() {
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="general" />
           <Stack.Screen name="printer" />
-          <Stack.Screen name="history" />
+          <Stack.Screen
+            name="history"
+            options={{ headerTintColor: "transparent" }}
+          />
         </Stack>
       </View>
     </View>

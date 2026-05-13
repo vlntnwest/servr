@@ -1,6 +1,9 @@
 import { Stack } from "expo-router";
+import { useAppLifecycle } from "@/hooks/use-app-lifecycle";
 
 export default function AppLayout() {
+  useAppLifecycle();
+
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen
