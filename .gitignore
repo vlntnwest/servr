@@ -37,4 +37,5 @@ prompt-ralph.md
 memory/
 tests.json
 tsconfig.tsbuildinfo
+/docs/
 

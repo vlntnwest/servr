@@ -409,28 +409,25 @@ module.exports.handleWebhook = async (req, res) => {
       }
 
       const order = await withOrderNumber(async (tx, orderNumber) => {
-        const existing = await tx.order.findUnique({
-          where: { id: orderId },
-          select: { id: true, status: true },
-        });
-        // Only transition DRAFT → PENDING; any other status means already processed or advanced
-        if (!existing || existing.status !== "DRAFT") {
-          if (existing) {
-            logger.info(
-              { orderId, status: existing.status },
-              "Webhook already processed, skipping",
-            );
-          }
-          return null;
-        }
-
-        return tx.order.update({
-          where: { id: orderId },
+        const result = await tx.order.updateMany({
+          where: { id: orderId, status: "DRAFT" },
           data: {
             status: "PENDING",
             orderNumber,
             stripePaymentIntentId: session.payment_intent || null,
           },
+        });
+
+        if (result.count === 0) {
+          logger.info(
+            { orderId, sessionId: session.id },
+            "Webhook already processed or order missing, skipping",
+          );
+          return null;
+        }
+
+        return tx.order.findUnique({
+          where: { id: orderId },
           include: ORDER_INCLUDE,
         });
       });
